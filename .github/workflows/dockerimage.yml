@@ -20,4 +20,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         workdir: bedops
-        tags: '${{ TAG_NAME }}'
+        tags: $TAG_NAME
