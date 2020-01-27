@@ -2,22 +2,22 @@ name: Build and Publish bedops
 
 on:
   push:
-    paths: 
+    paths:
       - 'bedops/Dockerfile'
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@master
     - name: Build, Tag, Publish Docker
-      uses: HurricanKai/Publish-Docker-Github-Action@1.12.1
+      env:
+        TAG_NAME: 2.4.36_$(echo "${GITHUB_SHA}" | cut -c1-6)
+      uses: elgohr/Publish-Docker-Github-Action@master
       with:
         name: gwas/bedops
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        snapshot: true
-        dockerfile: bedops/Dockerfile
+        workdir: bedops
+        tags: '${{ TAG_NAME }}'
