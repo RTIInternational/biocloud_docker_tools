@@ -12,12 +12,10 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Build, Tag, Publish Docker
-      env:
-        TAG_NAME: 2.4.36_$(echo "${GITHUB_SHA}" | cut -c1-6)
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
         name: gwas/bedops
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         workdir: bedops
-        tags: $TAG_NAME
+        tags: 2.4.36_$(echo "${GITHUB_SHA}" | cut -c1-6)
