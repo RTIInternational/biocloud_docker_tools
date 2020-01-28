@@ -21,6 +21,7 @@ RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/
     && apt-get install -y --no-install-recommends \
         wget \
         unzip \
+        locales \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure default locale, see https://github.com/rocker-org/rocker/issues/19
@@ -33,14 +34,14 @@ ENV LANG en_US.UTF-8
 
 #### Install tsv-utils and create binary executables in /opt ####
 
-RUN wget https://github.com/eBay/tsv-utils/releases/download/v1.4.4/tsv-utils-v1.4.4_linux-x86_64_ldc2.tar.gz \
+RUN wget https://github.com/eBay/tsv-utils/releases/download/v1.4.4/tsv-utils-v1.4.4_linux-x86_64_ldc2.tar.gz --no-check-certificate \
     && tar -zxf tsv-utils-v1.4.4_linux-x86_64_ldc2.tar.gz \
-    && mv /tsv-utils-v1.4.4_osx-x86_64_ldc2 /opt/ \
-    && chmod -R a+x /opt/tsv-utils-v1.4.4_osx-x86_64_ldc2/bin/ \
+    && mv /tsv-utils-v1.4.4_linux-x86_64_ldc2 /opt/ \
+    && chmod -R a+x /opt/tsv-utils-v1.4.4_linux-x86_64_ldc2/bin/ \
     && rm -f tsv-utils-v1.4.4_linux-x86_64_ldc2.tar.gz
 
 WORKDIR /
 
-ENV PATH=pkg-config:$PATH:/opt/tsv-utils-v1.4.4_osx-x86_64_ldc2/bin/
+ENV PATH=pkg-config:$PATH:/opt/tsv-utils-v1.4.4_linux-x86_64_ldc2/bin/
 
-CMD ["ls", "-l", "/opt/tsv-utils-v1.4.4_osx-x86_64_ldc2/bin/"]
+CMD ["ls", "-l", "/opt/tsv-utils-v1.4.4_linux-x86_64_ldc2/bin/"]
