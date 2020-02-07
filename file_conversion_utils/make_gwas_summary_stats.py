@@ -34,16 +34,6 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-from argparse import Namespace
-args = Namespace(
-    file_in_summary_stats = "/shared/rti-midas-data/studies/wihs/imputed/v9/association_tests/0001/ea/wihs1.ea.chr1.vllog10mean~variant+basesex+site+wihscode+evs.MetaScore.assoc.gz",
-    file_in_summary_stats_format = "rvtests",
-    file_in_info = "/shared/rti-midas-data/studies/wihs/imputed/v9/imputations/aa/output_files/chr1.info.gz",
-    file_in_pop_mafs = "/shared/rti-common/ref_panels/mis/1000g/phase3/2.0.0/pop_mafs/afr/chr1.tsv.gz",
-    population = "afr",
-    file_out_prefix = "/shared/temp/sum_stats_test"
-)
-
 # Open log file
 fileLog = args.file_out_prefix + ".log"
 log = open(fileLog, 'w')
@@ -51,8 +41,9 @@ log.write("Script: make_gwas_summary_stats.py\n")
 log.write("Arguments:\n")
 # Write arguments to log file
 pp = pprint.PrettyPrinter(indent = 4)
-log.write(pp.pprint(vars(args)))
+log.write(pp.pformat(vars(args)))
 log.write("\n\n")
+log.flush()
 
 # Read population MAFS
 popMAFs = pd.read_table(
@@ -61,19 +52,23 @@ popMAFs = pd.read_table(
 )
 # Rename columns
 popMAFs.columns = ["VARIANT_ID", "POP_MAF"]
-log.write("Read \n" + popMAFs.shape[0] + " lines from " + args.file_in_pop_mafs)
+log.write("Read " + str(popMAFs.shape[0]) + " lines from " + args.file_in_pop_mafs + "\n")
+popMAFs.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+log.write(str(popMAFs.shape[0]) + " remain after duplicate removal\n")
+log.flush()
 
 # Read MAF, Rsq (IMP_QUAL), and Genotyped (SOURCE) from info file
 info = pd.read_table(
     args.file_in_info,
     compression='gzip',
-    usecols = ["SNP" , "MAF", "Rsq", "Genotyped"],
-    dtype = {"MAF" : "float64", "Rsq": "float64", "Genotyped": "category"},
+    usecols = ["SNP" , "ALT_Frq", "MAF", "Rsq", "Genotyped"],
+    dtype = {"Genotyped": "category"},
     na_values = {"-"}
 )
 # Rename columns
 colXref = {
     'SNP': 'VARIANT_ID',
+    'ALT_Frq': 'ALT_AF',
     'MAF': 'MAF',
     'Rsq': 'IMP_QUAL',
     'Genotyped': 'SOURCE'
@@ -81,19 +76,22 @@ colXref = {
 info.columns = info.columns.map(colXref)
 # Recode sources
 sourceXref = {
-    'Imputed': 'imp',
-    'Genotyped': 'obs',
-    'Typed_Only': 'obs'
+    'Imputed': 'IMP',
+    'Genotyped': 'GEN',
+    'Typed_Only': 'GEN'
 }
 info['SOURCE'] = info['SOURCE'].map(sourceXref)
-log.write("Read \n" + info.shape[0] + " lines from " + args.file_in_info)
+log.write("Read " + str(info.shape[0]) + " lines from " + args.file_in_info + "\n")
+info.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+log.write(str(info.shape[0]) + " remain after duplicate removal\n")
+log.flush()
 
 # Read summary stats file
 if args.file_in_summary_stats_format == "rvtests":
     sumStats = pd.read_table(
         args.file_in_summary_stats,
         compression='gzip',
-        usecols = ["CHROM", "POS", "REF", "ALT", "N_INFORMATIVE", "AF", "SQRT_V_STAT", "ALT_EFFSIZE", "PVALUE"],
+        usecols = ["CHROM", "POS", "REF", "ALT", "N_INFORMATIVE", "SQRT_V_STAT", "ALT_EFFSIZE", "PVALUE"],
         dtype = {"CHROM": "category", "REF": "category", "ALT": "category"},
         comment = "#"
     )
@@ -104,7 +102,6 @@ if args.file_in_summary_stats_format == "rvtests":
         'REF': 'REF',
         'ALT': 'ALT',
         'N_INFORMATIVE': 'N',
-        'AF': 'ALT_AF',
         'SQRT_V_STAT': 'SQRT_V_STAT',
         'ALT_EFFSIZE': 'ALT_EFFECT',
         'PVALUE': 'P',
@@ -115,13 +112,16 @@ if args.file_in_summary_stats_format == "rvtests":
         sumStats['REF'].astype(str) + ':' + sumStats['ALT'].astype(str)
     # Add SE
     sumStats['SE'] = 1 / sumStats['SQRT_V_STAT']
-    log.write("Read \n" + sumStats.shape[0] + " lines from " + args.file_in_summary_stats)
+    log.write("Read " + str(sumStats.shape[0]) + " lines from " + args.file_in_summary_stats + "\n")
+    log.flush()
 elif args.file_in_summary_stats_format == "genesis":
     sumStats = pd.read_table(
         args.file_in_summary_stats,
         compression='gzip',
         usecols = ["variant.id" , "chr", "pos", "freq", "n.obs", "Est", "Est.SE", "Score.pval"]
     )
+sumStats.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+log.write(str(sumStats.shape[0]) + " remain after duplicate removal\n")
 
 # Merge population MAFs into summary stats
 sumStats = pd.merge(
@@ -163,7 +163,9 @@ sumStats.to_csv(
     columns = columnsToWrite,
     index = False,
     compression='gzip',
-    sep = '\t'
+    sep = '\t',
+    na_rep = 'NA'
 )
-log.write("Wrote \n" + sumStats.shape[0] + " lines to " + args.file_out_prefix + ".tsv.gz")
+log.write("Wrote " + str(sumStats.shape[0]) + " lines to " + args.file_out_prefix + ".tsv.gz" + "\n")
+log.flush()
 
