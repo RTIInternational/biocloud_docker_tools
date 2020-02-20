@@ -19,26 +19,6 @@ parser.add_argument(
     help="info file from genotype imputation"
 )
 parser.add_argument(
-    "--info_id_col",
-    help="name of variant ID column in info file"
-)
-parser.add_argument(
-    "--info_alt_freq_col",
-    help="name of alt allele frequency column in info file"
-)
-parser.add_argument(
-    "--info_maf_col",
-    help="name of MAF column in info file"
-)
-parser.add_argument(
-    "--info_rsq_col",
-    help="name of RSQ column in info file"
-)
-parser.add_argument(
-    "--info_genotyped_col",
-    help="name of genotyped column in info file"
-)
-parser.add_argument(
     "--file_in_pop_mafs",
     help="file containing mafs for relevant 1000G population"
 )
@@ -81,17 +61,19 @@ log.flush()
 info = pd.read_table(
     args.file_in_info,
     compression='gzip',
-    usecols = [args.info_id_col, args.info_alt_freq_col, args.info_maf_col, args.info_rsq_col, args.info_genotyped_col],
+    usecols = ["SNP", "REF(0)", "ALT(1)", "ALT_Frq", "MAF", "Rsq", "Genotyped"],
     dtype = {"Genotyped": "category"},
     na_values = {"-"}
 )
 # Rename columns
 colXref = {
-    args.info_id_col: 'VARIANT_ID',
-    args.info_alt_freq_col: 'ALT_AF',
-    args.info_maf_col: 'MAF',
-    args.info_rsq_col: 'IMP_QUAL',
-    args.info_genotyped_col: 'SOURCE'
+    "SNP": 'VARIANT_ID',
+    "ALT_Frq": 'ALT_AF',
+    "MAF": 'MAF',
+    "Rsq": 'IMP_QUAL',
+    "Genotyped": 'SOURCE',
+    "REF(0)": "REF",
+    "ALT(1)": "ALT"
 }
 info.columns = info.columns.map(colXref)
 # Recode sources
@@ -101,6 +83,13 @@ sourceXref = {
     'Typed_Only': 'GEN'
 }
 info['SOURCE'] = info['SOURCE'].map(sourceXref)
+
+# Fix variant ID
+info["VARIANT_ID"] = info["VARIANT_ID"].astype(str) + ":" + info["REF"].astype(str) + ":" + info["ALT"].astype(str)
+
+# Remove unnecessary columns
+info = info[["VARIANT_ID", "ALT_AF", "MAF", "IMP_QUAL", "SOURCE"]]
+
 log.write("Read " + str(info.shape[0]) + " lines from " + args.file_in_info + "\n")
 info.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
 log.write(str(info.shape[0]) + " remain after duplicate removal\n")
