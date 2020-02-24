@@ -19,3 +19,8 @@ The GitHub action will build and push the Docker Image to Docker Hub. If a repo 
 All Docker Images are pushed to Docker Hub here: https://hub.docker.com/u/rtibiocloud
 
 The repository is the tool name. Images are tagged in the format `<tool-version>_<first-6-git-sha>`.
+
+
+## GitHub Action Notes
+
+The GitHub action is based on code from this GitHub Action: https://github.com/elgohr/Publish-Docker-Github-Action
