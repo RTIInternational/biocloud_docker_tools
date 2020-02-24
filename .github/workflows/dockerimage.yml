@@ -1,13 +1,16 @@
 name: Build and Publish Docker Images
 
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v2
     - name: get changed files
       id: getfile
       run: |
