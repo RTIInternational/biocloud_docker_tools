@@ -50,6 +50,8 @@ function main() {
 
     INPUT_REGISTRY="${ORGANIZATION}/${REGISTRY_NO_PROTOCOL}"
     INPUT_NAME="${INPUT_REGISTRY}"
+    echo $INPUT_REGISTRY
+    echo $INPUT_NAME
 
     if uses "${INPUT_WORKDIR}"; then
         changeWorkingDirectory
