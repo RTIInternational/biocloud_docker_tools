@@ -6,8 +6,8 @@ LABEL maintainer="Bryan Quach <bquach@rti.org>"
 
 #### Basic Ubuntu setup ####
 
-# Set a default user. Available via runtime flag `--user docker` 
-# Add user to 'staff' group and make home directory 
+# Set a default user. Available via runtime flag `--user docker`
+# Add user to 'staff' group and make home directory
 RUN useradd docker \
     && mkdir /home/docker \
     && chown docker:docker /home/docker \
