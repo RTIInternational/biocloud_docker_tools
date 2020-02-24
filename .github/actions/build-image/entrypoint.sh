@@ -12,7 +12,7 @@ function main() {
     CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${GITHUB_SHA}) # dfe37af2c9a8c753fcd6392ea2f5e711a04b38e1
 
     # Can only build 1 Docker image in 1 actions run/commit
-    if [[ $(echo $CHANGED_FILES | tr " " "\n" | grep -c "Dockerfile") > 1 ]]; then
+    if [[ $(echo $CHANGED_FILES | tr " " "\n" | grep -c "Dockerfile") -gt 1 ]]; then
         echo "Only one changed Dockerfile is allowed per commit."
         exit 1
     fi
@@ -25,7 +25,7 @@ function main() {
         BASE_DIR_ARR+=(${arrFILE[0]})
     done
     UNIQUE_DIRS=($(echo "${BASE_DIR_ARR[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
-    if [[ ${#UNIQUE_DIRS[@]} != 1 ]]; then
+    if [[ ${#UNIQUE_DIRS[@]} -gt 1 ]]; then
         echo "Only 1 Docker image directory allowed per commit"
         exit 1
     fi
