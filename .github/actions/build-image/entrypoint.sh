@@ -66,7 +66,7 @@ function main() {
     # echo ${INPUT_PASSWORD} | docker login -u ${INPUT_USERNAME} --password-stdin ${INPUT_REGISTRY}
     echo ${INPUT_PASSWORD} | docker login -u ${INPUT_USERNAME} --password-stdin
 
-    SHA_TAG="${SOFTWARE_VERSION}"_$(echo "${GITHUB_SHA}" | cut -c1-6)
+    SHA_TAG="${SOFTWARE_VERSION}"_$(echo "${GITHUB_SHA}" | cut -c1-7)
 
     TAGS=("${SHA_TAG}")
     FIRST_TAG=$(echo $TAGS | cut -d ' ' -f1)
