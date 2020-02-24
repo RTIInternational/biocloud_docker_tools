@@ -3,6 +3,7 @@ set -e
 
 function main() {
     echo "" # see https://github.com/actions/toolkit/issues/168
+    cd /github/workspace
 
     sanitize "${INPUT_USERNAME}" "username"
     sanitize "${INPUT_PASSWORD}" "password"
