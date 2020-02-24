@@ -33,4 +33,4 @@ ENV LANG en_US.UTF-8
 
 WORKDIR /
 
-CMD ["pigz", "-h"]]
+CMD ["pigz", "-h"]
