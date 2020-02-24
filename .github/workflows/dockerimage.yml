@@ -12,5 +12,6 @@ jobs:
       uses: ./.github/actions/build-image
       with:
         organization: gwas
+        changed_files: ${{ git diff-tree --no-commit-id --name-only -r github.sha }}
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
