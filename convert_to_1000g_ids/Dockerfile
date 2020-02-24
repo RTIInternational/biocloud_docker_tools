@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:18.04 
 
 # Maintainer and author
 LABEL maintainer="Alex Waldrop <awaldrop@rti.org>"
