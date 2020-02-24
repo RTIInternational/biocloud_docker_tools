@@ -48,6 +48,10 @@ function main() {
         echo "File is not in a directory."
         exit 0
     fi
+    if [[ ${#arrFILE[@]} -eq 0 ]]; then
+        echo "No changed files found."
+        exit 0
+    fi
 
     # INPUT_REGISTRY="${ORGANIZATION}/${REGISTRY_NO_PROTOCOL}"
     # INPUT_NAME="${INPUT_REGISTRY}"
