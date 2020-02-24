@@ -2,7 +2,7 @@
 FROM ubuntu:18.04
 
 # Maintainer and author
-LABEL maintainer="Bryan Quach <bquach@rti.org>"
+LABEL maintainer="Bryan Quach <bquach@rti.org>" 
 
 #### Basic Ubuntu setup ####
 
