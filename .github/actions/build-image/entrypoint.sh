@@ -7,7 +7,7 @@ function main() {
 
     sanitize "${INPUT_USERNAME}" "username"
     sanitize "${INPUT_PASSWORD}" "password"
-    sanitize "${ORGANIZATION}" "organization"
+    sanitize "${INPUT_ORGANIZATION}" "organization"
 
     CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${GITHUB_SHA}) # dfe37af2c9a8c753fcd6392ea2f5e711a04b38e1
 
