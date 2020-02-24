@@ -30,7 +30,7 @@ function main() {
     fi
 
     CFS_arr=($(echo "$CHANGED_FILES" | tr " " "\n"))
-    FIRST_FILE = ${CFS_arr[0]}
+    FIRST_FILE=${CFS_arr[0]}
 
     IFS='/'; arrFILE=($FIRST_FILE); unset IFS;
     if [[ ${#arrFILE[@]} == 3 ]]; then
@@ -48,22 +48,22 @@ function main() {
         exit 0
     fi
 
-    INPUT_REGISTRY="${ORGANIZATION}/${REGISTRY_NO_PROTOCOL}"
-    INPUT_NAME="${INPUT_REGISTRY}"
-    echo $INPUT_REGISTRY
-    echo $INPUT_NAME
+    # INPUT_REGISTRY="${ORGANIZATION}/${REGISTRY_NO_PROTOCOL}"
+    # INPUT_NAME="${INPUT_REGISTRY}"
+    INPUT_NAME="${ORGANIZATION}/${REGISTRY_NO_PROTOCOL}"
 
     if uses "${INPUT_WORKDIR}"; then
         changeWorkingDirectory
     fi
 
-    echo ${INPUT_PASSWORD} | docker login -u ${INPUT_USERNAME} --password-stdin ${INPUT_REGISTRY}
+    # echo ${INPUT_PASSWORD} | docker login -u ${INPUT_USERNAME} --password-stdin ${INPUT_REGISTRY}
+    echo ${INPUT_PASSWORD} | docker login -u ${INPUT_USERNAME} --password-stdin
 
     SHA_TAG="${SOFTWARE_VERSION}"_$(echo "${GITHUB_SHA}" | cut -c1-6)
 
     TAGS=("${SHA_TAG}")
     FIRST_TAG=$(echo $TAGS | cut -d ' ' -f1)
-    DOCKERNAME="${REGISTRY_NO_PROTOCOL}:${FIRST_TAG}"
+    DOCKERNAME="${INPUT_NAME}:${FIRST_TAG}"
     BUILDPARAMS=""
     CONTEXT="."
 
