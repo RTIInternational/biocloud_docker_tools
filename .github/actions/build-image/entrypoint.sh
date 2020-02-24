@@ -34,17 +34,17 @@ function main() {
     FIRST_FILE=${CFS_arr[0]}
 
     IFS='/'; arrFILE=($FIRST_FILE); unset IFS;
-    if [[ ${#arrFILE[@]} == 3 ]]; then
+    if [[ ${#arrFILE[@]} -eq 3 ]]; then
         REGISTRY_NO_PROTOCOL=${arrFILE[0]}
         SOFTWARE_VERSION=${arrFILE[1]}
         INPUT_WORKDIR=${arrFILE[0]}/${arrFILE[1]}
     fi
-    if [[ ${#arrFILE[@]} == 2 ]]; then
+    if [[ ${#arrFILE[@]} -eq 2 ]]; then
         REGISTRY_NO_PROTOCOL=${arrFILE[0]}
         SOFTWARE_VERSION="none"
         INPUT_WORKDIR=${arrFILE[0]}
     fi
-    if [[ ${#arrFILE[@]} == 1 ]]; then
+    if [[ ${#arrFILE[@]} -eq 1 ]]; then
         echo "File is not in a directory."
         exit 0
     fi
