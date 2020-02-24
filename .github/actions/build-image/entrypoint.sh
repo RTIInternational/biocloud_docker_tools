@@ -8,10 +8,10 @@ function main() {
     sanitize "${INPUT_PASSWORD}" "password"
     sanitize "${ORGANIZATION}" "organization"
 
-    CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${GITHUB_SHA})
+    CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${GITHUB_SHA}) # dfe37af2c9a8c753fcd6392ea2f5e711a04b38e1
 
     # Can only build 1 Docker image in 1 actions run/commit
-    if [[ "$CHANGED_FILES" | tr " " "\n" | grep -c "Dockerfile" > 1 ]]; then
+    if [[ $(echo $CHANGED_FILES | tr " " "\n" | grep -c "Dockerfile") > 1 ]]; then
         echo "Only one changed Dockerfile is allowed per commit."
         exit 1
     fi
