@@ -18,7 +18,6 @@ RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/
         ca-certificates \
         wget
 
-
 ##################### Install Regtools #########################################
 RUN wget https://github.com/griffithlab/regtools/archive/0.5.1.tar.gz
 RUN tar -xvzf 0.5.1.tar.gz

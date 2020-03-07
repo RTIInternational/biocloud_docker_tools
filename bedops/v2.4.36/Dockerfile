@@ -2,12 +2,12 @@
 FROM ubuntu:18.04
 
 # Maintainer and author
-LABEL maintainer="Bryan Quach <bquach@rti.org>"
+LABEL maintainer="Bryan Quach <bquach@rti.org>" 
 
 #### Basic Ubuntu setup ####
 
-# Set a default user. Available via runtime flag `--user docker` 
-# Add user to 'staff' group and make home directory 
+# Set a default user. Available via runtime flag `--user docker`
+# Add user to 'staff' group and make home directory
 RUN useradd docker \
     && mkdir /home/docker \
     && chown docker:docker /home/docker \
@@ -16,7 +16,7 @@ RUN useradd docker \
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list \
-    && apt-get update \ 
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         dirmngr \
         software-properties-common \

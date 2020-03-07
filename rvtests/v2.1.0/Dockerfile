@@ -15,7 +15,7 @@ RUN useradd docker \
     && addgroup docker staff
 
 ENV DEBIAN_FRONTEND noninteractive
-    
+
 RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list \
     && apt-get update \ 
     && apt-get install -y --no-install-recommends \
@@ -49,7 +49,7 @@ RUN \
     #    gcc \
     #    g++ \
     #&& rm -rf /var/lib/apt/lists/* \
-     wget https://github.com/zhanxw/rvtests/releases/download/v2.1.0/rvtests_linux64.tar.gz \
+    wget https://github.com/zhanxw/rvtests/releases/download/v2.1.0/rvtests_linux64.tar.gz \
     && tar -xf rvtests_linux64.tar.gz \
     && cp executable/* /opt \
     && rm -r example/ executable/ rvtests_linux64.tar.gz

@@ -1,4 +1,4 @@
-FROM r-base:3.6.2
+FROM r-base:3.6.2 
 
 # =====================================================================
 # Install R
@@ -16,4 +16,3 @@ RUN chmod 755 /opt/generate_gwas_plots.R
 # Set wrkdir
 RUN mkdir /data
 WORKDIR /data
-
