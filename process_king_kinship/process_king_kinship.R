@@ -9,7 +9,7 @@ parser = add_option(object=parser, opt_str=c("--kinship"), default=NULL, type="c
                     help="[REQUIRED] Path to KING kinship output file")
 parser = add_option(object=parser, opt_str=c("--output_basename"), default=NULL, type="character",
                     help="[REQUIRED] Basename to prefix output files.")
-parser = add_option(object=parser, opt_str=c("--output_delim"), default="tab", type="character",
+parser = add_option(object=parser, opt_str=c("--output_delim"), default="space", type="character",
                     help="[REQUIRED] Output file delimiter (Options: space, tab, comma)")
 ############## Parse command line
 argv = parse_args(parser)
