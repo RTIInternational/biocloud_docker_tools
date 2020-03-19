@@ -11,7 +11,7 @@ LABEL maintainer="Alex Waldrop <awaldrop@rti.org>"
 RUN R -e 'install.packages(c("optparse", "igraph"), repos="http://cran.us.r-project.org")'
 
 # Add R helper script
-ADD 755 process_king_kinship.R /opt/
+ADD process_king_kinship.R /opt/
 
 # Change permissions to make things exectuable
 RUN chmod 755 /opt/process_king_kinship.R
