@@ -100,13 +100,13 @@ write.table(final.remove.list, file = exclusion_recommendations_file,
 # Annotate relationships with level of relatedness
 classify_kinship = function(kin){
   if(kin > 0.354){
-    return("MZ twin or duplicate")
+    return("MZ_twin_or_duplicate")
   }else if(kin > 0.177){
-    return("1st degree relative")
+    return("1st_degree_relative")
   }else if(kin > 0.0884){
-    return("2nd degree relative")
+    return("2nd_degree_relative")
   }else{
-    return("4+ degree relative")
+    return("4+_degree_relative")
   }
 }
 
@@ -115,6 +115,6 @@ king.stats$Classification = sapply(king.stats$Kinship, classify_kinship)
 
 # Write annotated kinship stats to output file
 write.table(king.stats, file = annotated_kin_file, 
-            sep = output_delim, row.names = F, col.names = T, quote = F)
+            sep = "\t", row.names = F, col.names = T, quote = F)
 
 print("Finished successfully!")
