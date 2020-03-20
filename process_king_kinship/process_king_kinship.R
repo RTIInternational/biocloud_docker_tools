@@ -47,6 +47,17 @@ if(expected_colnames != actual_colnames){
   stop(err)
 }
 
+# Just touch empty files if 0 rows
+if(nrow(king.stats) == 0){
+  print("Empty kinship file! No related sample pairs detected!")
+  file.create(exclusion_recommendations_file)
+  # Write annotated kinship stats to output file
+  write.table(king.stats, file = annotated_kin_file, 
+              sep = "\t", row.names = F, col.names = T, quote = F)
+  print("Finished successfully!")
+  quit(status=0, save='no')
+}
+
 # Combine FID and IIDs into single ID for first component of a pair
 edge.heads <- paste0(king.stats$FID1, ":::", king.stats$ID1)
 # Combine FID and IIDs into single ID for second component of a pair
@@ -76,14 +87,21 @@ while(length(sample.degrees) > 0 & sample.degrees[1] > 1) {
 
 # Update sample pairs post-pruning
 unpruned.sample.pairs <- sample.pairs[!(sample.pairs[,1] %in% remove.list) & !(sample.pairs[,2] %in% remove.list),]
+only_one_pair <- nrow(king.stats) == 1
 
 # Randomly select one from each pair to remove
 print("Randomply excluding members of remaining sample pairs...")
-random.exclusions <- sapply(1:nrow(unpruned.sample.pairs),
-                            function(i){unpruned.sample.pairs[i, sample(x = 1:2, size = 1)]})
+if(!only_one_pair){
+  random.exclusions <- sapply(1:nrow(unpruned.sample.pairs),
+                              function(i){unpruned.sample.pairs[i, sample(x = 1:2, size = 1)]})
+  remove.list <- c(remove.list, as.vector(random.exclusions))
+}else{
+  # Need to handle case where only one sample pair exists
+  remove.list <- unpruned.sample.pairs[sample(x=1:2, size=1)]
+}
 
 # Update remove list
-remove.list <- c(remove.list, as.vector(random.exclusions))
+
 print(paste0("Total related samples recommended for exclusion: ", length(remove.list)))
 
 # Final check that no sample pairs remain
