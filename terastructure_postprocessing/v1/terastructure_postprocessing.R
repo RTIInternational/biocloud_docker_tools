@@ -242,9 +242,12 @@ for (dataset in datasets) {
         )
 
         # Generate triangle plot
-        thisThetaDataset$DATASET = paste(thisThetaDataset$DATASET, ancestry)
-        generateTrianglePlot(paste0(outPrefix,"_",tolower(dataset),"_",tolower(ancestry)), thisThetaDataset, refPops)
-
+        if(nrow(thisThetaDataset) > 0){
+          thisThetaDataset$DATASET = paste(thisThetaDataset$DATASET, ancestry)
+          generateTrianglePlot(paste0(outPrefix,"_",tolower(dataset),"_",tolower(ancestry)), thisThetaDataset, refPops)
+        }else{
+          print(paste0("Not generating triangle plot for ancestry '", ancestry, "' as no samples were classified!"))
+        }
     }
 
 }
