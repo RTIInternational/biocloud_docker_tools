@@ -1,6 +1,8 @@
 #!/usr/bin/Rscript
 
 library("vcd")
+library("ggplot2")
+library("reshape2")
 
 args = commandArgs(TRUE)
 loop = TRUE
@@ -86,7 +88,7 @@ while (loop) {
 }
 
 generateTrianglePlot = function(outPrefix, theta, refPops) {
-
+  
     # Get color palette
     cohorts = unique(theta$DATASET)
     cohortCount = length(cohorts)
@@ -128,6 +130,102 @@ generateTrianglePlot = function(outPrefix, theta, refPops) {
     # Close png file
     dev.off()
 
+}
+
+generateBarPlot = function(outPrefix, theta, refPops, refPopType) {
+  
+  # Get color palette
+  colors = rainbow(length(refPops))
+
+  # Replace SUPERPOP/POP with Dataset for thetaRef datasets
+  if(!"DATASET" %in% colnames(theta)){
+    theta$DATASET = theta[[refPopType]]
+  }
+  # Add a sample id column
+  theta$SAMPLE = paste0(theta$FID,"_",theta$IID)
+  
+  # Order samples in descending order of largest ancestry
+  anc_perc = sapply(refPops, function(pop){sum(theta[[pop]])})
+  names(anc_perc) = refPops
+  top_anc = names(anc_perc)[order(anc_perc, decreasing=T)][1]
+  
+  # Re-order samples based on percentage of top ancestry
+  theta$SAMPLE = factor(theta$SAMPLE, levels=theta$SAMPLE[order(theta[[top_anc]], decreasing=T)])
+  
+  # Subset to only include columns you want
+  cols_to_keep = c("SAMPLE", "DATASET", refPops)
+  theta = theta[,cols_to_keep]
+  # Melt to get dataset in long format 
+  theta = melt(theta, id.vars=c("SAMPLE", "DATASET"))
+  # Rename variable/value created melting
+  colnames(theta) = c("SAMPLE", "DATASET", "ANCESTRY", "THETA")
+  
+  # Open png file
+  png(
+    paste0(outPrefix, "_barplot.png"),
+    width=800,
+    height=800,
+    type="cairo"
+  )
+  
+  plot = ggplot(theta, aes(y = THETA, x = SAMPLE, fill = ANCESTRY)) + geom_bar(position="fill",stat="identity") +
+    scale_fill_manual(values=colors) + 
+    facet_grid(~ DATASET, scales = "free", space = "free") + 
+    theme(axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.title.y=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())
+  print(plot)
+  dev.off()
+}
+
+plot_ancestry = function(outPrefix, theta, refPops, refPopType){
+  if(length(refPops) == 3){
+    generateTrianglePlot(outPrefix, theta, refPops)
+  }else{
+    generateBarPlot(outPrefix, theta, refPops, refPopType)
+  }
+}
+
+is_ancestry_class = function(sample_row, ancestry, thisThetaDataset, ancestryDefinitions){
+  # Return whether sample in thisThetaDataset would be classified as an ancestry type based on ancestry definitions
+  if(!ancestry %in% ancestryDefinitions$ANCESTRY){
+    stop(paste0("Ancestry not defined in ancestry definitions: ", ancestry))
+  }
+  thisAncestryDefinition = ancestryDefinitions[ancestryDefinitions$ANCESTRY == ancestry,]
+  sample_thetas = thisThetaDataset[sample_row,]
+  is_ancestry = TRUE
+  for (row in 1:nrow(thisAncestryDefinition)) {
+    # Throw error if ancestry not in theta dataset
+    if (!thisAncestryDefinition[row, "POP"] %in% colnames(thisThetaDataset)){
+      stop(paste("Ancestry definition",thisAncestryDefinition[row,"ANCESTRY"],"population",thisAncestryDefinition[row,"POP"],"not valid"))
+    }else if (thisAncestryDefinition[row, "OPERATION"] == ">") {
+      is_ancestry = is_ancestry && thisThetaDataset[sample_row,thisAncestryDefinition[row, "POP"]] > thisAncestryDefinition[row, "THRESHOLD"]
+    } else if (thisAncestryDefinition[row, "OPERATION"] == ">=") {
+      is_ancestry = is_ancestry && thisThetaDataset[sample_row,thisAncestryDefinition[row, "POP"]] >= thisAncestryDefinition[row, "THRESHOLD"]
+    } else if (thisAncestryDefinition[row, "OPERATION"] == "<") {
+      is_ancestry = is_ancestry && thisThetaDataset[sample_row,thisAncestryDefinition[row, "POP"]] < thisAncestryDefinition[row, "THRESHOLD"]
+    } else if (thisAncestryDefinition[row, "OPERATION"] == "<=") {
+      is_ancestry = is_ancestry && thisThetaDataset[sample_row,thisAncestryDefinition[row, "POP"]] <= thisAncestryDefinition[row, "THRESHOLD"]
+    }
+  }
+  return(is_ancestry)
+}
+
+classify_sample = function(sample_row, thisThetaDataset, ancestryDefinitions){
+  # Apply ancestry definitions and determine sample classification
+  ancestries = unique(ancestryDefinitions$ANCESTRY)
+  classifications = sapply(ancestries, function(anc) is_ancestry_class(sample_row, anc, thisThetaDataset, ancestryDefinitions))
+  class = ancestries[which(classifications)]
+  if(length(class) == 0){
+    return("UNCLASSIFIED")
+  }else if(length(class) > 1){
+    return("MULTI_CLASSIFIED")
+  }else{
+    return(class[1])
+  }
 }
 
 # Read theta.txt
@@ -177,60 +275,103 @@ if (fileSampleDatasetXref == "") {
     thetaDataset = merge(thetaDataset, sampleDatasetXref, sort=FALSE)
 }
 
+# Ancestries to classify
+ancestries = unique(ancestryDefinitions$ANCESTRY)
+
+# Log some info
+print(paste0("Total ref samples: ", nrow(thetaRef)))
+print(paste0("Total study samples: ", nrow(thetaDataset)))
+ancestry_string = paste(ancestries)
+print(paste0("Ancestries considered: ", ancestry_string))
+print("Ancestry definitions:")
+print(ancestryDefinitions)
+
+# Classify reference samples
+thetaRef$CLASS = sapply(1:nrow(thetaRef), function(row){
+  classify_sample(row, thetaRef, ancestryDefinitions)
+})
+# Include dummy column to make the plotting work for ref dataset
+thetaRef$DATASET = thetaRef[[refPopType]]
+
+# Classify dataset samples
+thetaDataset$CLASS = sapply(1:nrow(thetaDataset), function(row){
+  classify_sample(row, thetaDataset, ancestryDefinitions)
+})
+
+# Indicate ref samples that were missclassified
+thetaRef$MISCLASSIFIED = thetaRef[[refPopType]] != thetaRef$CLASS 
+print(paste0("Unsclassified reference samples: ", length(which(thetaRef$CLASS == "UNCLASSIFIED"))))
+print(paste0("Multi-classified reference samples: ", length(which(thetaRef$CLASS == "MULTI_CLASSIFIED"))))
+print(paste0("Total Misclassified reference samples: ", length(which(thetaRef$MISCLASSIFIED))))
+
+# Generate triangle plot for ref samples
+plot_ancestry(paste0(outPrefix,"_ref"), thetaRef, refPops, refPopType)
+
 # Write reference theta results
 write.table(
-    thetaRef[, c("FID", "IID", refPopType, refPops)],
+    thetaRef[, c("FID", "IID", refPopType, refPops, "CLASS", "MISCLASSIFIED")],
     file=paste0(outPrefix,"_ref_theta.tsv"),
     quote=FALSE,
     sep="\t",
     row.names=FALSE
 )
 
+# Generate trianlge plots for ref data samples that were missclassified
+if(length(which(thetaRef$MISCLASSIFIED)) > 0){
+  plot_ancestry(paste0(outPrefix,"_ref_misclassified"), thetaRef[thetaRef$MISCLASSIFIED,], refPops, refPopType)
+}
+
+# Write misclassified ref samples
+write.table(
+  thetaRef[thetaRef$MISCLASSIFIED, c("FID", "IID")],
+  file=paste0(outPrefix,"_ref_misclassified.txt"),
+  quote=FALSE,
+  sep="\t",
+  row.names=FALSE,
+  col.names=FALSE
+)
+
 # Write dataset theta results for each dataset
 datasets = unique(thetaDataset$DATASET)
 for (dataset in datasets) {
+    thetaDS = thetaDataset[thetaDataset$DATASET == dataset,]
+    
+    # Generate triangle plot for dataset
+    plot_ancestry(paste0(outPrefix,"_",tolower(dataset)), thetaDS, refPops, refPopType)
+    
+    # Write datset theta results
     write.table(
-        thetaDataset[thetaDataset$DATASET == dataset, c("FID", "IID", "DATASET", refPops)],
+        thetaDS[,c("FID", "IID", "DATASET", refPops, "CLASS")],
         file=paste0(outPrefix,"_",tolower(dataset),"_theta.tsv"),
         quote=FALSE,
         sep="\t",
         row.names=FALSE
     )
+    
+    # Make dataset unclassified triangle plot
+    thetaDS = thetaDS[thetaDS$CLASS %in% c("UNCLASSIFIED", "MULTI_CLASSIFIED"),]
+    print(paste0("Total unclassified data samples (",dataset,"): ", nrow(thetaDS)))
+    if(nrow(thetaDS) > 0){
+      plot_ancestry(paste0(outPrefix,"_",tolower(dataset),"_unclassified"), thetaDS, refPops, refPopType)
+    }
+    
+    # Write unclassified theta results
+    write.table(
+      thetaDS[, c("FID", "IID")],
+      file=paste0(outPrefix,"_",tolower(dataset),"_unclassified.txt"),
+      quote=FALSE,
+      sep="\t",
+      row.names=FALSE,
+      col.names=FALSE
+    )
 }
 
-# Generate triangle plot with all datasets
-generateTrianglePlot(outPrefix, thetaDataset, refPops)
-
-# Generate overall triangle plot for each dataset
-for (dataset in datasets) {
-    generateTrianglePlot(paste0(outPrefix,"_",tolower(dataset)), thetaDataset[thetaDataset$DATASET == dataset, ], refPops)
-}
 
 # Generate keep lists for each dataset and generate ancestry-specific triangle plots
 for (dataset in datasets) {
-
-    ancestries = unique(ancestryDefinitions$ANCESTRY)
     for (ancestry in ancestries) {
-
-        # Filter
-        thisAncestryDefinition = ancestryDefinitions[ancestryDefinitions$ANCESTRY == ancestry,]
-        thisThetaDataset = thetaDataset[thetaDataset$DATASET == dataset, ]
-        for (row in 1:nrow(thisAncestryDefinition)) {
-            if (thisAncestryDefinition[row, "POP"] %in% colnames(thisThetaDataset)) {
-                if (thisAncestryDefinition[row, "OPERATION"] == ">") {
-                    thisThetaDataset = thisThetaDataset[thisThetaDataset[,thisAncestryDefinition[row, "POP"]] > thisAncestryDefinition[row, "THRESHOLD"],]
-                } else if (thisAncestryDefinition[row, "OPERATION"] == ">=") {
-                    thisThetaDataset = thisThetaDataset[thisThetaDataset[,thisAncestryDefinition[row, "POP"]] >= thisAncestryDefinition[row, "THRESHOLD"],]
-                } else if (thisAncestryDefinition[row, "OPERATION"] == "<") {
-                    thisThetaDataset = thisThetaDataset[thisThetaDataset[,thisAncestryDefinition[row, "POP"]] < thisAncestryDefinition[row, "THRESHOLD"],]
-                } else if (thisAncestryDefinition[row, "OPERATION"] == "<=") {
-                    thisThetaDataset = thisThetaDataset[thisThetaDataset[,thisAncestryDefinition[row, "POP"]] <= thisAncestryDefinition[row, "THRESHOLD"],]
-                }
-            } else {
-                stop(paste("Ancestry definition",thisAncestryDefinition[row,"ANCESTRY"],"population",thisAncestryDefinition[row,"POP"],"not valid"))
-            }
-        }
-
+        thisThetaDataset = thetaDataset[(thetaDataset$DATASET == dataset) & (thetaDataset$CLASS == ancestry),]
+        
         # Write keep list
         write.table(
             thisThetaDataset[, c("FID", "IID")],
@@ -241,13 +382,18 @@ for (dataset in datasets) {
             col.names=FALSE
         )
 
-        # Generate triangle plot
+        # Generate triangle plot for the data samples
         if(nrow(thisThetaDataset) > 0){
           thisThetaDataset$DATASET = paste(thisThetaDataset$DATASET, ancestry)
-          generateTrianglePlot(paste0(outPrefix,"_",tolower(dataset),"_",tolower(ancestry)), thisThetaDataset, refPops)
+          plot_ancestry(paste0(outPrefix,"_",tolower(dataset),"_",tolower(ancestry)), thisThetaDataset, refPops, refPopType)
         }else{
-          print(paste0("Not generating triangle plot for ancestry '", ancestry, "' as no samples were classified!"))
+          print(paste0("Not generating plots for ancestry '", ancestry, "' as no samples were classified!"))
         }
+        
+        # Plot triangle or barplot for reference samples known to be of this ancestry
+        plot_ancestry(paste0(outPrefix,"_ref_",tolower(ancestry)), thetaRef[thetaRef$DATASET == ancestry,], refPops, refPopType)
     }
-
 }
+
+
+

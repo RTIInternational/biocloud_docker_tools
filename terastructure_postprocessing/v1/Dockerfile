@@ -8,7 +8,7 @@ FROM r-base:3.6.2
 LABEL maintainer="Alex Waldrop <awaldrop@rti.org>"
 
 # Install R packages
-RUN R -e 'install.packages(c("vcd"), repos="http://cran.us.r-project.org")'
+RUN R -e 'install.packages(c("vcd", "reshape2", "ggplot2"), repos="http://cran.us.r-project.org")'
 
 # Add R helper script
 ADD terastructure_postprocessing.R /opt/
