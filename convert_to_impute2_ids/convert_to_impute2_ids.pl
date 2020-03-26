@@ -39,7 +39,6 @@ GetOptions (
     'legend_with_chr=s' => \$legend,
     'file_out=s' => \$fileOut,
 );
-
 if ($fileIn eq '') { die "Please provide an input file\n"; }
 if ($fileInIdCol eq -1) { die "Please provide the ID column in the input file\n"; }
 if ($fileInChrCol eq -1) { die "Please provide the chromosome column in the input file\n"; }
@@ -71,7 +70,7 @@ sub flip {
 
         foreach my $nt (reverse(split("", $allele))) {
             if (!exists($flipMap{uc($nt)})) {
-                $alleleComplement = "error";
+                $alleleComplement = $allele;
                 last;
             } else {
                 $alleleComplement .= $flipMap{uc($nt)};
@@ -97,6 +96,13 @@ my %xChr = (
 my %variants = ();
 my %positionVariantCount = ();
 my %rsIndels = ();
+my %snpAlleles = (
+    'A' => 1,
+    'C' => 1,
+    'G' => 1,
+    'T' => 1,
+    $fileInMonomorphicAllele => 1
+);
 my %ridAlleles = (
     'R' => 1,
     'I' => 1,
@@ -241,7 +247,8 @@ while (<FILE_IN>) {
 
     if ($createId) {
 
-        if (!($alleles[0] eq 'A' || $alleles[0] eq 'C' || $alleles[1] eq 'A' || $alleles[1] eq 'C')) {
+        if (exists($snpAlleles{$alleles[0]}) && exists($snpAlleles{$alleles[1]}) &&
+            !($alleles[0] eq 'A' || $alleles[0] eq 'C' || $alleles[1] eq 'A' || $alleles[1] eq 'C')) {
             $alleles[0] = flip($alleles[0], $fileInMonomorphicAllele);
             $alleles[1] = flip($alleles[1], $fileInMonomorphicAllele);
         }
