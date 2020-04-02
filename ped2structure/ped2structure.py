@@ -162,7 +162,7 @@ def main():
             sample_id = "{0}_{1}".format(split_line[0], split_line[1])
 
             # Determine whether sample is in one of the input population files
-            pop_id = pop_ids[sample_id] if sample_id in pop_ids else pop_count
+            pop_id = pop_ids[sample_id] if sample_id in pop_ids else 0
 
             # If pop was found, mark that the pop should be used by STRUCTURE
             pop_flag = "1" if sample_id in pop_ids else "0"
@@ -171,7 +171,7 @@ def main():
             line_1 = "{0} {1} {2}".format(sample_id, pop_id, pop_flag)
             line_2 = line_1
 
-            # Convert genotype to structure format
+            # Convert plus/minus strand genotypes to structure format
             for i in range(6, len(split_line), 2):
                 line_1 += " {0}".format(geno_map[split_line[i]])
                 line_2 += " {0}".format(geno_map[split_line[i+1]])
@@ -190,7 +190,13 @@ def main():
                 raise RuntimeError("Line 2 is wrong length for sample {0}. Not sure what happened but output is invalid".format(sample_id))
 
             # Write to output file
-            out_fh.write("{0}\n{1}\n".format(line_1, line_2))
+            # Need to add newlines to the beginning so that final line doesn't have a newline
+            # Means you just need to skip adding leading newline to first sample
+            if samples_out:
+                out_fh.write("\n{0}\n{1}".format(line_1, line_2))
+            else:
+                # Don't include leading newline for first sample
+                out_fh.write("{0}\n{1}".format(line_1, line_2))
 
             # Increment counters
             if sample_id in pop_ids:
