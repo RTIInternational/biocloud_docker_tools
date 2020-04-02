@@ -236,13 +236,7 @@ def main():
                 raise RuntimeError("Line 2 is wrong length for sample {0}. Not sure what happened but output is invalid".format(sample_id))
 
             # Write to output file
-            # Need to add newlines to the beginning so that final line doesn't have a newline
-            # Means you just need to skip adding leading newline to first sample
-            if samples_out:
-                out_fh.write("\n{0}\n{1}".format(line_1, line_2))
-            else:
-                # Don't include leading newline for first sample
-                out_fh.write("{0}\n{1}".format(line_1, line_2))
+            out_fh.write("{0}\n{1}\n".format(line_1, line_2))
 
             # Increment counters
             if sample_id in pop_ids:
