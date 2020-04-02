@@ -46,6 +46,12 @@ def get_argparser():
             raise argparse.ArgumentTypeError(err_msg)
         return arg_string
 
+    def pop_col_type(arg_int):
+        if int(arg_int) < 2:
+            err_msg = "Invalid ref pop column: {0}! First two columns must be FID, IID!".format(arg_int)
+            raise argparse.ArgumentTypeError(err_msg)
+        return int(arg_int)
+
 
     # Configure and return argparser object for reading command line arguments
     argparser_obj = argparse.ArgumentParser(prog="ped2structure")
@@ -68,14 +74,31 @@ def get_argparser():
 
 
     # Pop files to specify samples belonging to each pop
-    argparser_obj.add_argument("--pop-files",
+    argparser_obj.add_argument("--ref-samples",
                                action="store",
                                type=file_type,
-                               dest="pop_files",
-                               nargs="*",
+                               dest="ref_sample_file",
                                required=False,
-                               default=[],
-                               help="Paths to files containing sample ids from each pop to be included in structure run")
+                               help="Path to file containing ids and pop info for any reference samples in ped file")
+
+    # Pop files to specify samples belonging to each pop
+    argparser_obj.add_argument("--ref-delim",
+                               action="store",
+                               type=str,
+                               dest="ref_sample_delim",
+                               required=False,
+                               default="space",
+                               choices= ["space", "tab", "comma"],
+                               help="Delimiter for reference sample info file")
+
+    # Pop files to specify samples belonging to each pop
+    argparser_obj.add_argument("--ref-pop-col",
+                               action="store",
+                               type=pop_col_type,
+                               dest="ref_sample_pop_index",
+                               required=False,
+                               default=2,
+                               help="0-based index of column containig ref sample pop info")
 
     # Verbosity level
     argparser_obj.add_argument("-v",
@@ -97,6 +120,46 @@ def get_argparser():
 geno_map = {"A": 1, "T": 4, "G": 3, "C": 2, "0": -9}
 
 
+def get_ref_ids(ref_sample_file, delim, ref_pop_col):
+    line_num = 1
+    sample_counts = {}
+    pop_ids = {}
+    with open(ref_sample_file, "r") as fh:
+        for line in fh:
+            line = [x.strip() for x in line.strip().split(delim)]
+            if ref_pop_col >= len(line):
+                # Raise error if wrong number of columns
+                err_msg = "Ref pop info should be found in column {0} but " \
+                          "there are only {1} columns in line {2}!".format(ref_pop_col,
+                                                                           len(line),
+                                                                           line_num)
+                logging.error(err_msg)
+                raise IOError(err_msg)
+
+            # Otherwise get sample id
+            sample_id = "_".join(line[0:2])
+            if sample_id in pop_ids:
+                # Throw error if duplicate sample id
+                err_msg = "Duplicate sample id: {0}".format(sample_id)
+                logging.error(err_msg)
+                raise IOError(err_msg)
+
+            # Add sample-pop association to pop_ids
+            pop = line[ref_pop_col]
+            pop_ids[sample_id] = pop
+
+            # Increment count for each pop
+            if pop not in sample_counts:
+                sample_counts[pop] = 0
+            sample_counts[pop] += 1
+            line_num += 1
+
+    logging.info("Found {0} total reference samples from {1} total pops".format(sum(sample_counts.values()),
+                                                                                len(sample_counts)))
+    logging.info("Reference samples by pop: {0}".format(sample_counts))
+    return pop_ids
+
+
 def main():
 
     # Configure argparser
@@ -110,37 +173,20 @@ def main():
     configure_logging(verbosity)
 
     ped_file = args.ped_file
-    pop_files = args.pop_files
+    ref_sample_file = args.ref_sample_file
     out_file = args.out_file
+    ref_delim = args.ref_sample_delim
+    ref_pop_col = args.ref_sample_pop_index
 
-    if pop_files:
-        logging.info("Detected {0} pop files...".format(len(pop_files)))
+    # Set delimiter
+    delims = {"space": " ", "tab": "\t", "comma": ","}
+
+    if ref_sample_file:
+        logging.info("Parsing ref sample info from {0}".format(ref_sample_file))
+        pop_ids = get_ref_ids(ref_sample_file, delims[ref_delim], ref_pop_col)
     else:
         logging.info("No pop files detected! Structure will not use any pop information!")
-    pop_ids = {}
-
-    pop_count = 1
-    # Initialize hash table of populations
-    for i, pop_file in enumerate(pop_files):
-        pop_samples = 0
-        with open(pop_file, "r") as fh:
-            for line in fh:
-                # Make sure no duplicate samples being added
-                sample_id = "_".join(line.strip().split()[0:2])
-                if sample_id in pop_ids:
-                    err_msg = "Duplicate sample id: {0}".format(sample_id)
-                    logging.error(err_msg)
-                    raise IOError(err_msg)
-                pop_ids[sample_id] = pop_count
-                pop_samples += 1
-
-        # Increment pop count
-        pop_count += 1
-
-        logging.info("Counted {0} individuals from pop file {1}...".format(pop_samples, pop_file))
-
-    if pop_files:
-        logging.info("Count {0} samples across all input pops...".format(len(pop_ids)))
+        pop_ids = {}
 
     # Create filehandle for writing
     out_fh = open(out_file, "w")
