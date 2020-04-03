@@ -319,10 +319,13 @@ if (fileSampleDatasetXref == "") {
   thetaDataset$DATASET = datasetLabel
 } else {
   sampleDatasetXref = read.table(fileSampleDatasetXref)
-  colnames(sampleDatasetXref) = c("IID", "DATASET")
+  if(ncol(sampleDatasetXref) != 3){
+    stop("Sample dataset file must contain exactly 3 columns (FID, IID, DATASET)! Also do not include a header for this file!")
+  }
+  colnames(sampleDatasetXref) = c("FID", "IID", "DATASET")
   thetaDataset = merge(thetaDataset, sampleDatasetXref, sort=FALSE, all.x=T)
   # Fill in unknowns with a constant so everything has a dataset
-  thetaDataset$DATASET[is.na(derp$NARD)] = "no_dataset_info"
+  thetaDataset$DATASET[is.na(thetaDataset$DATASET)] = "no_dataset_info"
 }
 
 # Log some info
