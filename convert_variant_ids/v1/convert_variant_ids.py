@@ -102,6 +102,13 @@ parser.add_argument(
     help="Output file path for log",
     type = str
 )
+parser.add_argument(
+    "--chunk_size",
+    help="chunk size for reading in large ref inputs",
+    type=int,
+    default=5000000,
+    required=False
+)
 args = parser.parse_args()
 sep = ("\t" if args.in_sep == "tab" else (" " if args.in_sep == "space" else ","))
 idCol = args.in_id_col
@@ -115,6 +122,7 @@ refDelAllele = args.ref_deletion_allele
 chrom = args.chr
 start = int(args.start)
 end = int(args.end)
+chunk_size = args.chunk_size
 
 # Open log file
 log = open(args.log_file, 'w', buffering=1)
@@ -183,17 +191,16 @@ elif chrom in {"24", "Y"}:
     dfIn.iloc[:, idCol] = "Y"
 dfIn['___new_id___'] = dfIn.iloc[:, chrCol] + "_" + dfIn.iloc[:, idCol]
 
-# Create ID dictionary from ref
-ref = pd.read_csv(
-    args.ref,
-    sep = "\t",
-    header = 0
-)
-ref = ref[ref.POSITION.isin(dfIn.iloc[:, posCol])]
-idLookup = dict(zip(ref.ALIAS, ref.ID))
+# Read reference in chunks of 5M SNPs
+count = 1
+for ref_chunk in pd.read_csv(args.ref, sep="\t", header=0, chunksize=chunk_size):
+    print("Reading chunk {0} ({1} records) of chr{2}...".format(count, chunk_size, chrom))
+    ref = ref_chunk[ref_chunk.POSITION.isin(dfIn.iloc[:, posCol])]
+    idLookup = dict(zip(ref.ALIAS, ref.ID))
 
-# Update IDs from ref
-dfIn['___new_id___'] = dfIn.iloc[:, idCol].map(idLookup).fillna(dfIn['___new_id___'])
+    # Update IDs from ref
+    dfIn['___new_id___'] = dfIn.iloc[:, idCol].map(idLookup).fillna(dfIn['___new_id___'])
+    count += 1
 
 # Add new IDs to output table
 dfOut.iloc[:, idCol] = dfIn['___new_id___']
