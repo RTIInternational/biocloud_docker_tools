@@ -186,9 +186,9 @@ dfIn.iloc[:, a2Col] = dfIn.iloc[:, a2Col].replace(to_replace=fileInDelAllele, va
 # Create aliases and default IDs for each variant
 dfIn.iloc[:, idCol] = dfIn.iloc[:, posCol].astype(str) + "_" + dfIn.iloc[:, a1Col] + "_" + dfIn.iloc[:, a2Col]
 if chrom in {"23", "X"}:
-    dfIn.iloc[:, idCol] = "X"
+    dfIn.iloc[:, chrCol] = "X"
 elif chrom in {"24", "Y"}:
-    dfIn.iloc[:, idCol] = "Y"
+    dfIn.iloc[:, chrCol] = "Y"
 dfIn['___new_id___'] = dfIn.iloc[:, chrCol] + "_" + dfIn.iloc[:, idCol]
 
 # Read reference in chunks of 5M SNPs
