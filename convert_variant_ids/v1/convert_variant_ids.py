@@ -68,16 +68,20 @@ parser.add_argument(
 parser.add_argument(
     "--chr",
     help="Chromosome to convert",
-    choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "X", "Y"]
+    choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "X", "Y", "25"]
 )
 parser.add_argument(
     "--start",
     help="Position of start of chunk to convert",
+    default=-1,
+    required=False,
     type = str
 )
 parser.add_argument(
     "--end",
     help="Position of end of chunk to convert",
+    default=-1,
+    required=False,
     type = str
 )
 parser.add_argument(
@@ -157,8 +161,12 @@ else:
     filterChrs = {chrom}
 dfIn.iloc[:, chrCol] = dfIn.iloc[:, chrCol].astype(str)
 dfIn = dfIn[dfIn.iloc[:, chrCol].isin(filterChrs)]
-dfIn = dfIn[dfIn.iloc[:, posCol] >= start]
-dfIn = dfIn[dfIn.iloc[:, posCol] <= end]
+
+# Optionally subset to specific region
+if start != -1:
+    dfIn = dfIn[dfIn.iloc[:, posCol] >= start]
+if end != -1:
+    dfIn = dfIn[dfIn.iloc[:, posCol] <= end]
 
 # Create table for output
 dfOut = dfIn.copy()
