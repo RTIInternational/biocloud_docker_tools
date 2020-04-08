@@ -200,7 +200,7 @@ dfOut.iloc[:, idCol] = dfIn['___new_id___']
 
 # Write output
 mode = 'w'
-if fileInHeader > 0:
+if fileInHeader is not None:
     dfInHeader.to_csv(
         args.out_file,
         index = False,
