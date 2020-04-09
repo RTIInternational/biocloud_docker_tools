@@ -211,7 +211,8 @@ for ref_chunk in pd.read_csv(args.ref, sep="\t", header=0, chunksize=chunk_size)
 dfOut.iloc[:, idCol] = dfIn['___new_id___']
 
 # Replace hyphens with colons
-dfOut.iloc[:,idCol] = dfOut.iloc[:,idCol].str.replace("_", ":")
+if len(dfOut):
+    dfOut.iloc[:,idCol] = dfOut.iloc[:,idCol].str.replace("_", ":")
 
 # Write output
 mode = 'w'
