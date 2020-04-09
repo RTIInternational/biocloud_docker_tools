@@ -71,20 +71,6 @@ parser.add_argument(
     choices=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "X", "Y", "25"]
 )
 parser.add_argument(
-    "--start",
-    help="Position of start of chunk to convert",
-    default=-1,
-    required=False,
-    type = str
-)
-parser.add_argument(
-    "--end",
-    help="Position of end of chunk to convert",
-    default=-1,
-    required=False,
-    type = str
-)
-parser.add_argument(
     "--out_file",
     help="Output file path for converted file",
     type = str
@@ -126,8 +112,6 @@ missAllele = args.in_missing_allele
 fileInDelAllele = args.in_deletion_allele
 refDelAllele = args.ref_deletion_allele
 chrom = args.chr
-start = int(args.start)
-end = int(args.end)
 chunk_size = args.chunk_size
 
 # Open log file
@@ -175,12 +159,6 @@ else:
     filterChrs = {chrom}
 dfIn.iloc[:, chrCol] = dfIn.iloc[:, chrCol].astype(str)
 dfIn = dfIn[dfIn.iloc[:, chrCol].isin(filterChrs)]
-
-# Optionally subset to specific region
-if start != -1:
-    dfIn = dfIn[dfIn.iloc[:, posCol] >= start]
-if end != -1:
-    dfIn = dfIn[dfIn.iloc[:, posCol] <= end]
 
 # Create table for output
 dfOut = dfIn.copy()
