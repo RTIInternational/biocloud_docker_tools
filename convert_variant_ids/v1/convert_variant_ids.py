@@ -109,6 +109,12 @@ parser.add_argument(
     default=5000000,
     required=False
 )
+parser.add_argument(
+    "--rescue_rsids",
+    help="Boolean flag for whether to try to rescue monomorph ids by using the ids in the input file",
+    action="store_true",
+    required=False
+)
 args = parser.parse_args()
 sep = ("\t" if args.in_sep == "tab" else (" " if args.in_sep == "space" else ","))
 idCol = args.in_id_col
@@ -179,6 +185,10 @@ if end != -1:
 # Create table for output
 dfOut = dfIn.copy()
 
+# Standardize monomoroph alleles
+dfIn.iloc[:, a1Col] = dfIn.iloc[:, a1Col].replace(to_replace=missAllele, value="0")
+dfIn.iloc[:, a2Col] = dfIn.iloc[:, a2Col].replace(to_replace=missAllele, value="0")
+
 # Update deletion allele
 dfIn.iloc[:, a1Col] = dfIn.iloc[:, a1Col].replace(to_replace=fileInDelAllele, value=refDelAllele)
 dfIn.iloc[:, a2Col] = dfIn.iloc[:, a2Col].replace(to_replace=fileInDelAllele, value=refDelAllele)
@@ -191,7 +201,24 @@ elif chrom in {"24", "Y"}:
     dfIn.iloc[:, chrCol] = "Y"
 dfIn['___new_id___'] = dfIn.iloc[:, chrCol] + "_" + dfIn.iloc[:, idCol]
 
-# Read reference in chunks of 5M SNPs
+# Optionally attempt to rescue rsids from SNPs that can't be fetched from dbSNP
+# Includes monomorphs (e.g. 1 rs24455 1111204 . C)
+# And indels where ref or alt allele is just the deletionAllele (e.g. 1 rs123123 23341 C -)
+if args.rescue_rsids:
+    # Get list of snps that won't be searchable in dbSNP
+    unfetchable = (dfIn.iloc[:,a1Col] == "0") | \
+                  (dfIn.iloc[:,a1Col] == refDelAllele) | \
+                  (dfIn.iloc[:,a2Col] == refDelAllele)
+
+    # Get subset of those that contain an rsid in the input file
+    rescuable = dfOut[unfetchable & (dfOut.iloc[:, idCol].str.contains("rs"))].index
+
+    # Set the ids for those SNPs to be the original ids and not the POS_A1_A2 format
+    dfIn.loc[rescuable, '___new_id___'] = dfOut.loc[rescuable, :].iloc[:, idCol]
+    print("Able to rescue {0} out of {1} unfetchable rsids...".format(len(rescuable),
+                                                                      len(dfIn[unfetchable])))
+
+# Read reference in chunks to conserve memory
 count = 1
 for ref_chunk in pd.read_csv(args.ref, sep="\t", header=0, chunksize=chunk_size):
     print("Reading chunk {0} ({1} records) of chr{2}...".format(count, chunk_size, chrom))
@@ -204,6 +231,9 @@ for ref_chunk in pd.read_csv(args.ref, sep="\t", header=0, chunksize=chunk_size)
 
 # Add new IDs to output table
 dfOut.iloc[:, idCol] = dfIn['___new_id___']
+
+# Replace hyphens with colons
+dfOut.iloc[:,idCol] = dfOut.iloc[:,idCol].str.replace("_", ":")
 
 # Write output
 mode = 'w'
@@ -223,9 +253,9 @@ dfOut.to_csv(
     compression=args.out_compression,
     sep = sep,
     header = False,
-    mode = mode
+    mode = mode,
+    float_format='%g'
 )
 
 log.write("Conversion complete\n")
 log.close()
-
