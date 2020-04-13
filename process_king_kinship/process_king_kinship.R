@@ -84,24 +84,26 @@ while(length(sample.degrees) > 0 & sample.degrees[1] > 1) {
   sample.degrees = sort(degree(current.graph), decreasing = T)
 }
 
-
 # Update sample pairs post-pruning
 unpruned.sample.pairs <- sample.pairs[!(sample.pairs[,1] %in% remove.list) & !(sample.pairs[,2] %in% remove.list),]
-only_one_pair <- nrow(king.stats) == 1
 
 # Randomly select one from each pair to remove
-print("Randomply excluding members of remaining sample pairs...")
-if(!only_one_pair){
-  random.exclusions <- sapply(1:nrow(unpruned.sample.pairs),
-                              function(i){unpruned.sample.pairs[i, sample(x = 1:2, size = 1)]})
-  remove.list <- c(remove.list, as.vector(random.exclusions))
+if(nrow(unpruned.sample.pairs) > 0){
+  print("Randomply excluding members of remaining sample pairs...")
+  if(nrow(king.stats) > 1){
+    random.exclusions <- sapply(1:nrow(unpruned.sample.pairs),
+                                function(i){unpruned.sample.pairs[i, sample(x = 1:2, size = 1)]})
+    remove.list <- c(remove.list, as.vector(random.exclusions))
+  }else{
+    # Need to handle case where only one sample pair exists
+    # This sample pair would NOT have been touched in the while loop above bc both samples have degree == 1
+    remove.list <- unpruned.sample.pairs[sample(x=1:2, size=1)]
+  }
 }else{
-  # Need to handle case where only one sample pair exists
-  remove.list <- unpruned.sample.pairs[sample(x=1:2, size=1)]
+  print("No unpruned sample pairs remain after graph pruning! No need to do random pair exclusion!")
 }
 
 # Update remove list
-
 print(paste0("Total related samples recommended for exclusion: ", length(remove.list)))
 
 # Final check that no sample pairs remain
@@ -124,7 +126,7 @@ classify_kinship = function(kin){
   }else if(kin > 0.0884){
     return("2nd_degree_relative")
   }else{
-    return("4+_degree_relative")
+    return("3+_degree_relative")
   }
 }
 
