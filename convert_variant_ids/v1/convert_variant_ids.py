@@ -145,7 +145,7 @@ filterChrs = {}
 if chrom == "23" or chrom == "X":
     filterChrs = {
         "23",
-        "25"
+        "25",
         "X",
         "X_PAR",
         "X_NONPAR"
