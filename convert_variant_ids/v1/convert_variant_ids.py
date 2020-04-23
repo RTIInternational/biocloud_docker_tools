@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import numpy as np
 import pprint
 
 # Get arguments
@@ -123,6 +124,24 @@ pp = pprint.PrettyPrinter(indent = 4)
 log.write(pp.pformat(vars(args)))
 log.write("\n\n")
 
+def flip(allele, missingAllele, deletionAllele):
+    flipMap = {
+        "A": "T",
+        "C": "G",
+        "G": "C",
+        "T": "A",
+        missingAllele: missingAllele,
+        deletionAllele: deletionAllele
+    }
+    flippedAllele = ""
+    for nt in reversed(allele):
+        if nt in flipMap:
+            flippedAllele += flipMap[nt]
+        else:
+            flippedAllele = "error"
+            break
+    return flippedAllele
+
 # Read input file header
 if args.in_header > 0:
     dfInHeader = pd.read_csv(
@@ -157,6 +176,7 @@ elif chrom == "24" or chrom == "Y":
     }
 else:
     filterChrs = {chrom}
+
 dfIn.iloc[:, chrCol] = dfIn.iloc[:, chrCol].astype(str)
 dfIn = dfIn[dfIn.iloc[:, chrCol].isin(filterChrs)]
 
@@ -171,8 +191,26 @@ dfIn.iloc[:, a2Col] = dfIn.iloc[:, a2Col].replace(to_replace=missAllele, value="
 dfIn.iloc[:, a1Col] = dfIn.iloc[:, a1Col].replace(to_replace=fileInDelAllele, value=refDelAllele)
 dfIn.iloc[:, a2Col] = dfIn.iloc[:, a2Col].replace(to_replace=fileInDelAllele, value=refDelAllele)
 
+# Get reverse complement of alleles
+dfIn["___a1_rc___"] = dfIn.iloc[:, a1Col]
+dfIn["___a1_rc___"] = dfIn["___a1_rc___"].apply(flip, args=["0", refDelAllele])
+dfIn["___a2_rc___"] = dfIn.iloc[:, a2Col]
+dfIn["___a2_rc___"] = dfIn["___a2_rc___"].apply(flip, args=["0", refDelAllele])
+
 # Create aliases and default IDs for each variant
-dfIn.iloc[:, idCol] = dfIn.iloc[:, posCol].astype(str) + "_" + dfIn.iloc[:, a1Col] + "_" + dfIn.iloc[:, a2Col]
+conditions = [
+    (dfIn.iloc[:, a1Col] <= dfIn.iloc[:, a2Col]) & (dfIn.iloc[:, a1Col] <= dfIn["___a1_rc___"]) & (dfIn.iloc[:, a1Col] <= dfIn["___a2_rc___"]),
+    (dfIn.iloc[:, a2Col] <= dfIn.iloc[:, a1Col]) & (dfIn.iloc[:, a2Col] <= dfIn["___a1_rc___"]) & (dfIn.iloc[:, a2Col] <= dfIn["___a2_rc___"]),
+    (dfIn["___a1_rc___"] <= dfIn.iloc[:, a1Col]) & (dfIn["___a1_rc___"] <= dfIn.iloc[:, a2Col]) & (dfIn["___a1_rc___"] <= dfIn["___a2_rc___"]),
+    (dfIn["___a2_rc___"] <= dfIn.iloc[:, a1Col]) & (dfIn["___a2_rc___"] <= dfIn.iloc[:, a2Col]) & (dfIn["___a2_rc___"] <= dfIn["___a1_rc___"]),
+]
+choices = [
+    dfIn.iloc[:, posCol].astype(str) + "_" + dfIn.iloc[:, a1Col] + "_" + dfIn.iloc[:, a2Col],
+    dfIn.iloc[:, posCol].astype(str) + "_" + dfIn.iloc[:, a2Col] + "_" + dfIn.iloc[:, a1Col],
+    dfIn.iloc[:, posCol].astype(str) + "_" + dfIn["___a1_rc___"] + "_" + dfIn["___a2_rc___"],
+    dfIn.iloc[:, posCol].astype(str) + "_" + dfIn["___a2_rc___"] + "_" + dfIn["___a1_rc___"]
+]
+dfIn.iloc[:, idCol] = np.select(conditions, choices)
 if chrom in {"23", "X"}:
     dfIn.iloc[:, chrCol] = "X"
 elif chrom in {"24", "Y"}:
