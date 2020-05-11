@@ -167,15 +167,25 @@ if chrom == "23" or chrom == "X":
         "25",
         "X",
         "X_PAR",
-        "X_NONPAR"
+        "X_NONPAR",
+        "chr23",
+        "chr25",
+        "chrX",
+        "chrX_PAR",
+        "chrX_NONPAR"
     }
 elif chrom == "24" or chrom == "Y":
     filterChrs = {
         "24",
         "Y"
+        "chr24",
+        "chrY"
     }
 else:
-    filterChrs = {chrom}
+    filterChrs = {
+        chrom,
+        "chr" + chrom
+    }
 
 dfIn.iloc[:, chrCol] = dfIn.iloc[:, chrCol].astype(str)
 dfIn = dfIn[dfIn.iloc[:, chrCol].isin(filterChrs)]
@@ -211,11 +221,12 @@ choices = [
     dfIn.iloc[:, posCol].astype(str) + "_" + dfIn["___a2_rc___"] + "_" + dfIn["___a1_rc___"]
 ]
 dfIn.iloc[:, idCol] = np.select(conditions, choices)
-if chrom in {"23", "X"}:
-    dfIn.iloc[:, chrCol] = "X"
-elif chrom in {"24", "Y"}:
-    dfIn.iloc[:, chrCol] = "Y"
-dfIn['___new_id___'] = dfIn.iloc[:, chrCol] + "_" + dfIn.iloc[:, idCol]
+idChr = chrom
+if idChr in {"23", "X"}:
+    idChr = "X"
+elif idChr in {"24", "Y"}:
+    idChr = "Y"
+dfIn['___new_id___'] = idChr + "_" + dfIn.iloc[:, idCol]
 
 # Optionally attempt to rescue rsids from SNPs that can't be fetched from dbSNP
 # Includes monomorphs (e.g. 1 rs24455 1111204 . C)
