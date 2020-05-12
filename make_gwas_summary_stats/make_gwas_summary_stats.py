@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+import numpy as np
 import pprint
 
 # Get arguments
@@ -33,6 +34,7 @@ parser.add_argument(
     help="prefix for output files"
 )
 args = parser.parse_args()
+includePopMAFs = True if args.file_in_pop_mafs else False
 
 # Open log file
 fileLog = args.file_out_prefix + ".log"
@@ -45,22 +47,23 @@ log.write(pp.pformat(vars(args)))
 log.write("\n\n")
 log.flush()
 
-# Read population MAFS
-popMAFs = pd.read_table(
-    args.file_in_pop_mafs,
-    compression='gzip'
-)
-# Rename columns
-popMAFs.columns = ["VARIANT_ID", "POP_MAF"]
-log.write("Read " + str(popMAFs.shape[0]) + " lines from " + args.file_in_pop_mafs + "\n")
-popMAFs.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
-log.write(str(popMAFs.shape[0]) + " remain after duplicate removal\n")
-log.flush()
+# Read population MAFS if provided
+if includePopMAFs:
+    popMAFs = pd.read_table(
+        args.file_in_pop_mafs,
+        compression='gzip'
+    )
+    # Rename columns
+    popMAFs.columns = ["VARIANT_ID", "POP_MAF"]
+    log.write("Read " + str(popMAFs.shape[0]) + " lines from " + args.file_in_pop_mafs + "\n")
+    popMAFs.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+    log.write(str(popMAFs.shape[0]) + " remain after duplicate removal\n")
+    log.flush()
 
 # Read MAF, Rsq (IMP_QUAL), and Genotyped (SOURCE) from info file
-info = pd.read_table(
+info = pd.read_csv(
     args.file_in_info,
-    compression='gzip',
+    sep = "\t",
     usecols = ["SNP", "REF(0)", "ALT(1)", "ALT_Frq", "MAF", "Rsq", "Genotyped"],
     dtype = {"Genotyped": "category"},
     na_values = {"-"}
@@ -76,6 +79,8 @@ colXref = {
     "ALT(1)": "ALT"
 }
 info.columns = info.columns.map(colXref)
+# Remove "chr" from start of ID if there
+info.VARIANT_ID = info.VARIANT_ID.replace({'chr':''}, regex=True)
 # Recode sources
 sourceXref = {
     'Imputed': 'IMP',
@@ -83,9 +88,6 @@ sourceXref = {
     'Typed_Only': 'GEN'
 }
 info['SOURCE'] = info['SOURCE'].map(sourceXref)
-
-# Fix variant ID
-info["VARIANT_ID"] = info["VARIANT_ID"].astype(str) + ":" + info["REF"].astype(str) + ":" + info["ALT"].astype(str)
 
 # Remove unnecessary columns
 info = info[["VARIANT_ID", "ALT_AF", "MAF", "IMP_QUAL", "SOURCE"]]
@@ -99,7 +101,6 @@ log.flush()
 if args.file_in_summary_stats_format == "rvtests":
     sumStats = pd.read_table(
         args.file_in_summary_stats,
-        compression='gzip',
         usecols = ["CHROM", "POS", "REF", "ALT", "N_INFORMATIVE", "SQRT_V_STAT", "ALT_EFFSIZE", "PVALUE"],
         dtype = {"CHROM": "category", "REF": "category", "ALT": "category"},
         comment = "#"
@@ -116,6 +117,8 @@ if args.file_in_summary_stats_format == "rvtests":
         'PVALUE': 'P',
     }
     sumStats.columns = sumStats.columns.map(colXref)
+    # Remove "chr" from start of CHR if there
+    sumStats.CHR = sumStats.CHR.astype(str).replace({'chr':''}, regex=True)
     # Create VARIANT_ID field
     sumStats['VARIANT_ID'] = sumStats['CHR'].astype(str) + ':' + sumStats['POS'].astype(str) + ':' + \
         sumStats['REF'].astype(str) + ':' + sumStats['ALT'].astype(str)
@@ -133,13 +136,16 @@ sumStats.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
 log.write(str(sumStats.shape[0]) + " remain after duplicate removal\n")
 
 # Merge population MAFs into summary stats
-sumStats = pd.merge(
-    left = sumStats,
-    right = popMAFs,
-    how = 'left',
-    left_on = 'VARIANT_ID',
-    right_on = 'VARIANT_ID'
-)
+if includePopMAFs:
+    sumStats = pd.merge(
+        left = sumStats,
+        right = popMAFs,
+        how = 'left',
+        left_on = 'VARIANT_ID',
+        right_on = 'VARIANT_ID'
+    )
+else:
+    sumStats['POP_MAF'] = np.nan
 
 # Merge MAF, IMP_QUAL, and SOURCE into summary stats
 sumStats = pd.merge(
