@@ -306,7 +306,8 @@ for dfIn in pd.read_csv(args.in_file, sep=sep, header=fileInHeader, chunksize=in
             sep = sep,
             header = False,
             mode = 'a',
-            float_format='%g'
+            float_format='%g',
+            na_rep = 'NA'
         )
 
 log.write("Conversion complete\n")
