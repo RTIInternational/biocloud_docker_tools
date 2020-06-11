@@ -281,13 +281,16 @@ for dfIn in pd.read_csv(args.in_file, sep=sep, header=fileInHeader, chunksize=in
         dfRef = dfRef.append(prevRefChunk)
         maxDfRefPos = dfRef.POSITION.max()
         while (maxDfRefPos <= maxDfInPos) and len(prevRefChunk.index):
-            print("Reading reference chunk {0} ({1} records) of chr{2}...".format(refChunkCount, refChunkSize, chrom))
-            prevRefChunk = ref.get_chunk(refChunkSize)
-            if len(prevRefChunk.index):
-                dfRef = dfRef.append(prevRefChunk)
-            maxDfRefPos = dfRef.POSITION.max()
-            dfRef = dfRef[dfRef.POSITION.isin(dfIn.iloc[:, posCol])]
-            refChunkCount += 1
+            try:
+                print("Reading reference chunk {0} ({1} records) of chr{2}...".format(refChunkCount, refChunkSize, chrom))
+                prevRefChunk = ref.get_chunk(refChunkSize)
+                if len(prevRefChunk.index):
+                    dfRef = dfRef.append(prevRefChunk)
+                maxDfRefPos = dfRef.POSITION.max()
+                dfRef = dfRef[dfRef.POSITION.isin(dfIn.iloc[:, posCol])]
+                refChunkCount += 1
+            except:
+                break
 
         idLookup = dict(zip(dfRef.ALIAS, dfRef.ID))
         dfIn['___new_id___'] = dfIn.iloc[:, idCol].map(idLookup).fillna(dfIn['___new_id___'])
