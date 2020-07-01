@@ -63,6 +63,7 @@ if includePopMAFs:
     popMAFs.columns = ["VARIANT_ID", "POP_MAF"]
     # Drop duplicates
     popMAFs.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+    log.write(str(popMAFs.shape[0]) + " remain after duplicates removal\n")
 
 # Set variables depending on source of summary stats
 if args.file_in_summary_stats_format == "rvtests":
@@ -85,7 +86,7 @@ elif args.file_in_summary_stats_format == "genesis":
 info = pd.read_csv(
     args.file_in_info,
     sep = "\t",
-    usecols = ["SNP", "ALT_Frq", "MAF", "Rsq", "Genotyped"],
+    usecols = ["SNP", "ALT_Frq", "MAF", "Rsq", "Genotyped", "REF(0)", "ALT(1)"],
     dtype = {"Genotyped": "category"},
     na_values = {"-"},
     iterator = True
@@ -113,6 +114,8 @@ for sumStats in pd.read_table(
         sumStats['SE'] = 1 / sumStats['SQRT_V_STAT']
     # Remove duplicates
     sumStats.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+    log.write(str(sumStats.shape[0]) + " remain after duplicates removal\n")
+
     # Read MAF, Rsq (IMP_QUAL), and Genotyped (SOURCE) from info file
     infoChunk = info.get_chunk(args.chunk_size)
     log.write("Read " + str(infoChunk.shape[0]) + " lines from " + args.file_in_info + "\n")
@@ -122,11 +125,20 @@ for sumStats in pd.read_table(
         "ALT_Frq": 'ALT_AF',
         "MAF": 'MAF',
         "Rsq": 'IMP_QUAL',
-        "Genotyped": 'SOURCE'
+        "Genotyped": 'SOURCE',
+        "REF(0)": "REF",
+        "ALT(1)": "ALT"
     }
     infoChunk.columns = infoChunk.columns.map(infoColXref)
     # Remove "chr" from start of ID if there
     infoChunk.VARIANT_ID = infoChunk.VARIANT_ID.replace({'chr':''}, regex=True)
+    log.write(str(infoChunk.shape[0]) + " remain after duplicates removal\n")
+
+    # Fix variant ID
+    infoChunk.VARIANT_ID = infoChunk["VARIANT_ID"].astype(str) + ":" + infoChunk["REF"].astype(str) + ":" + infoChunk["ALT"].astype(str)
+    # Remove unnecessary columns
+    infoChunk = infoChunk[["VARIANT_ID", "ALT_AF", "MAF", "IMP_QUAL", "SOURCE"]]
+
     # Recode sources
     sourceXref = {
         'Imputed': 'IMP',
@@ -134,8 +146,10 @@ for sumStats in pd.read_table(
         'Typed_Only': 'GEN'
     }
     infoChunk['SOURCE'] = infoChunk['SOURCE'].map(sourceXref)
+
     # Remove duplicates
     infoChunk.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+
     # Merge MAF, IMP_QUAL, and SOURCE into summary stats
     sumStats = pd.merge(
         left = sumStats,
