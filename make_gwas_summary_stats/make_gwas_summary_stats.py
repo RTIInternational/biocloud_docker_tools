@@ -134,8 +134,14 @@ for sumStats in pd.read_table(
     infoChunk.VARIANT_ID = infoChunk.VARIANT_ID.replace({'chr':''}, regex=True)
     log.write(str(infoChunk.shape[0]) + " remain after duplicates removal\n")
 
-    # Fix variant ID
+    # Normalize info variant ids to be of form CHR:POS (strip any other info from variant id)
+    def get_chr_pos(variant_id):
+        return ":".join(variant_id.split(":")[0:2])
+    infoChunk["VARIANT_ID"] = infoChunk["VARIANT_ID"].map(get_chr_pos)
+
+    # Add REF/ALT alleles to info variant IDS to be of form CHR:POS:A1:A2 that will map back to sumstats file
     infoChunk.VARIANT_ID = infoChunk["VARIANT_ID"].astype(str) + ":" + infoChunk["REF"].astype(str) + ":" + infoChunk["ALT"].astype(str)
+
     # Remove unnecessary columns
     infoChunk = infoChunk[["VARIANT_ID", "ALT_AF", "MAF", "IMP_QUAL", "SOURCE"]]
 
