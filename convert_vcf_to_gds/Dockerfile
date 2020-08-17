@@ -1,4 +1,4 @@
-FROM bioconductor_docker:RELEASE_3_11
+FROM bioconductor/bioconductor_docker:RELEASE_3_11
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
@@ -10,7 +10,7 @@ ADD convert_vcf_to_gds.R /opt/
 RUN chmod 755 /opt/convert_vcf_to_gds.R
 
 # Install SNPRelate
-RUN Rscript -e 'BiocManager::install(c("SNPRelate"), version = "3.11", ask = FALSE);'
+RUN Rscript -e 'BiocManager::install(c("SNPRelate"), version = "3.11");'
 
 # Set wrkdir
 RUN mkdir /data
