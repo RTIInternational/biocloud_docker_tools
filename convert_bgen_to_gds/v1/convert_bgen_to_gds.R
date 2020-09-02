@@ -17,11 +17,11 @@ parallel = 8
 
 while (loop) {
 
-	if (args[1] == "--in_bgen") {
+	if (args[1] == "--in-bgen") {
 		fileInBgen = args[2]
 	}
 
-	if (args[1] == "--out_gds") {
+	if (args[1] == "--out-gds") {
 		fileOutGds = args[2]
 	}
 
