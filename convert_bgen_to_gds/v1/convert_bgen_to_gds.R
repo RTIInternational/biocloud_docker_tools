@@ -34,23 +34,23 @@ while (loop) {
 	}
 
 	if (args[1] == "--geno") {
-		geno = toupper(args[2])
+		geno = TRUE
 	}
 
 	if (args[1] == "--dosage") {
-		dosage = toupper(args[2])
+		dosage = TRUE
 	}
 
 	if (args[1] == "--prob") {
-		prob = toupper(args[2])
+		prob = TRUE
 	}
 
 	if (args[1] == "--optimize") {
-		optimize = toupper(args[2])
+		optimize = TRUE
 	}
 
 	if (args[1] == "--parallel") {
-		parallel = args[2]
+		parallel = as.integer(args[2])
 	}
 
 	if (length(args) > 1) {
