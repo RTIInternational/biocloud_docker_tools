@@ -87,19 +87,21 @@ while(length(sample.degrees) > 0 & sample.degrees[1] > 1) {
 # Update sample pairs post-pruning
 unpruned.sample.pairs <- sample.pairs[!(sample.pairs[,1] %in% remove.list) & !(sample.pairs[,2] %in% remove.list),]
 
-# Randomly select one from each pair to remove
-if(nrow(unpruned.sample.pairs) > 0){
-  print("Randomply excluding members of remaining sample pairs...")
-  if(nrow(king.stats) > 1){
-    random.exclusions <- sapply(1:nrow(unpruned.sample.pairs),
-                                function(i){unpruned.sample.pairs[i, sample(x = 1:2, size = 1)]})
+# Randomly select one from each unpruned sample pair to remove
+if(is.character(unpruned.sample.pairs) & length(unpruned.sample.pairs) == 2){
+    # Handle case where only 1 unpruned sample pair remains
+    # Need to handle specially because R converts 1 row matrix to character vector (annoying)
+    print("Randomply excluding member of single remaining sample pair...")
+    remove.list <- c(remove.list, unpruned.sample.pairs[sample(x=1:2, size=1)])
+} else if(nrow(unpruned.sample.pairs) > 0){
+    # Handle case where multiple unpruned sample pairs remain
+    print("Randomply excluding members of multiple remaining sample pairs...")
+    random.exclusions <- sapply(1:nrow(unpruned.sample.pairs), function(i){
+        unpruned.sample.pairs[i, sample(x = 1:2, size = 1)]
+    })
     remove.list <- c(remove.list, as.vector(random.exclusions))
-  }else{
-    # Need to handle case where only one sample pair exists
-    # This sample pair would NOT have been touched in the while loop above bc both samples have degree == 1
-    remove.list <- unpruned.sample.pairs[sample(x=1:2, size=1)]
-  }
 }else{
+  # Print a nice friendly message because no unpruned sample pairs remain
   print("No unpruned sample pairs remain after graph pruning! No need to do random pair exclusion!")
 }
 
