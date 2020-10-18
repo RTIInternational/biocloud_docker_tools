@@ -14,6 +14,7 @@ covars = ""
 family = ""
 gxE = ""
 fileOut = ""
+gzip = FALSE
 
 while (loop) {
 
@@ -48,6 +49,10 @@ while (loop) {
 
 	if (args[1] == "--out") {
 		fileOut = args[2]
+	}
+
+	if (args[1] == "--gzip") {
+		gzip = TRUE
 	}
 
 	if (length(args) > 1) {
@@ -117,9 +122,13 @@ colOrder = c(
 )
 
 # Write results
+out = fileOut
+if (gzip) {
+    out <- gzfile(fileOut + ".gz", "w")
+}
 write.table(
     assoc,
-    file = fileOut,
+    file = out,
     row.names = FALSE,
     quote = FALSE,
     sep = "\t"
