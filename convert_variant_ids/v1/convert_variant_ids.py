@@ -232,6 +232,10 @@ for dfIn in pd.read_csv(args.in_file, sep=sep, header=fileInHeader, chunksize=in
         dfIn.iloc[:, a1Col] = dfIn.iloc[:, a1Col].replace(to_replace=fileInDelAllele, value=refDelAllele)
         dfIn.iloc[:, a2Col] = dfIn.iloc[:, a2Col].replace(to_replace=fileInDelAllele, value=refDelAllele)
 
+        # Convert alleles to uppercase
+        dfIn.iloc[:, a1Col] = dfIn.iloc[:, a1Col].str.upper()
+        dfIn.iloc[:, a2Col] = dfIn.iloc[:, a2Col].str.upper()
+
         # Get reverse complement of alleles
         dfIn["___a1_rc___"] = dfIn.iloc[:, a1Col]
         dfIn["___a1_rc___"] = dfIn["___a1_rc___"].apply(flip, args=["0", refDelAllele])
