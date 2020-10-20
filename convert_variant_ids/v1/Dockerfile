@@ -14,7 +14,6 @@ RUN mv convert_variant_ids.py /opt/
 
 # Install libraries
 RUN pip install pandas
-RUN pip install pprint
 
 # Set wrkdir
 RUN mkdir /data
