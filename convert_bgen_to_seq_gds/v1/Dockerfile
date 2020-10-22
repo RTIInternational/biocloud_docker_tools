@@ -15,3 +15,4 @@ RUN Rscript -e 'library("devtools"); install_github("zhengxwen/gds2bgen");'
 # Set wrkdir
 RUN mkdir /data
 WORKDIR /data
+
