@@ -13,11 +13,11 @@ dosage = FALSE
 
 while (loop) {
 
-	if (args[1] == "--in-bgen") {
+	if (args[1] == "--in-seq-gds") {
 		fileInSeqGds = args[2]
 	}
 
-	if (args[1] == "--out-gds") {
+	if (args[1] == "--out-snp-gds") {
 		fileOutSnpGds = args[2]
 	}
 
