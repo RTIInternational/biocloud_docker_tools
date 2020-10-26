@@ -12,6 +12,7 @@ RUN chmod 755 /opt/genesis.R
 # Install libraries
 RUN Rscript -e 'BiocManager::install(c("GWASTools"), ask = FALSE)'
 RUN Rscript -e 'BiocManager::install(c("GENESIS"), ask = FALSE)'
+RUN Rscript -e 'install.packages(c("R.utils"))'
 
 # Set wrkdir
 RUN mkdir /data
