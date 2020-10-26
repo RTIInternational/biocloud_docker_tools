@@ -1,71 +1,27 @@
 #!/usr/local/bin/Rscript
 
+# Arguments
+# --in-geno <GENOTYPE FILE>
+# --in-geno-format <GENOTYPE TYPE> e.g., gds
+# --in-pheno <PHENOTYPE FILE>
+# --pheno <PHENO>
+# --covars <COVAR LIST> comma-separated
+# --gxe <INTERACTION COVAR>
+# --family <FAMILY> e.g., gaussian
+# --out <OUTPUT FILE>
+# --gzip
+
 library(GENESIS)
 library(GWASTools)
+library(R.utils)
 
-args <- commandArgs(TRUE)
-
-loop = TRUE
-fileInGeno = ""
-genoFormat = ""
-fileInPheno = ""
-pheno = ""
-covars = ""
-family = ""
-gxE = ""
-fileOut = ""
-gzip = FALSE
-
-while (loop) {
-
-	if (args[1] == "--in-geno") {
-		fileInGeno = args[2]
-	}
-
-	if (args[1] == "--in-geno-format") {
-		genoFormat = args[2]
-	}
-
-	if (args[1] == "--in-pheno") {
-		fileInPheno = args[2]
-	}
-
-	if (args[1] == "--pheno") {
-		pheno = args[2]
-	}
-
-    # Comma-delimited
-	if (args[1] == "--covars") {
-		covars = strsplit(args[2], ",")[[1]]
-	}
-
-	if (args[1] == "--family") {
-		family = args[2]
-	}
-
-	if (args[1] == "--gxe") {
-		gxE = args[2]
-	}
-
-	if (args[1] == "--out") {
-		fileOut = args[2]
-	}
-
-	if (args[1] == "--gzip") {
-		gzip = TRUE
-	}
-
-	if (length(args) > 1) {
-		args = args[2:length(args)]
-	} else {
-		loop=FALSE
-	}
-
-}
+args <- commandArgs(asValue = TRUE)
+cat("Arguments:\n")
+str(args)
 
 # Read phenotype data
 pheno = read.table(
-    fileInPheno,
+    toString(args["in-pheno"]),
     header = T
 )
 
@@ -75,15 +31,15 @@ phenoScanAnnot = ScanAnnotationDataFrame(pheno)
 # Fit the null model
 nullmod = fitNullModel(
     phenoScanAnnot,
-    outcome = pheno,
-    covars = covars,
-    family = family
+    outcome = toString(args["pheno"]),
+    covars = strsplit(toString(args["covars"]), ",")[[1]],
+    family = toString(args["family"])
 )
 
 # Read genotype data
-if (genoFormat == "gds") {
+if (toString(args["in-geno-format"]) == "gds") {
     geno <- GdsGenotypeReader(
-        fileInGeno
+        toString(args["in-geno"])
     )
 }
 genoData <- GenotypeData(geno)
@@ -92,7 +48,7 @@ genoData <- GenotypeData(geno)
 genoIterator = GenotypeBlockIterator(genoData, snpBlock=500)
 
 # Run association testing
-if (gxE == "") {
+if (toString(args["gxe"]) == "") {
     assoc = assocTestSingle(
         genoIterator,
         null.model = nullmod
@@ -101,7 +57,7 @@ if (gxE == "") {
     assoc = assocTestSingle(
         genoIterator,
         null.model = nullmod,
-        GxE = c(gxE)
+        GxE = c(toString(args["gxe"]))
     )
 }
 
@@ -123,12 +79,12 @@ colOrder = c(
 
 # Write results
 out = fileOut
-if (gzip) {
+if (args["gzip"]) {
     out <- gzfile(fileOut + ".gz", "w")
 }
 write.table(
     assoc,
-    file = out,
+    file = toString(args["out"]),
     row.names = FALSE,
     quote = FALSE,
     sep = "\t"
