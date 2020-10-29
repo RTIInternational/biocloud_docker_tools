@@ -9,7 +9,6 @@
 # --gxe <INTERACTION COVAR>
 # --family <FAMILY> e.g., gaussian
 # --out <OUTPUT FILE>
-# --gzip
 
 library(GENESIS)
 library(GWASTools)
@@ -78,12 +77,8 @@ colOrder = c(
 )
 
 # Write results
-out = fileOut
-if (args["gzip"]) {
-    out <- gzfile(fileOut + ".gz", "w")
-}
 write.table(
-    assoc,
+    assoc[,colOrder],
     file = toString(args["out"]),
     row.names = FALSE,
     quote = FALSE,
