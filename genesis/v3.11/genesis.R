@@ -1,13 +1,12 @@
 #!/usr/local/bin/Rscript
 
 # Arguments
-# --file-geno <GENOTYPE FILE>
-# --geno-format <GENOTYPE TYPE> e.g., gds
-# --file-pheno <PHENOTYPE FILE>
+# --in-geno <GENOTYPE FILE>
+# --in-geno-format <GENOTYPE TYPE> e.g., gds
+# --in-pheno <PHENOTYPE FILE>
 # --pheno <PHENO>
 # --covars <COVAR LIST> comma-separated
 # --gxe <INTERACTION COVAR>
-# --file-variant-list <VARIANT LIST FILE>
 # --family <FAMILY> e.g., gaussian
 # --out <OUTPUT FILE>
 
@@ -21,7 +20,7 @@ str(args)
 
 # Read phenotype data
 pheno = read.table(
-    toString(args["file-pheno"]),
+    toString(args["in-pheno"]),
     header = T
 )
 
@@ -37,38 +36,29 @@ nullmod = fitNullModel(
 )
 
 # Read genotype data
-if (toString(args["geno-format"]) == "gds") {
+if (toString(args["in-geno-format"]) == "gds") {
     geno <- GdsGenotypeReader(
-        toString(args["file-geno"])
+        toString(args["in-geno"])
     )
 }
 genoData <- GenotypeData(geno)
 
 # Create genotype iterator
-snpInclude = NULL
-if (toString(args["file-variant-list"]) != "") {
-    snpInclude = read.table(
-        toString(args["file-variant-list"]),
-        header = F
-    )
-    snpInclude = snpInclude$V1
-}
-genoIterator = GenotypeBlockIterator(
-    genoData,
-    snpBlock=500,
-    snpInclude = snpInclude
-)
+genoIterator = GenotypeBlockIterator(genoData, snpBlock=500)
 
 # Run association testing
-gxE = NULL
-if (toString(args["gxe"]) != "") {
-    gxE = toString(args["gxe"])
+if (toString(args["gxe"]) == "") {
+    assoc = assocTestSingle(
+        genoIterator,
+        null.model = nullmod
+    )
+} else {
+    assoc = assocTestSingle(
+        genoIterator,
+        null.model = nullmod,
+        GxE = c(toString(args["gxe"]))
+    )
 }
-assoc = assocTestSingle(
-    genoIterator,
-    null.model = nullmod,
-    GxE = gxE
-)
 
 # Add alleles to results
 ## Need to confirm that this is correct (alt vs. ref)
