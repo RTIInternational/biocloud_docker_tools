@@ -7,7 +7,7 @@ LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 ADD GenomicSEM_commonFactor.R /opt/
 
 # Change permissions to make things exectuable
-RUN chmod 755 /opt/GenomicSem_commonFactor.R
+RUN chmod 755 /opt/GenomicSEM_commonFactor.R
 
 # Install R packages
 RUN Rscript -e 'install.packages("magrittr"); install.packages("devtools"); library("devtools"); install_github("MichelNivard/GenomicSEM");require(GenomicSEM);require(Matrix);require(stats);library(R.utils)'
