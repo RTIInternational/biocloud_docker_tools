@@ -1,5 +1,6 @@
 #!/usr/local/bin/Rscript
 
+
 # Arguments
 # --file-geno <GENOTYPE FILE>
 # --geno-format <GENOTYPE TYPE> e.g., gds
