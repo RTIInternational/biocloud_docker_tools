@@ -9,6 +9,7 @@
 # --gxe <INTERACTION COVAR>
 # --file-variant-list <VARIANT LIST FILE>
 # --family <FAMILY> e.g., gaussian
+# --chr <CHR>
 # --out <OUTPUT FILE>
 
 library(GENESIS)
@@ -77,6 +78,10 @@ assoc$ref = getAlleleB(geno, assoc$variant.id)
 
 # Close iterator
 close(genoIterator)
+
+# Fix chr
+assoc$chr = toString(assoc$chr)
+assoc$chr = toString(args["chr"])
 
 # Reorder columns
 colOrder = c(
