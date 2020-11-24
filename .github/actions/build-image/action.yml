@@ -5,6 +5,9 @@ branding:
   color: 'green'
 description: 'Builds the specified Dockerfile and pushes the image to Docker Hub.'
 inputs:
+  changed_files:
+    description: 'The files changed in the triggering commit.'
+    required: true
   username:
     description: 'The login username for the registry'
     required: true
