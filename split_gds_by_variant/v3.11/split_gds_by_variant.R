@@ -23,10 +23,10 @@ closefn.gds(geno)
 # Split into chunks and write variant lists
 chunks = split(snpIds, ceiling(seq_along(snpIds)/strtoi(args["chunk-size"])))
 for (chunk in 1:(length(chunks))) {
-    out = chunks[chunk]
+    strChunk = formatC(chunk, width = 10, format = "d", flag = "0")
     fwrite(
         chunks[chunk],
-        file = paste0(toString(args["out-prefix"]), chunk),
+        file = paste0(toString(args["out-prefix"]), "_", strChunk, ".txt"),
         col.names = FALSE
     )
 }
