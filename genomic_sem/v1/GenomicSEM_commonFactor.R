@@ -7,7 +7,7 @@
 # --reference <REFERENCE FILE>
 # --info_filter <R_SQ filter> e.g. 0.8
 # --maf_filter <MAF filter> e.g. 0.01
-# --outDir <OUT PATH>
+# --out_prefix <OUT PREFIX>
 # --ld <LD SCORE REFERENCE FILE>
 # --munge <BOOLEAN WHETHER MUNGING IS NEEDED>
 # --LDSC <BOOLEAN WHETHER LDSC IS NEEDED>
@@ -38,8 +38,8 @@ cat("Arguments:\n")
 str(args)
 
 ## Parse arguments
-outDir = toString(args["outDir"])
-setwd(outDir)
+outPrefix = toString(args["outDir"])
+#setwd(outDir)
 input.files = strsplit(toString(args["input_files"]), ",")[[1]]
 trait.names = strsplit(toString(args["trait_names"]), ",")[[1]]
 sample.sizes = strsplit(toString(args["sample_sizes"]), ",")[[1]]
@@ -52,10 +52,10 @@ reference = toString(args["reference"])
 ld = toString(args["ld"])
 estimation = toString(args["estimation"])
 se.logit = strsplit(toString(args["se_logit"]), ",")[[1]]
-commonFactorModel = readLines(toString(args["common_factor_model"]))
-commonFactorGWASModel = readLines(toString(args["common_factor_gwas_model"]))
+commonFactorModel = toString(args["common_factor_model"])
+commonFactorGWASModel = toString(args["common_factor_gwas_model"])
 
-cat(paste0("Out Directory: \n", outDir))
+cat(paste0("Out Prefix: \n", out_prefix))
 cat(paste0("Input Files: ", input.files, "\n"))
 cat(paste0("Trait Names: ", trait.names, "\n"))
 cat(paste0("Sample Sizes: ", sample.sizes, "\n"))
@@ -71,7 +71,7 @@ cat(paste0("Parallel Processing: ", as.logical(args["parallel"]), "\n"))
 
 ## Munge the Summary Statistic files ##
 cat("Munging Summary Statistics...\n")
-print(args["munge"][1])
+cat(as.logical(args["munge"]))
 if (as.logical(args["munge"])) {
     munge(files=input.files, trait.names=trait.names, hm3=reference, N=sample.sizes, info.filter=info.filter, maf.filter=maf.filter)
 }
@@ -99,11 +99,11 @@ if (as.logical(args["common_factor"])) {
     #PGC ~~ 0*PGC
     #deCODE ~~ d*deCODE
     #d > 0.001'
-    zeroVar <- commonFactorModel
+    zeroVar <- readLines(commonFactorModel)
 
     cat("Running user Common Factor Model...\n")
     userCommonFactor = usermodel(covstruc=LDSCoutput, model = zeroVar, estimation = estimation, CFIcalc=TRUE, std.lv=FALSE, imp_cov=TRUE)
-    saveRDS(userCommonFactor, file = paste0(outDir, "/SEMresults/userModel_", estimation, "_zeroVariance_F1varies", paste(trait.names, collapse="."), ".rds"))
+    saveRDS(userCommonFactor, file = paste0(out_prefix, "_commonFactor_", estimation, ".rds"))
 }
 
 ## Run the sumstats function - setup SNPs for Common Factor GWAS ##
@@ -119,7 +119,7 @@ if (as.logical(args["sumstats"])) {
 
 ## Common Factor Model with SNPs ##
 if (as.logical(args["common_factor_gwas"])) {
-    zeroVarSNP <- commonFactorGWASModel
+    zeroVarSNP <- readLine(commonFactorGWASModel)
     #zeroVarSNP <- 'F1 =~ NA*oaFOU + MVP1_MVP2 + PGC + deCODE
     #F1 ~~ 1*F1
     #oaFOU ~~ b*oaFOU
@@ -137,6 +137,6 @@ if (as.logical(args["common_factor_gwas"])) {
     } else {
         userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = FALSE, Output = NULL, GC='standard', MPI=FALSE)
     }
-    saveRDS(userCommonFactorGWAS, file = paste0(outDir, '/SEMresults/GenomicSEM_GWAS_', estimation, '_zeroVariance.rds'))
+    saveRDS(userCommonFactorGWAS, file = paste0(out_prefix, 'commonFactor_GWAS_', estimation, '.rds'))
 }
 
