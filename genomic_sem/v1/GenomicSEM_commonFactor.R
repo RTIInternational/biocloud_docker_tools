@@ -68,7 +68,9 @@ cat(paste0("Pop Prev: ", pop.prev, "\n"))
 cat(paste0("Reference: ", reference, "\n"))
 cat(paste0("ld: ", ld, "\n"))
 cat(paste0("Estimation: ", estimation, "\n"))
-cat(paste0("SE Logit: ", se.logit, "\n\n"))
+cat(paste0("SE Logit: ", se.logit, "\n"))
+cat(paste0("Parallel Processing: ", as.logical(args["parallel"]), "\n"))
+cat(paste0("Num Cores: ", cores, "\n\n"))
 
 ## Munge the Summary Statistic files ##
 cat("Munging Summary Statistics...\n")
@@ -135,7 +137,7 @@ if (as.logical(args["common_factor_gwas"])) {
     cat("Running user Common Factor GWAS Model ... \n")
     if (as.logical(args["parallel"])) {
         userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = cores, toler = FALSE, SNPSE = FALSE, parallel = TRUE, Output = NULL, GC='standard', MPI=FALSE)
-    else:
+    } else {
         userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = cores, toler = FALSE, SNPSE = FALSE, parallel = FALSE, Output = NULL, GC='standard', MPI=FALSE)
     }
     saveRDS(userCommonFactorGWAS, file = paste0(outDir, '/SEMresults/GenomicSEM_GWAS_', estimation, '_zeroVariance.rds'))
