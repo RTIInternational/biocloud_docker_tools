@@ -21,7 +21,6 @@
 # --common_factor_gwas <BOOLEAN WHETHER COMMON FACTOR GWAS MODEL IS RUN>
 # --common_factor_gwas_model <FILE PATH FOR COMMON FACTOR GWAS MODEL> e.g. lav file with lavaan syntax
 # --parallel <BOOLEAN WHETHER PARALLEL COMPUTING IS CONDUCTED>
-# --cores <NUMBER OF CORES TO USE>
 
 
 #install.packages("magrittr")
@@ -55,7 +54,6 @@ estimation = toString(args["estimation"])
 se.logit = strsplit(toString(args["se_logit"]), ",")[[1]]
 commonFactorModel = readLines(toString(args["common_factor_model"]))
 commonFactorGWASModel = readLines(toString(args["common_factor_gwas_model"]))
-cores = as.numeric(args["cores"])
 
 cat(paste0("Out Directory: \n", outDir))
 cat(paste0("Input Files: ", input.files, "\n"))
@@ -70,7 +68,6 @@ cat(paste0("ld: ", ld, "\n"))
 cat(paste0("Estimation: ", estimation, "\n"))
 cat(paste0("SE Logit: ", se.logit, "\n"))
 cat(paste0("Parallel Processing: ", as.logical(args["parallel"]), "\n"))
-cat(paste0("Num Cores: ", cores, "\n\n"))
 
 ## Munge the Summary Statistic files ##
 cat("Munging Summary Statistics...\n")
@@ -136,9 +133,9 @@ if (as.logical(args["common_factor_gwas"])) {
 
     cat("Running user Common Factor GWAS Model ... \n")
     if (as.logical(args["parallel"])) {
-        userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = cores, toler = FALSE, SNPSE = FALSE, parallel = TRUE, Output = NULL, GC='standard', MPI=FALSE)
+        userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = TRUE, Output = NULL, GC='standard', MPI=FALSE)
     } else {
-        userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = cores, toler = FALSE, SNPSE = FALSE, parallel = FALSE, Output = NULL, GC='standard', MPI=FALSE)
+        userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = FALSE, Output = NULL, GC='standard', MPI=FALSE)
     }
     saveRDS(userCommonFactorGWAS, file = paste0(outDir, '/SEMresults/GenomicSEM_GWAS_', estimation, '_zeroVariance.rds'))
 }
