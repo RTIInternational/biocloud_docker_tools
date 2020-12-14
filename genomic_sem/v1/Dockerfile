@@ -15,3 +15,4 @@ RUN Rscript -e 'install.packages("magrittr"); install.packages("devtools"); libr
 # Set wrkdir
 RUN mkdir /data
 WORKDIR /data
+
