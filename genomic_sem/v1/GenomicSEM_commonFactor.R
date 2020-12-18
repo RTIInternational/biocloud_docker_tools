@@ -118,7 +118,7 @@ if (as.logical(args["sumstats"])) {
 
 ## Common Factor Model with SNPs ##
 if (as.logical(args["common_factor_gwas"])) {
-    zeroVarSNP <- readLine(commonFactorGWASModel)
+    zeroVarSNP <- readLines(commonFactorGWASModel)
     #zeroVarSNP <- 'F1 =~ NA*oaFOU + MVP1_MVP2 + PGC + deCODE
     #F1 ~~ 1*F1
     #oaFOU ~~ b*oaFOU
