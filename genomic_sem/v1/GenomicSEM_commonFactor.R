@@ -28,10 +28,10 @@
 #library(devtools)
 #install_github("MichelNivard/GenomicSEM", dependencies=TRUE)
 
-#require(GenomicSEM)
-#require(Matrix)
-#require(stats)
-#library(R.utils)
+require(GenomicSEM)
+require(Matrix)
+require(stats)
+library(R.utils)
 
 args <- commandArgs(asValue = TRUE)
 cat("Arguments:\n")
