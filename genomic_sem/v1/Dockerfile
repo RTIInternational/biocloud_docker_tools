@@ -10,7 +10,8 @@ ADD GenomicSEM_commonFactor.R /opt/
 RUN chmod 755 /opt/GenomicSEM_commonFactor.R
 
 # Install R packages
-RUN Rscript -e 'install.packages("magrittr"); install.packages("devtools"); library("devtools"); install_github("MichelNivard/GenomicSEM");require(GenomicSEM);require(Matrix);require(stats);library(R.utils)'
+RUN Rscript -e 'install.packages("magrittr"); install.packages("devtools"); library("devtools"); install_github("MichelNivard/GenomicSEM"); require(GenomicSEM); require(Matrix); require(stats)'
+RUN Rscript -e 'BiocManager::install(c("R.utils"), ask = FALSE)'
 
 # Set wrkdir
 RUN mkdir /data
