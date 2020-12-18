@@ -37,7 +37,7 @@ cat("Arguments:\n")
 str(args)
 
 ## Parse arguments
-outPrefix = toString(args["outDir"])
+out_prefix = toString(args["outDir"])
 #setwd(outDir)
 input.files = strsplit(toString(args["input_files"]), ",")[[1]]
 trait.names = strsplit(toString(args["trait_names"]), ",")[[1]]
@@ -80,7 +80,7 @@ if (as.logical(args["munge"])) {
 if (as.logical(args["LDSC"])) {
     cat("Running LDSC...\n")
     LDSCoutput <- ldsc(traits=traits, sample.prev=sample.prev, population.prev=pop.prev, ld=ld, wld=ld, trait.names=trait.names)
-    saveRDS(LDSCoutput, file=paste0(outDir, "/LDSCoutput.", paste(trait.names, collapse="."), ".rds"))
+    saveRDS(LDSCoutput, file=paste0(out_prefix, "_LDSCoutput.", paste(trait.names, collapse="."), ".rds"))
 } else {
     cat("Loading Previous LDSC Results...\n")
     LDSCoutput = readRDS(toString(args["LDSC_file"]))
@@ -109,7 +109,7 @@ if (as.logical(args["common_factor"])) {
 if (as.logical(args["sumstats"])) {
     cat("Running sumstats for Common Factor GWAS Model...\n")
     sumstats = sumstats(files=input.files, ref=reference, trait.names=trait.names, se.logit=c(T,T,T,T), OLS=NULL, linprob=NULL, prop=sample.prev, N=sample.sizes, info.filter=info.filter, maf.filter=maf.filter, keep.indel=TRUE, parallel=FALSE, cores=NULL)
-    saveRDS(sumstats, file = paste0(outDir, "/SEMresults/sumstats_GWAS.", paste(trait.names, collapse="."), ".rds"))
+    saveRDS(sumstats, file = paste0(out_prefix, "_sumstats_GWAS.", paste(trait.names, collapse="."), ".rds"))
 } else {
     cat("Loading sumstats...\n")
     sumstats = readRDS(toString(args["sumstats_file"]))
