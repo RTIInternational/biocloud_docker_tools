@@ -66,7 +66,7 @@ cat(paste0("Reference: ", reference, "\n"))
 cat(paste0("ld: ", ld, "\n"))
 cat(paste0("Estimation: ", estimation, "\n"))
 cat(paste0("SE Logit: ", se.logit, "\n"))
-cat(paste0("Parallel Processing: ", as.logical(args["parallel"]), "\n"))
+#cat(paste0("Parallel Processing: ", as.logical(args["parallel"]), "\n"))
 
 ## Munge the Summary Statistic files ##
 cat("Munging Summary Statistics...\n")
@@ -131,11 +131,12 @@ if (as.logical(args["common_factor_gwas"])) {
     #F1 ~ SNP'
 
     cat("Running user Common Factor GWAS Model ... \n")
-    if (as.logical(args["parallel"])) {
-        userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = TRUE, Output = NULL, GC='standard', MPI=FALSE)
-    } else {
-        userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = FALSE, Output = NULL, GC='standard', MPI=FALSE)
-    }
+    #if (as.logical(args["parallel"])) {
+    #    userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = TRUE, Output = NULL, GC='standard', MPI=FALSE)
+    #} else {
+    #    userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = FALSE, Output = NULL, GC='standard', MPI=FALSE)
+    #}
+    userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, cores = 16, toler = FALSE, SNPSE = FALSE, parallel = TRUE, Output = NULL, GC='standard', MPI=FALSE) 
     saveRDS(userCommonFactorGWAS, file = paste0(out_prefix, '.rds'))
 }
 
