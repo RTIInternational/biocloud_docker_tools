@@ -7,7 +7,7 @@
 # --file-pheno <PHENOTYPE FILE>
 # --pheno <PHENO>
 # --covars <COVAR LIST> comma-separated
-# --gxe <INTERACTION COVAR>
+# --gxe <INTERACTION COVAR> (optional)
 # --file-variant-list <VARIANT LIST FILE>
 # --family <FAMILY> e.g., gaussian
 # --chr <CHR>
