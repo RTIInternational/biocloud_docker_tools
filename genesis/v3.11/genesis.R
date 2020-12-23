@@ -63,17 +63,16 @@ genoIterator = GenotypeBlockIterator(
 
 # Run association testing
 gxE = NULL
-if (toString(args["gxe"]) != "") {
-    gxE = toString(args["gxe"])
+if (args["gxe"] == "NULL" || args["gxe"] == "") {
     assoc = assocTestSingle(
         genoIterator,
-        null.model = nullmod,
-        GxE = toString(args["gxe"])
+        null.model = nullmod
     )
 } else {
     assoc = assocTestSingle(
         genoIterator,
-        null.model = nullmod
+        null.model = nullmod,
+        GxE = toString(args["gxe"])
     )
 }
 
