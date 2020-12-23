@@ -37,7 +37,7 @@ cat("Arguments:\n")
 str(args)
 
 ## Parse arguments
-out_prefix = toString(args["outDir"])
+out_prefix = toString(args["out_prefix"])
 #setwd(outDir)
 input.files = strsplit(toString(args["input_files"]), ",")[[1]]
 trait.names = strsplit(toString(args["trait_names"]), ",")[[1]]
