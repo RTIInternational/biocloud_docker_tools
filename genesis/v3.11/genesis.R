@@ -65,12 +65,17 @@ genoIterator = GenotypeBlockIterator(
 gxE = NULL
 if (toString(args["gxe"]) != "") {
     gxE = toString(args["gxe"])
+    assoc = assocTestSingle(
+        genoIterator,
+        null.model = nullmod,
+        GxE = toString(args["gxe"])
+    )
+} else {
+    assoc = assocTestSingle(
+        genoIterator,
+        null.model = nullmod
+    )
 }
-assoc = assocTestSingle(
-    genoIterator,
-    null.model = nullmod,
-    GxE = gxE
-)
 
 # Add alleles to results
 ## Need to confirm that this is correct (alt vs. ref)
