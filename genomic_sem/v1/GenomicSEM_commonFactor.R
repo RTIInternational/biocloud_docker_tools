@@ -136,7 +136,7 @@ if (as.logical(args["common_factor_gwas"])) {
     #} else {
     #    userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, modelchi = FALSE, printwarn = TRUE, toler = FALSE, SNPSE = FALSE, parallel = FALSE, Output = NULL, GC='standard', MPI=FALSE)
     #}
-    userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, printwarn = FALSE, parallel = FALSE, MPI=FALSE) 
+    userCommonFactorGWAS = userGWAS(covstruc = LDSCoutput, SNPs = sumstats, estimation = estimation, model = zeroVarSNP, printwarn = FALSE, parallel = TRUE, MPI=FALSE) 
     saveRDS(userCommonFactorGWAS, file = paste0(out_prefix, '.rds'))
 }
 
