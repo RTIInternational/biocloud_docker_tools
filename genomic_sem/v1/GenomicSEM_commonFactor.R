@@ -140,3 +140,4 @@ if (as.logical(args["common_factor_gwas"])) {
     saveRDS(userCommonFactorGWAS, file = paste0(out_prefix, '.rds'))
 }
 
+
