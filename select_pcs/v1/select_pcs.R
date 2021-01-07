@@ -8,6 +8,7 @@
 # --model_type <"logistic" OR "continuous">
 # --ancestry <ANCESTRY LABEL>
 # --pve_threshold <PVE THRESHOLD> (percentage)
+# --combine_fid_iid (Set fid and iid fields to fid_iid)
 # --file_out_pheno <OUTPUT PHENO FILE> (input phenotype file with PCs added)
 # --file_out_prefix <OUTPUT PREFIX> (for plots and log)
 
@@ -27,6 +28,7 @@ pve_threshold = strtoi(toString(args["pve_threshold"]))
 file_out_pheno = toString(args["file_out_pheno"])
 file_out_prefix = toString(args["file_out_prefix"])
 coded_12 = if(args["coded_12"] == "TRUE") TRUE else FALSE
+combine_fid_iid = if(args["combine_fid_iid"] == "TRUE") TRUE else FALSE
 
 options(stringsAsFactors=F)
 
@@ -106,13 +108,21 @@ plot(cumsum(pve_sorted$PVE), type="b", main=paste(ancestry,"PVE Cumulative Sum (
 axis(side=1, at=c(1:10), labels=rownames(pve_sorted), cex.axis=cex.factor)
 dev.off()
 
-# Output phenotype file
+# Create final df
 merge_data = merge(
     x = pheno,
     y = pcs[, c("fid", "iid", topPCs)],
     by = c("fid", "iid"),
     sort = FALSE
 )
+
+# Combine fid and iid if specified
+if (combine_fid_iid) {
+    merge_data$fid = paste0(merge_data$fid, "_", merge_data$iid)
+    merge_data$iid = merge_data$fid
+}
+
+# Output phenotype file
 write.table(
     merge_data,
     file = file_out_pheno,
