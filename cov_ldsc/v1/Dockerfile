@@ -8,7 +8,7 @@ FROM python:2.7-slim
 LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 
 # Add R helper script
-#ADD ldsc.py /opt/
+ADD ldsc.py /opt/
 
 # Change permissions to make things exectuable
 RUN chmod 755 /opt/ldsc.py
