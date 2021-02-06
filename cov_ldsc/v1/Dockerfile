@@ -10,7 +10,7 @@ LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 # Add R helper script
 RUN cd /opt \
     git clone https://github.com/immunogenomics/cov-ldsc.git
-#ADD ldsc.py /opt/
+ADD ldsc.py /opt/
 
 # Change permissions to make things exectuable
 RUN chmod 755 /opt/ldsc.py
