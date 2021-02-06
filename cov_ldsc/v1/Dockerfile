@@ -14,7 +14,7 @@ ADD ldsc.py /opt/
 RUN chmod 755 /opt/ldsc.py
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ..
+COPY . .
 
 # Install python modules
 
