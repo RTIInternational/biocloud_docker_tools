@@ -1,4 +1,8 @@
-FROM python:3.7.6-slim-stretch
+FROM python:2
+
+WORKDIR /USR/SRC/APP
+
+COPY requirements.txt ./
 
 # Maintainer and author
 LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
@@ -8,6 +12,9 @@ ADD ldsc.py /opt/
 
 # Change permissions to make things exectuable
 RUN chmod 755 /opt/ldsc.py
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ..
 
 # Install python modules
 
