@@ -23,6 +23,7 @@ RUN chmod 755 /opt/ldsc.py
 # Install python modules
 RUN pip install numpy
 RUN pip install pandas
+RUN pip install bitarray
 
 # Set wrkdir
 RUN mkdir /data
