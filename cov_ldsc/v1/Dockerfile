@@ -11,7 +11,7 @@ RUN cd /opt \
     git clone https://github.com/immunogenomics/cov-ldsc.git
 
 # Change permissions to make things exectuable
-RUN chmod 755 /opt/coc-LDSC/ldsc.py
+RUN chmod 755 /opt/cov-LDSC/ldsc.py
 
 # Install python modules
 RUN pip install numpy
