@@ -1,25 +1,21 @@
-FROM python:2.7-slim
-
-WORKDIR /usr/src/app
-
-COPY requirements.txt ./
+FROM python:2
 
 # Maintainer and author
 LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 
-# Add R helper script
+# update the OD related packages
+RUN apt-get update
+
+# clone cov-ldsc repo
 RUN cd /opt \
     git clone https://github.com/immunogenomics/cov-ldsc.git
-#ADD ldsc.py /opt/
 
 # Change permissions to make things exectuable
 RUN chmod 755 /opt/coc-LDSC/ldsc.py
-#RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
 
 # Install python modules
-
+RUN pip install numpy
+RUN pip install pandas
 
 # Set wrkdir
 RUN mkdir /data
