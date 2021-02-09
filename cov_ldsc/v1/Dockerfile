@@ -1,8 +1,8 @@
 FROM python:2.7-slim
 
-#WORKDIR /usr/src/app
+WORKDIR /usr/src/app
 
-#COPY requirements.txt ./
+COPY requirements.txt ./
 
 # Maintainer and author
 LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
@@ -13,10 +13,10 @@ RUN cd /opt \
 #ADD ldsc.py /opt/
 
 # Change permissions to make things exectuable
-#RUN chmod 755 /opt/ldsc.py
+RUN chmod 755 /opt/coc-LDSC/ldsc.py
 #RUN pip install --no-cache-dir -r requirements.txt
 
-#COPY . .
+COPY . .
 
 # Install python modules
 
