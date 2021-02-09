@@ -15,6 +15,7 @@ LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 
 # clone cov-ldsc repo
 ADD ldsc.py /opt/
+ADD ldscore/ /opt/
 
 # Change permissions to make things exectuable
 RUN chmod 755 /opt/ldsc.py
