@@ -6,6 +6,13 @@ LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 # update the OD related packages
 RUN apt-get update
 
+WORKDIR /usr/src/app
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
 # clone cov-ldsc repo
 RUN cd /opt \
     git clone https://github.com/immunogenomics/cov-ldsc.git
@@ -21,3 +28,4 @@ RUN pip install pandas
 RUN mkdir /data
 WORKDIR /data
 
+CMD [ "python", "/opt/cov-ldsc/ldsc.py" \
