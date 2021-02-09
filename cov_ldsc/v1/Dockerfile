@@ -4,14 +4,14 @@ FROM python:2
 LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 
 # update the OD related packages
-RUN apt-get update
+#RUN apt-get update
 
-WORKDIR /usr/src/app
+#WORKDIR /usr/src/app
 
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+#COPY requirements.txt ./
+#RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+#COPY . .
 
 # clone cov-ldsc repo
 RUN cd /opt \
