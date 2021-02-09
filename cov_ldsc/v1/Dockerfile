@@ -14,11 +14,10 @@ LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 #COPY . .
 
 # clone cov-ldsc repo
-RUN cd /opt \
-    git clone https://github.com/immunogenomics/cov-ldsc.git
+ADD ldsc.py /opt/
 
 # Change permissions to make things exectuable
-RUN chmod 755 /opt/cov-LDSC/ldsc.py
+RUN chmod 755 /opt/ldsc.py
 
 # Install python modules
 RUN pip install numpy
@@ -28,4 +27,4 @@ RUN pip install pandas
 RUN mkdir /data
 WORKDIR /data
 
-CMD [ "python", "/opt/cov-ldsc/ldsc.py" \
+CMD [ "python", "/opt/ldsc.py" \
