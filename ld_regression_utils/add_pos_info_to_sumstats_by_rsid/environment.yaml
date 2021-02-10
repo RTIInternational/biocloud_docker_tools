@@ -1,4 +1,0 @@
-name: add_pos_info
-dependencies:
-- python=3
-- pandas=0.20
