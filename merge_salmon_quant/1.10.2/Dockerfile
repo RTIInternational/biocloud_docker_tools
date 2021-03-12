@@ -1,4 +1,4 @@
-FROM rticode/deseq2:1.24.0
+FROM rtibiocloud/deseq2:v3.10_8369df2
 
 LABEL maintainer=awaldrop@rti.org
 
