@@ -29,9 +29,9 @@ RUN cd /resfinder \
     && git clone https://git@bitbucket.org/genomicepidemiology/pointfinder_db.git db_pointfinder
 
 #### Index databases ####
-RUN cd /shared/resfinder/db_resfinder/ \
+RUN cd /resfinder/db_resfinder/ \
     && python INSTALL.py \
-    && cd /shared/resfinder/db_pointfinder/ \
+    && cd /resfinder/db_pointfinder/ \
     && python INSTALL.py
 
 WORKDIR /resfinder/
