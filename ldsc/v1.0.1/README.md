@@ -1,16 +1,51 @@
 # LD Score Regression (LDSC)
-https://github.com/bulik/ldsc
+GitHub page: [ldsc](https://github.com/bulik/ldsc)<br>
+[FAQ](https://github.com/bulik/ldsc/wiki/FAQ)
 
-## Relevant Papers
-* [Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.](http://www.nature.com/ng/journal/vaop/ncurrent/full/ng.3211.html)
-* [Finucane, HK, et al. Partitioning heritability by functional annotation using genome-wide association summary statistics. Nature Genetics, 2015.](https://www.nature.com/articles/ng.3404)
-* [Finucane, HK, et al. Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types. Nature Genetics, 2018.](https://www.nature.com/articles/s41588-018-0081-4)
+<br>
+
+## Automated Workflow
+[RTIInternational/ld-regression-pipeline](https://github.com/RTIInternational/ld-regression-pipeline) 
 
 <br><br>
 
-
-
 ## Example Code
+### h2 estimate and ldsc intercept
+Also see the TL;DR section in [Heritability and Genetic Correlation](https://github.com/bulik/ldsc/wiki/Heritability-and-Genetic-Correlation).
+
+<details>
+  <summary>expand code</summary>
+  
+```
+# start interactive session
+docker run -it -v $PWD:/data/ \
+    rtibiocloud/ldsc:v1.0.1_0bb574e /bin/bash
+
+# Download data
+cd /data/
+wget https://data.broadinstitute.org/alkesgroup/LDSCORE/eur_w_ld_chr.tar.bz2
+wget https://data.broadinstitute.org/alkesgroup/LDSCORE/w_hm3.snplist.bz2
+tar -jxvf eur_w_ld_chr.tar.bz2
+bunzip2 w_hm3.snplist.bz2
+
+# Munge data
+/opt/ldsc/munge_sumstats.py \
+	--sumstats meta_results.txt \
+	--N 17314 \
+	--out meta_munged \
+	--merge-alleles w_hm3.snplist
+
+# calculate h2 estimate and ldsc intercept 
+/opt/ldsc/ldsc.py \
+	--h2 meta_munged.sumstats.gz \
+	--ref-ld-chr eur_w_ld_chr/ \
+	--w-ld-chr eur_w_ld_chr/ \
+	--out meta_h2
+```
+</details>
+
+<br>
+
 ### LDSC-SEG
 LDSC regression applied to specifically expressed genes (LDSC-SEG).
 The code below was used in [this analysis in GitHub issue 166](https://github.com/RTIInternational/bioinformatics/issues/166#issuecomment-816057301).
@@ -93,3 +128,10 @@ for trait in {"hiv_acquisition","alzheimers_disease","amyotrophic_lateral_sclero
 done # end trait file loop
 ```
   </details>
+
+<br><br>
+
+## Relevant Papers
+* [Bulik-Sullivan, et al. LD Score Regression Distinguishes Confounding from Polygenicity in Genome-Wide Association Studies. Nature Genetics, 2015.](http://www.nature.com/ng/journal/vaop/ncurrent/full/ng.3211.html)
+* [Finucane, HK, et al. Partitioning heritability by functional annotation using genome-wide association summary statistics. Nature Genetics, 2015.](https://www.nature.com/articles/ng.3404)
+* [Finucane, HK, et al. Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types. Nature Genetics, 2018.](https://www.nature.com/articles/s41588-018-0081-4)
