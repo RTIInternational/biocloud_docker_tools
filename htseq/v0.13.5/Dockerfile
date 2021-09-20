@@ -17,7 +17,7 @@ RUN useradd docker \
 ENV DEBIAN_FRONTEND noninteractive
     
 RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list \
-    && apt-get update \ 
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         dirmngr \
         software-properties-common \
@@ -48,19 +48,19 @@ RUN apt-get update \
         g++ \
         libbz2-dev \
         liblzma-dev \
-        python-dev \
-        python-pip \
-    && pip install setuptools \
-    && pip install wheel \
-    && pip install pysam \
-    && pip install numpy \
-    && pip install matplotlib \
+        python3-dev \
+        python3-pip \
+    && pip3 install setuptools \
+    && pip3 install wheel \
+    && pip3 install pysam \
+    && pip3 install numpy \
+    && pip3 install matplotlib \
     && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-#### Install htseq ####    
-RUN pip install htseq 
-RUN ln -s /usr/local/lib/python2.7/dist-packages/HTSeq/scripts/count.py /opt/count.py
+#### Install htseq ####
+RUN pip3 install htseq==0.13.5
+RUN ln -s /usr/local/lib/python3.6/dist-packages/HTSeq/scripts/count.py /opt/count.py
 RUN rm -rf /tmp/*
 
 WORKDIR /
