@@ -6,8 +6,8 @@ It is common to run this analysis prior to GWAS.
 
 
 **INPUT:** 
-* phenotype file, (2) 
-* Top 10 PCs (from eigenstrat for example)
+* phenotype file 
+* top 10 PCs file (from eigenstrat)
 
 **OUTPUT:** 
 * phenotype file with top PCs appended
