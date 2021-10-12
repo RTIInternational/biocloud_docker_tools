@@ -37,6 +37,7 @@ generateSnpIndelQqPlot = FALSE
 generateDataTable = FALSE
 manhattanYLimit=0
 manhattanPlotSigLine = TRUE
+manhattanPlotSigValue = 7.3 # 7.3 for gwas and ~6.3 for ewas
 manhattanOddChrColor = "gray65"
 manhattanEvenChrColor = "gray10"
 manhattanHighlightColor = "red"
@@ -90,7 +91,7 @@ while (loop) {
 			inChr=c(1:22)
 		} else if (args[2] == "autosomal_nonPAR") {
 			inChr=c(1:23)
-    }
+                  }
 	}
 
 	if (args[1] == "--in_csv") {
@@ -232,6 +233,11 @@ while (loop) {
 		generateDataTable = TRUE
 	}
 
+	if (args[1] == "--manhattan_significance_value") {
+		manhattanPlotSigValue = args[2]
+		
+	}
+	
 	if (length(args) > 1) {
 		args = args[2:length(args)]
 	} else {
@@ -398,7 +404,8 @@ if (exists("inputData") && nrow(inputData) != 0) {
         points(xpos[highlightIndices],lobs[highlightIndices],col=inputData[highlightIndices,"color"],cex=manhattanPointsCex,pch=inputData[highlightIndices,"pch"])
       }
 			if (manhattanPlotSigLine) {
-				abline(h=7.3)
+				#abline(h=7.3)
+				abline(h=manhattanPlotSigValue)
 			}
       #abline(h=6, lty=3)
 			loc = chrStart+chrLen/2
