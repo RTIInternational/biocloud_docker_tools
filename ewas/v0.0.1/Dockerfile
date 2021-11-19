@@ -10,11 +10,10 @@ LABEL description="Contains the R packages necessary to run the EWAS workflow."
 ##################### Defaults ##############################
 # Set a default user. Available via runtime flag `--user docker`
 # Add user to 'staff' group, granting them write privileges to /usr/local/lib/R/site.library
-# User should also have & own a home directory (for rstudio or linked volumes to work properly).
 #RUN useradd docker \
-#    && mkdir /home/docker \
-#    && chown docker:docker /home/docker \
-#    && addgroup docker staff
+#  && mkdir /home/docker \
+RUN chown docker:docker /home/docker \
+    && addgroup docker staff
 
 # Don't print "debconf: unable to initialize frontend: Dialog" messages
 ARG DEBIAN_FRONTEND=noninteractive
@@ -37,7 +36,6 @@ RUN apt-get update \
         libssl-dev \
 	locales \
 	libcurl4-openssl-dev
-        
 
 RUN apt-get install -y --no-install-recommends \
         build-essential \
@@ -54,7 +52,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN rm -rf /var/lib/apt/lists/*
 
 
-######################### Install Python ###############################
+############################ Install Python Packages ############################
 RUN alias python='/usr/bin/python3' \
     && echo 'alias python="/usr/bin/python3"' >> /root/.bashrc \
     && echo 'alias pip="/usr/bin/pip3"' >> /root/.bashrc \
@@ -64,10 +62,8 @@ RUN echo "statsmodels\nsklearn\ncvxopt\nscipy\nnumpy\npandas\nmatplotlib" >  /op
 
 RUN pip3 install -r /opt/requirements.txt
 
-############################ Install R ##################################
-RUN Rscript -e 'install.packages(c("XML", "xml2", "data.table", "ggplot2", "ggrepel", "gridExtra", "dplyr", "sandwich", "lmtest", "remotes", "RColorBrewer", "MASS", "gee", "cat", "BiocManager"))' 
 
-RUN Rscript -e 'install.packages("optparse")' 
-#RUN Rscript -e 'BiocManager::install("DESeq2", version= "3.10")'
+############################ Install R Packages ############################
+RUN Rscript -e 'install.packages(c("XML", "xml2", "data.table", "ggplot2", "ggrepel", "gridExtra", "dplyr", "sandwich", "lmtest", "remotes", "RColorBrewer", "MASS", "gee", "cat", "BiocManager", "optparse"))' 
 
 RUN  Rscript -e 'BiocManager::install(c("minfi", "IlluminaHumanMethylation450kanno.ilmn12.hg19", "FlowSorted.DLPFC.450k", "FlowSorted.Blood.EPIC", "FlowSorted.Blood.450k", "IlluminaHumanMethylationEPICanno.ilm10b4.hg19", "GenomicRanges", "SummarizedExperiment", "LieberInstitute/jaffelab"))'
