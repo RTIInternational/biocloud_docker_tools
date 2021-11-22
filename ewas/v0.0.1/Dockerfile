@@ -35,6 +35,8 @@ RUN apt-get update \
         gpg-agent \
         libssl-dev \
 	locales \
+	libxml2-dev \
+	ca-certificates \
 	libcurl4-openssl-dev
 
 RUN apt-get install -y --no-install-recommends \
@@ -52,7 +54,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN rm -rf /var/lib/apt/lists/*
 
 
-############################ Install Python Packages ############################
+############################# Install Python Packages ############################
 RUN alias python='/usr/bin/python3' \
     && echo 'alias python="/usr/bin/python3"' >> /root/.bashrc \
     && echo 'alias pip="/usr/bin/pip3"' >> /root/.bashrc \
@@ -63,7 +65,8 @@ RUN echo "statsmodels\nsklearn\ncvxopt\nscipy\nnumpy\npandas\nmatplotlib" >  /op
 RUN pip3 install -r /opt/requirements.txt
 
 
-############################ Install R Packages ############################
-RUN Rscript -e 'install.packages(c("XML", "xml2", "data.table", "ggplot2", "ggrepel", "gridExtra", "dplyr", "sandwich", "lmtest", "remotes", "RColorBrewer", "MASS", "gee", "cat", "BiocManager", "optparse"))' 
+############################# Install R Packages ############################
+RUN Rscript -e 'install.packages(c("XML", "xml2", "data.table", "ggplot2", "ggrepel", "gridExtra", "dplyr", "sandwich", "lmtest", "remotes", "RColorBrewer", "MASS", "gee", "cat", "BiocManager", "optparse"))'
 
-RUN  Rscript -e 'BiocManager::install(c("minfi", "IlluminaHumanMethylation450kanno.ilmn12.hg19", "FlowSorted.DLPFC.450k", "FlowSorted.Blood.EPIC", "FlowSorted.Blood.450k", "IlluminaHumanMethylationEPICanno.ilm10b4.hg19", "GenomicRanges", "SummarizedExperiment", "LieberInstitute/jaffelab"))'
+RUN  Rscript -e 'BiocManager::install(c("minfi","IlluminaHumanMethylation450kanno.ilmn12.hg19", "IlluminaHumanMethylationEPICanno.ilm10b4.hg19", "FlowSorted.DLPFC.450k", "FlowSorted.Blood.450k", "FlowSorted.Blood.EPIC", "GenomicRanges", "SummarizedExperiment"))'
+RUN Rscript -e 'remotes::install_github("LieberInstitute/jaffelab")'
