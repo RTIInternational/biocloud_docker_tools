@@ -50,7 +50,7 @@ RUN apt-get update \
         libboost-all-dev \
     && rm -rf /var/lib/apt/lists/* \
     && wget https://github.com/large-scale-gxe-methods/GEM/archive/refs/tags/v1.4.2.tar.gz \
-    && tar -xvzf v1.4.2.tar.gz
+    && tar -xvzf v1.4.2.tar.gz \
     && cd GEM-1.4.2/src \
     && make \
     && cp GEM /opt/
