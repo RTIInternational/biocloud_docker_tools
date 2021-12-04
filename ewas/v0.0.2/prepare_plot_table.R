@@ -38,10 +38,10 @@ find_fdr <- function(target=0.10, start_guess=1e-10, pval_vec) {
     difference <- 10
     while (difference > 0.001) {
         fdr_val <- p.adjust(c(start_guess, pval_vec), method="BH")[1]
-        #print(fdr_val)
+        print(fdr_val)
         difference <- abs(fdr_val - target)
         start_guess <- start_guess + 1e-8
-        #print(start_guess)
+        print(start_guess)
     }
 
     return (signif(start_guess, 4) ) # FDR of <target> is reached at <start_guess>
