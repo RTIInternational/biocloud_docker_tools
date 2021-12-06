@@ -45,7 +45,9 @@ lmtest <- function(model_data, probe_id, test_var, covariates) {
 cat("Reading phenotype data......\n")
 pheno <- read.csv(opt$p, header=T, stringsAsFactors=F, sep=" ")
 
-pheno[is.na(pheno[, opt$t]),][, opt$t] <- 0 # remove NA from phenotypes
+if ( any(is.na(pheno[, opt$t])) ) {
+        pheno[is.na(pheno[, opt$t]),][, opt$t] <- 0 # remove NA from phenotypes
+}
 
 cat("Phenotype data has ",dim(pheno)[1]," rows and ",dim(pheno)[2]," columns.\n\n")
 
