@@ -39,7 +39,8 @@ RUN apt-get update \
 	ca-certificates \
 	libcurl4-openssl-dev
 
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
         build-essential \
         python3-pip \
         python-setuptools \
@@ -47,7 +48,8 @@ RUN apt-get install -y --no-install-recommends \
         python-tk \
         pip
 
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
         r-base \
         r-cran-randomforest
 
