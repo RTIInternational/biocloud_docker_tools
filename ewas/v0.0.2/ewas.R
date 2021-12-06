@@ -46,7 +46,7 @@ cat("Reading phenotype data......\n")
 pheno <- read.csv(opt$p, header=T, stringsAsFactors=F, sep=" ")
 
 if ( any(is.na(pheno[, opt$t])) ) {
-        pheno[is.na(pheno[, opt$t]),][, opt$t] <- 0 # remove NA from phenotypes
+    pheno[is.na(pheno[, opt$t]),][, opt$t] <- 0 # remove NA from phenotypes
 }
 
 cat("Phenotype data has ",dim(pheno)[1]," rows and ",dim(pheno)[2]," columns.\n\n")
