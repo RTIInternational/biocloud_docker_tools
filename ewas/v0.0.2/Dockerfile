@@ -72,7 +72,7 @@ RUN  Rscript -e 'BiocManager::install(c("minfi","IlluminaHumanMethylation450kann
 RUN Rscript -e 'remotes::install_github("LieberInstitute/jaffelab")'
 
 
-####################### Add source files ######################### 
+####################### Add source files ##########################
 ADD prepare_plot_table.R /
 ADD make_plots.R /
 ADD ewas.R /
