@@ -30,9 +30,6 @@ resu_annot_sub$chr_new <- gsub("[xX]", "23", resu_annot_sub$chr) # change chrX t
 resu_annot_sub$chr_new <- as.numeric(gsub("[a-zA-Z ]", "", resu_annot_sub$chr_new)) #create chr.new with "chr" prefix removed for chr; necessary for plotting purposes
 resu_annot_sub$chr_new <- gsub("23", "X", resu_annot_sub$chr_new) #change chr23 to chrX
 
-#resu_annot_sub$chr_ordered <- factor(resu_annot_sub$chr_new,levels=c(1:22, "X"))
-resu_annot_sub$chr_ordered <- factor(resu_annot_sub$chr_new)
-
 ## find sigLin for FDR<1% in Manhattan plot
 find_fdr <- function(target=0.10, start_guess=1e-10, pval_vec) {
     difference <- 10
