@@ -44,7 +44,7 @@ RUN apt-get update \
         build-essential \
         python3-pip \
         python-setuptools \
-        python-dev \
+        python3-dev \
         python-tk \
         pip
 
