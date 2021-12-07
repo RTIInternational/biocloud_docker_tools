@@ -20,7 +20,7 @@ opt = parse_args(OptionParser(option_list=option_list))
 plot_table <- read.csv(opt$t, sep=" ")
 head(plot_table)
 
-manhattan.plot<-function(chr, pos, pvalue,
+manhattan.plot <- function(chr, pos, pvalue,
     sig.level=NA, sig.level2=NA, annotate=NULL, ann.default=list(),
     should.thin=T, thin.pos.places=2, thin.logp.places=2,
     xlab="Chromosome", ylab=expression(-log[10](p-value)),
@@ -30,15 +30,10 @@ manhattan.plot<-function(chr, pos, pvalue,
     if (length(pos)==0) stop("position vector is empty")
     if (length(pvalue)==0) stop("pvalue vector is empty")
 
-    #make sure we have an ordered factor
-    if(!is.ordered(chr)) {
-        chr <- ordered(chr)
-    } else {
-        chr <- chr[,drop=T]
-    }
-
+    chr <- factor(chr, levels=c(1:22, "X"))
+  
     #make sure positions are in kbp
-    if (any(pos>1e6)) pos<-pos/1e6;
+    if (any(pos>1e6)) pos <- pos/1e6;
 
     #calculate absolute genomic position
     #from relative chromosomal positions
@@ -57,8 +52,8 @@ manhattan.plot<-function(chr, pos, pvalue,
     ann.settings <- list()
     label.default<-list(x="peak",y="peak",adj=NULL, pos=3, offset=0.5,
         col=NULL, fontface=NULL, fontsize=NULL, show=F)
-    parse.label<-function(rawval, groupname) {
-        r<-list(text=groupname)
+    parse.label <- function(rawval, groupname) {
+        r <- list(text=groupname)
         if(is.logical(rawval)) {
             if(!rawval) {r$show <- F}
         } else if (is.character(rawval) || is.expression(rawval)) {
@@ -84,20 +79,20 @@ manhattan.plot<-function(chr, pos, pvalue,
         grp <- factor(rep(1, times=length(pvalue)))
     }
 
-    ann.settings<-vector("list", length(levels(grp)))
-    ann.settings[[1]]<-list(pch=pch, col=col, cex=cex, fill=col, label=label.default)
+    ann.settings <- vector("list", length(levels(grp)))
+    ann.settings[[1]] <- list(pch=pch, col=col, cex=cex, fill=col, label=label.default)
 
     if (length(ann.settings)>1) {
-        lcols<-trellis.par.get("superpose.symbol")$col
-        lfills<-trellis.par.get("superpose.symbol")$fill
+        lcols <- trellis.par.get("superpose.symbol")$col
+        lfills <- trellis.par.get("superpose.symbol")$fill
         for(i in 2:length(levels(grp))) {
-            ann.settings[[i]]<-list(pch=pch,
+            ann.settings[[i]] <- list(pch=pch,
                 col=lcols[(i-2) %% length(lcols) +1 ],
                 fill=lfills[(i-2) %% length(lfills) +1 ],
                 cex=cex, label=label.default);
             ann.settings[[i]]$label$show <- T
         }
-        names(ann.settings)<-levels(grp)
+        names(ann.settings) <- levels(grp)
     }
     for(i in 1:length(ann.settings)) {
         if (i>1) {ann.settings[[i]] <- modifyList(ann.settings[[i]], ann.default)}
@@ -108,16 +103,16 @@ manhattan.plot<-function(chr, pos, pvalue,
         user.cols <- 2:length(annotate)
         ann.cols <- c()
         if(!is.null(names(annotate[-1])) && all(names(annotate[-1])!="")) {
-            ann.cols<-match(names(annotate)[-1], names(ann.settings))
+            ann.cols <- match(names(annotate)[-1], names(ann.settings))
         } else {
-            ann.cols<-user.cols-1
+            ann.cols <- user.cols-1
         }
         for(i in seq_along(user.cols)) {
             if(!is.null(annotate[[user.cols[i]]]$label)) {
-                annotate[[user.cols[i]]]$label<-parse.label(annotate[[user.cols[i]]]$label,
+                annotate[[user.cols[i]]]$label <- parse.label(annotate[[user.cols[i]]]$label,
                     levels(grp)[ann.cols[i]])
             }
-            ann.settings[[ann.cols[i]]]<-modifyList(ann.settings[[ann.cols[i]]],
+            ann.settings[[ann.cols[i]]] <- modifyList(ann.settings[[ann.cols[i]]],
                 annotate[[user.cols[i]]])
         }
     }
@@ -160,9 +155,9 @@ manhattan.plot<-function(chr, pos, pvalue,
      }
 
     #make sure the y-lim covers the range (plus a bit more to look nice)
-    prepanel.chr<-function(x,y,...) {
-        A<-list();
-        maxy<-ceiling(max(y, ifelse(!is.na(sig.level), -log10(sig.level), 0)))+.5;
+    prepanel.chr <- function(x,y,...) {
+        A <- list();
+        maxy <- ceiling(max(y, ifelse(!is.na(sig.level), -log10(sig.level), 0)))+.5;
         A$ylim=c(0,maxy);
         A;
     }
@@ -182,7 +177,7 @@ manhattan.plot<-function(chr, pos, pvalue,
             }
         },
         panel.groups = function(x,y,..., subscripts, group.number) {
-            A<-list(...)
+            A <- list(...)
             #allow for different annotation settings
             gs <- ann.settings[[group.number]]
             A$col.symbol <- gs$col[(as.numeric(chr[subscripts])-1) %% length(gs$col) + 1]
@@ -194,22 +189,22 @@ manhattan.plot<-function(chr, pos, pvalue,
             do.call("panel.xyplot", A)
             #draw labels (if requested)
             if(gs$label$show) {
-                gt<-gs$label
-                names(gt)[which(names(gt)=="text")]<-"labels"
+                gt <- gs$label
+                names(gt)[which(names(gt)=="text")] <- "labels"
                 gt$show<-NULL
                 if(is.character(gt$x) | is.character(gt$y)) {
                     peak = which.max(y)
                     center = mean(range(x))
                     if (is.character(gt$x)) {
-                        if(gt$x=="peak") {gt$x<-x[peak]}
-                        if(gt$x=="center") {gt$x<-center}
+                        if(gt$x=="peak") {gt$x <- x[peak]}
+                        if(gt$x=="center") {gt$x <- center}
                     }
                     if (is.character(gt$y)) {
-                        if(gt$y=="peak") {gt$y<-y[peak]}
+                        if(gt$y=="peak") {gt$y <- y[peak]}
                     }
                 }
                 if(is.list(gt$x)) {
-                    gt$x<-A$getgenpos(gt$x[[1]],gt$x[[2]])
+                    gt$x <- A$getgenpos(gt$x[[1]],gt$x[[2]])
                 }
                 do.call("panel.text", gt)
             }
@@ -220,7 +215,7 @@ manhattan.plot<-function(chr, pos, pvalue,
 }
 
 
-qqunif.plot<-function(pvalues,
+qqunif.plot <- function(pvalues,
     should.thin=T, thin.obs.places=2, thin.exp.places=2,
     xlab=expression(paste("Expected (",-log[10], " p-value)")),
     ylab=expression(paste("Observed (",-log[10], " p-value)")),
@@ -242,23 +237,23 @@ qqunif.plot<-function(pvalues,
     }
 
 
-    grp<-NULL
-    n<-1
-    exp.x<-c()
+    grp <- NULL
+    n <- 1
+    exp.x <- c()
     if(is.list(pvalues)) {
-        nn<-sapply(pvalues, length)
-        rs<-cumsum(nn)
-        re<-rs-nn+1
-        n<-min(nn)
+        nn <- sapply(pvalues, length)
+        rs <- cumsum(nn)
+        re <- rs-nn+1
+        n <- min(nn)
         if (!is.null(names(pvalues))) {
             grp=factor(rep(names(pvalues), nn), levels=names(pvalues))
-            names(pvalues)<-NULL
+            names(pvalues) <- NULL
         } else {
             grp=factor(rep(1:length(pvalues), nn))
         }
-        pvo<-pvalues
-        pvalues<-numeric(sum(nn))
-        exp.x<-numeric(sum(nn))
+        pvo <- pvalues
+        pvalues <- numeric(sum(nn))
+        exp.x <- numeric(sum(nn))
         for(i in 1:length(pvo)) {
             if (!already.transformed) {
                 pvalues[rs[i]:re[i]] <- -log10(pvo[[i]])
@@ -280,15 +275,15 @@ qqunif.plot<-function(pvalues,
 
 
     #this is a helper function to draw the confidence interval
-    panel.qqconf<-function(n, conf.points=1000, conf.col="gray", conf.alpha=.05, ...) {
+    panel.qqconf <- function(n, conf.points=1000, conf.col="gray", conf.alpha=.05, ...) {
         require(grid)
         conf.points = min(conf.points, n-1);
-        mpts<-matrix(nrow=conf.points*2, ncol=2)
+        mpts <- matrix(nrow=conf.points*2, ncol=2)
             for(i in seq(from=1, to=conf.points)) {
-                    mpts[i,1]<- -log10((i-.5)/n)
-                    mpts[i,2]<- -log10(qbeta(1-conf.alpha/2, i, n-i))
-                    mpts[conf.points*2+1-i,1]<- -log10((i-.5)/n)
-                    mpts[conf.points*2+1-i,2]<- -log10(qbeta(conf.alpha/2, i, n-i))
+                    mpts[i,1] <- -log10((i-.5)/n)
+                    mpts[i,2] <- -log10(qbeta(1-conf.alpha/2, i, n-i))
+                    mpts[conf.points*2+1-i,1] <- -log10((i-.5)/n)
+                    mpts[conf.points*2+1-i,2] <- -log10(qbeta(conf.alpha/2, i, n-i))
             }
             grid.polygon(x=mpts[,1],y=mpts[,2], gp=gpar(fill=conf.col, lty=0), default.units="native")
         }
@@ -310,10 +305,10 @@ qqunif.plot<-function(pvalues,
     gc()
 
     prepanel.qqunif= function(x,y,...) {
-        A = list()
-        A$xlim = range(x, y)*1.02
-        A$xlim[1]=0
-        A$ylim = A$xlim
+        A <- list()
+        A$xlim <- range(x, y)*1.02
+        A$xlim[1] <- 0
+        A$ylim <- A$xlim
         return(A)
     }
 
