@@ -331,7 +331,7 @@ basename <- paste0(opt$o, "_manhattan.png")
 png(basename, width=950, height=500)
 
 man_colors <- strsplit(opt$c, " ")[[1]]
-manhattan.plot(chr=plot_table$chr_ordered,
+manhattan.plot(chr=plot_table$chr_new,
                pos=plot_table$pos,
                pvalue=plot_table$P_VAL,
                col=man_colors,
