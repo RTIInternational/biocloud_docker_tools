@@ -5,11 +5,16 @@
 FROM python:3.10
 
 #================================================================================
-#=================     Add Container Labels     =================================
+#=====================     Add Image Labels     =================================
 #================================================================================
 
 LABEL maintainer="Jesse Marks <jmarks@rti.org>"
-LABEL description="Contains the liftOver tool used to move genomic annotations from one assembly to another."
+LABEL description="Contains the liftOver tool used to move genomic annotations \
+from one assembly to another."
+LABEL website="http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/"
+LABEL binary="http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver"
+LABEL version="kent source version 423"
+LABEL release-date="2021-11-18"
 
 
 #================================================================================
