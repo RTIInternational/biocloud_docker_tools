@@ -48,4 +48,4 @@ RUN mv liftOver /opt/
 
 ENV PATH="/opt/liftOver/:${PATH}"
 
-CMD  ["bash", "/opt/liftOver"]
+CMD  ["/opt/liftOver"]
