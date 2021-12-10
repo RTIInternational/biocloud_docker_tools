@@ -31,3 +31,16 @@ RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
 	vim
+
+
+#================================================================================
+#======================     Install LiftOver     =====================
+#================================================================================
+
+RUN wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver
+RUN chmod +x liftOver
+RUN mv liftOver /opt/
+
+ENV PATH="/opt/liftOver/:${PATH}"
+
+CMD  ["bash", "/opt/liftOver"]
