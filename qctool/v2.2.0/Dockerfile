@@ -45,6 +45,7 @@ ENV LANG en_US.UTF-8
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        python2 \
         build-essential \
         intel-mkl \
         libboost-all-dev \
