@@ -1,4 +1,4 @@
-FROM python:3.7.6-slim-stretch 
+FROM python:3.7.6-slim-stretch
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
@@ -13,9 +13,7 @@ ADD make_gwas_summary_stats.py /
 RUN mv make_gwas_summary_stats.py /opt/
 
 # Install libraries
-RUN pip install argparse
 RUN pip install pandas
-RUN pip install pprint
 
 # Set wrkdir
 RUN mkdir /data
