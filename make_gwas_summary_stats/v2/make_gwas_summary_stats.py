@@ -3,6 +3,46 @@ import pandas as pd
 import numpy as np
 import pprint
 
+# Define custom functions
+def readInfoChunk(infoFileHandle, chunkSize, infoColXref, infoFormat):
+
+    # Read info file chunk
+    infoChunk = infoFileHandle.get_chunk(chunkSize)
+
+    # Rename info columns
+    infoChunk.rename(
+        columns = infoColXref,
+        inplace = True
+    )
+
+    # Normalize info file IDs to match ones created for sum stats
+    if infoFormat == "info":
+        def get_chr_pos(variant_id):
+            return ":".join(variant_id.split(":")[0:2])
+        def get_pos(variant_id):
+            return int(variant_id.split(":")[1])
+        infoChunk["VARIANT_ID"] = infoChunk["VARIANT_ID"].replace({'chr':''}, regex=True)
+        infoChunk["VARIANT_ID"] = infoChunk["VARIANT_ID"].map(get_chr_pos)
+        infoChunk["POS"] = infoChunk["VARIANT_ID"].map(get_pos)
+    elif infoFormat == "mfi":
+        infoChunk["VARIANT_ID"] = infoChunk["CHR"].astype(str) + ":" + infoChunk["POS"].astype(str)
+    infoChunk["VARIANT_ID"] = infoChunk["VARIANT_ID"].astype(str) + ":" + infoChunk["REF"].astype(str) + ":" + infoChunk["ALT"].astype(str)
+
+    # Recode sources if applicable
+    if 'SOURCE' in infoChunk.columns:
+        sourceXref = {
+            'Imputed': 'IMP',
+            'Genotyped': 'GEN',
+            'Typed_Only': 'GEN'
+        }
+        infoChunk['SOURCE'] = infoChunk['SOURCE'].map(sourceXref)
+
+    # Remove duplicates
+    infoChunk.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+
+    return infoChunk
+
+
 # Get arguments
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -137,6 +177,14 @@ if args.file_in_info_format == "info":
         "REF(0)": "REF",
         "ALT(1)": "ALT"
     }
+    # Define columns to keep
+    infoColKeep = [
+        'VARIANT_ID',
+        'ALT_AF',
+        'MAF',
+        'IMP_QUAL',
+        'SOURCE'
+    ]
     # Create iterator for info file
     info = pd.read_csv(
         args.file_in_info,
@@ -157,6 +205,12 @@ elif args.file_in_info_format == "mfi":
         "A1": "REF",
         "A2": "ALT"
     }
+    # Define columns to keep
+    infoColKeep = [
+        'VARIANT_ID',
+        'MAF',
+        'IMP_QUAL'
+    ]
     # Create iterator for info file
     info = pd.read_csv(
         args.file_in_info,
@@ -164,6 +218,13 @@ elif args.file_in_info_format == "mfi":
         usecols = infoColXref.keys(),
         iterator = True
     )
+
+# Read first chunk of info file
+infoChunkCount = 1
+print("Reading info chunk {0}...".format(infoChunkCount))
+prevInfoChunk = readInfoChunk(info, args.chunk_size, infoColXref, args.file_in_info_format)
+dfInfo = pd.DataFrame(columns=prevInfoChunk.columns)
+infoChunkCount += 1
 
 # Read summary stats file
 firstChunk = True
@@ -198,50 +259,29 @@ for sumStats in pd.read_table(
     sumStats.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
     log.write(str(sumStats.shape[0]) + " remain after duplicates removal\n")
 
-    # Read info file chunk
-    infoChunk = info.get_chunk(args.chunk_size)
-    log.write("Read " + str(infoChunk.shape[0]) + " lines from " + args.file_in_info + "\n")
+    # Read relevant chunks of ref
+    maxSumStatsPos = sumStats.POS.max()
+    dfInfo = dfInfo.append(prevInfoChunk)
+    maxInfoPos = dfInfo.POS.max()
+    while (maxInfoPos <= maxSumStatsPos) and len(prevInfoChunk.index):
+        try:
+            print("Reading info chunk {0}...".format(infoChunkCount))
+            prevInfoChunk = readInfoChunk(info, args.chunk_size, infoColXref, args.file_in_info_format)
+            if len(prevInfoChunk.index):
+                dfInfo = dfInfo.append(prevInfoChunk)
+            maxInfoPos = dfInfo.POS.max()
+            dfInfo = dfInfo[dfInfo.VARIANT_ID.isin(sumStats.VARIANT_ID)]
+            infoChunkCount += 1
+        except:
+            break
 
-    # Rename info columns
-    infoChunk.rename(
-        columns = infoColXref,
-        inplace = True
-    )
-    log.write(str(infoChunk.shape[0]) + " remain after duplicates removal\n")
-
-    # Normalize info file IDs to match ones created for sum stats
-    if args.file_in_info_format == "info":
-        def get_chr_pos(variant_id):
-            return ":".join(variant_id.split(":")[0:2])
-        infoChunk["VARIANT_ID"] = infoChunk["VARIANT_ID"].replace({'chr':''}, regex=True)
-        infoChunk["VARIANT_ID"] = infoChunk["VARIANT_ID"].map(get_chr_pos)
-    elif args.file_in_info_format == "mfi":
-        infoChunk["VARIANT_ID"] = infoChunk["CHR"].astype(str) + ":" + infoChunk["POS"].astype(str)
-    infoChunk["VARIANT_ID"] = infoChunk["VARIANT_ID"].astype(str) + ":" + infoChunk["REF"].astype(str) + ":" + infoChunk["ALT"].astype(str)
-
-    # Remove unnecessary info columns
-    infoKeepCols = ["VARIANT_ID"]
-    for infoCol in ["ALT_AF", "MAF", "IMP_QUAL", "SOURCE"]:
-        if (infoCol not in sumStats.columns and infoCol in infoChunk.columns):
-            infoKeepCols.append(infoCol)
-    infoChunk = infoChunk[infoKeepCols]
-
-    # Recode sources if applicable
-    if 'SOURCE' in infoChunk.columns:
-        sourceXref = {
-            'Imputed': 'IMP',
-            'Genotyped': 'GEN',
-            'Typed_Only': 'GEN'
-        }
-        infoChunk['SOURCE'] = infoChunk['SOURCE'].map(sourceXref)
-
-    # Remove duplicates
-    infoChunk.drop_duplicates(subset = "VARIANT_ID", keep = "first", inplace = True)
+    # Filter out unneeded info columns
+    dfInfo = dfInfo[infoColKeep]
 
     # Merge info into summary stats
     sumStats = pd.merge(
         left = sumStats,
-        right = infoChunk,
+        right = dfInfo,
         how = 'left',
         left_on = 'VARIANT_ID',
         right_on = 'VARIANT_ID'
@@ -280,5 +320,9 @@ for sumStats in pd.read_table(
     )
     log.write("Wrote " + str(sumStats.shape[0]) + " lines to " + args.file_out_prefix + ".tsv.gz\n")
     log.flush()
+
+    # Reset dfInfo
+    dfInfo = pd.DataFrame(columns=prevInfoChunk.columns)
+
 
 log.close()
