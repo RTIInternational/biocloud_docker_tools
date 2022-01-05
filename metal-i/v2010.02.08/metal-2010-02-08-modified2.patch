@@ -1,0 +1,1051 @@
+diff -rup generic-metal/metal/Main.cpp generic-metal-modified/metal/Main.cpp
+--- generic-metal/metal/Main.cpp	2010-02-08 14:41:08.000000000 -0500
++++ generic-metal-modified/metal/Main.cpp	2010-05-05 13:21:45.000000000 -0400
+@@ -29,6 +29,16 @@ Vector frequencies;
+ Vector frequencies2;
+ Vector minFrequencies;
+ Vector maxFrequencies;
++Vector WtV_iW11;
++Vector WtV_iW12;
++Vector WtV_iW22;
++Vector covbeta11;
++Vector covbeta12;
++Vector covbeta22;
++Vector tempeff;
++Vector tempinteff;
++Vector coefbeta;
++Vector coefbetaint;
+ 
+ Vector *    custom = NULL;
+ StringArray customVariables;
+@@ -43,6 +53,7 @@ String      original_flipped;
+ 
+ StringArray filenames;
+ StringArray directions;
++StringArray directionsInt;
+ FileSummary * processedFiles = NULL;
+ 
+ double weight = 1.0;
+@@ -53,6 +64,9 @@ String weightLabel  = "N";
+ String pvalueLabel  = "PVALUE";
+ String effectLabel  = "EFFECT";
+ String stderrLabel  = "STDERR";
++String inteffectLabel = "INTER";
++String intstderrLabel = "INTERSTDERR";
++String intcovLabel = "INTERCOV";
+ String strandLabel  = "STRAND";
+ String frequencyLabel = "FREQ";
+ String firstAllele  = "ALLELE1";
+@@ -61,6 +75,7 @@ String secondAllele = "ALLELE2";
+ String separators  = " \t";
+ 
+ bool   useStandardErrors = false;
++bool   useInteraction = false;
+ bool   useStrand = false;
+ bool   averageFrequencies = false;
+ bool   minMaxFrequencies = false;
+@@ -112,34 +127,57 @@ void SetupCrashHandlers()
+ 
+ void PrintablePvalue(String & buffer, double statistic)
+    {
+-   statistic = fabs(statistic);
+-
+-   if (logPValue)
+-      {
+-      double log_pvalue = (logndist(fabs(statistic), true) + log(2.0)) / log(10.0);
+-
+-      buffer.printf("%.2f", log_pvalue);
+-      }
+-   else if (statistic < 20)
++   if (useInteraction)
+       {
+-      double pvalue = 2.0 * ndist(fabs(statistic), true);
+-
+-      buffer.printf("%.4g", pvalue);
++      if (logPValue)
++         {
++         double log_pvalue = - statistic / (2.0 * log(10.0));
++         buffer.printf("%.2f", log_pvalue);
++         }
++      else if (statistic < 400)
++          {
++          double pvalue = chidist(statistic, 2);
++          buffer.printf("%.4g", pvalue);
++          }
++      else
++          {
++          double log_pvalue = - statistic / (2.0 * log(10.0));
++          double exponent = floor(log_pvalue);
++          double real = pow(10, log_pvalue - exponent);
++          if (real >= 9.995)
++             {
++             real /= 10;
++             exponent++;
++             }
++          buffer.printf("%.2fe%.0f", real, exponent);
++          }
+       }
+    else
+       {
+-      double log_pvalue = (logndist(fabs(statistic), true) + log(2.0)) / log(10.0);
++       statistic = fabs(statistic);
+ 
+-      double exponent = floor(log_pvalue);
+-      double real = pow(10, log_pvalue - exponent);
+-
+-      if (real >= 9.995)
+-         {
+-         real /= 10;
+-         exponent++;
+-         }
+-
+-      buffer.printf("%.2fe%.0f", real, exponent);
++       if (logPValue)
++          {
++          double log_pvalue = (logndist(fabs(statistic), true) + log(2.0)) / log(10.0);
++          buffer.printf("%.2f", log_pvalue);
++          }
++       else if (statistic < 20)
++          {
++          double pvalue = 2.0 * ndist(fabs(statistic), true);
++          buffer.printf("%.4g", pvalue);
++          }
++       else
++           {
++           double log_pvalue = (logndist(fabs(statistic), true) + log(2.0)) / log(10.0);
++           double exponent = floor(log_pvalue);
++           double real = pow(10, log_pvalue - exponent);
++           if (real >= 9.995)
++              {
++              real /= 10;
++              exponent++;
++              }
++           buffer.printf("%.2fe%.0f", real, exponent);
++           }
+       }
+    }
+ 
+@@ -166,9 +204,20 @@ void ClearAll()
+    frequencies2.Dimension(0);
+    minFrequencies.Dimension(0);
+    maxFrequencies.Dimension(0);
++   WtV_iW11.Dimension(0);
++   WtV_iW12.Dimension(0);
++   WtV_iW22.Dimension(0);
++   covbeta11.Dimension(0);
++   covbeta12.Dimension(0);
++   covbeta22.Dimension(0);
++   tempeff.Dimension(0);
++   tempinteff.Dimension(0);
++   coefbeta.Dimension(0);
++   coefbetaint.Dimension(0);
+    original_flipped.Clear();
+    filenames.Clear();
+    directions.Clear();
++   directionsInt.Clear();
+    customVariables.Clear();
+    customLabels.Clear();
+ 
+@@ -433,6 +482,36 @@ bool FlipAlleles(String & al1, String & 
+    return true;
+    }
+ 
++bool FlipIntAlleles(String & al1, String & al2, double & effect, double & inteffect, double & freq)
++   {
++   al1.ToLower();
++   al2.ToLower();
++
++   if (al1 > al2)
++      {
++      al1.Swap(al2);
++      effect *= -1.0;
++      inteffect *= -1.0;
++      freq = 1.0 - freq;
++      }
++
++   if (al1 == "a" || al1 == "c" && al2 == "g")
++      return false;
++
++   FlipAllele(al1);
++   FlipAllele(al2);
++
++   if (al1 > al2)
++      {
++      al1.Swap(al2);
++      effect *= -1.0;
++      inteffect *= -1.0;
++      freq = 1.0 - freq;
++      }
++
++   return true;
++   }
++   
+ bool GuessSecondAllele(int marker, String & al1, String & al2)
+    {
+    al1.ToLower();
+@@ -516,12 +595,14 @@ void Analyze(bool heterogeneity)
+       return;
+       }
+ 
+-   fprintf(f, "MarkerName\tAllele1\tAllele2\t%s%s%s\t%s\t%s\tDirection%s%s",
++   fprintf(f, "MarkerName\tAllele1\tAllele2\t%s%s%s\t%s\t%s%s\tDirection%s%s%s",
+               averageFrequencies ? "Freq1\tFreqSE\t" : "",
+               minMaxFrequencies ? "MinFreq\tMaxFreq\t" : "",
+-              useStandardErrors ? "Effect" : "Weight",
+-              useStandardErrors ? "StdErr" : "Zscore",
++              (useStandardErrors || useInteraction) ? "Effect" : "Weight",
++              (useStandardErrors || useInteraction) ? "StdErr" : "Zscore",
++              useInteraction ? "IntEffect\tIntStdErr\tIntCov\tChiSq2df\t" : "",
+               logPValue ? "log(P)" : "P-value",
++              useInteraction ? "\tDirectionInt" : "",
+               heterogeneity ? "\tHetChiSq\tHetDf\t" : "",
+               heterogeneity ? (logPValue ? "logHetP" : "HetPVal") : "");
+ 
+@@ -537,6 +618,7 @@ void Analyze(bool heterogeneity)
+    String al1, al2;
+ 
+    String direction;
++   String directionInt;
+ 
+    int count = 0, skipped = 0;
+    for (int i = 0; i < markerLookup.Capacity(); i++)
+@@ -546,13 +628,14 @@ void Analyze(bool heterogeneity)
+ 
+          if (weights[marker] == 0.0) continue;
+ 
+-         if (!useStandardErrors && weights[marker] < minweight)
++         if (!useInteraction && !useStandardErrors && weights[marker] < minweight)
+             {
+             skipped++;
+             continue;
+             }
+ 
+-         double statistic = statistics[marker] / sqrt(weights[marker]);
++         double statistic = useInteraction ? (coefbeta[marker] * WtV_iW11[marker] + coefbetaint[marker] * WtV_iW12[marker]) * coefbeta[marker] 
++         + (coefbeta[marker] * WtV_iW12[marker] + coefbetaint[marker] * WtV_iW22[marker]) * coefbetaint[marker] : statistics[marker] / sqrt(weights[marker]);
+          double frequency = averageFrequencies ? frequencies[marker] / weights[marker] : 0.5;
+          double frequency2 = averageFrequencies ? frequencies2[marker] / weights[marker] : 0.5;
+          double minFrequency = minMaxFrequencies ? minFrequencies[marker] : 0.5;
+@@ -572,8 +655,13 @@ void Analyze(bool heterogeneity)
+             FlipAllele(al1), FlipAllele(al2);
+ 
+          direction.Clear();
++         directionInt.Clear();
++         
+          for (int j = 0; j < filenames.Length(); j++)
+-            direction += marker < directions[j].Length() ? directions[j][marker] : '?';
++             {
++             direction += marker < directions[j].Length() ? directions[j][marker] : '?';
++             if (useInteraction) directionInt += marker < directionsInt[j].Length() ? directionsInt[j][marker] : '?';
++             }
+ 
+          fprintf(f, "%s\t%s\t%s\t",
+                   (const char *) markerLookup[i],
+@@ -586,25 +674,57 @@ void Analyze(bool heterogeneity)
+          if (minMaxFrequencies)
+             fprintf(f, "%.4f\t%.4f\t", minFrequency, maxFrequency);
+ 
+-         fprintf(f, "%.*f\t%.*f\t%s\t%s",
+-                  useStandardErrors ? 4 : 2,
+-                  useStandardErrors ? statistics[marker] / weights[marker] : weights[marker],
+-                  useStandardErrors ? 4 : 3,
+-                  useStandardErrors ? sqrt(1.0 / weights[marker]) : statistic,
+-                  (const char *) pvalue,
+-                  (const char *) direction);
++         if (!useInteraction)
++            {
++            fprintf(f, "%.*f\t%.*f\t%s\t%s",
++                       useStandardErrors ? 4 : 2,
++                       useStandardErrors ? statistics[marker] / weights[marker] : weights[marker],
++                       useStandardErrors ? 4 : 3,
++                       useStandardErrors ? sqrt(1.0 / weights[marker]) : statistic,
++                       (const char *) pvalue,
++                       (const char *) direction);
++            }
++         else
++             {
++             fprintf(f, "%.4g\t%.4g\t%.4g\t%.4g\t%.4g\t%.3f\t%s\t%s\t%s",
++                        coefbeta[marker],
++                        sqrt(covbeta11[marker]),
++                        coefbetaint[marker],
++                        sqrt(covbeta22[marker]),
++                        covbeta12[marker],
++                        statistic,
++                        (const char *) pvalue,
++                        (const char *) direction,
++                        (const char *) directionInt);
++             }
+          count++;
+ 
+          if (heterogeneity)
+             {
+-            double p =
+-               (hetStatistic[marker] < 1e-7 || hetDegreesOfFreedom[marker] <= 1) ?
+-               1.0 : chidist(hetStatistic[marker], hetDegreesOfFreedom[marker] - 1);
++            double p;
++            if (useInteraction)
++               {
++               p = (hetStatistic[marker] < 1e-7 || hetDegreesOfFreedom[marker] <= 1) ?
++               1.0 : chidist(hetStatistic[marker], 2 * (hetDegreesOfFreedom[marker] - 1));
++               }
++            else
++                {
++                p = (hetStatistic[marker] < 1e-7 || hetDegreesOfFreedom[marker] <= 1) ?
++                1.0 : chidist(hetStatistic[marker], hetDegreesOfFreedom[marker] - 1);
++                }
+ 
+             if (logPValue) p = (p < 1.0) ? log(p) / log(10.0) : 0.0;
+ 
+-            fprintf(f, "\t%.3f\t%d\t%.4g",
++            if (useInteraction)
++               {
++               fprintf(f, "\t%.3f\t%d\t%.4g",
++                        hetStatistic[marker], 2 * (hetDegreesOfFreedom[marker] - 1), p);
++               }
++            else
++                {
++                fprintf(f, "\t%.3f\t%d\t%.4g",
+                         hetStatistic[marker], hetDegreesOfFreedom[marker] - 1, p);
++                }
+             }
+ 
+          for (int j = 0; j < customVariables.Length(); j++)
+@@ -649,9 +769,10 @@ void Analyze(bool heterogeneity)
+               "%s"
+               "%s"
+               "%s\n"
++              "%s"
+               "# %s meta-analysis p-value\n"
+               "# Direction - summary of effect direction for each study, with one '+' or '-' per study\n"
+-              "%s%s",
++              "%s%s%s",
+               (const char *) filename,
+               !averageFrequencies ? "" :
+               "# Freq1       - weighted average of frequency for allele 1 across all studies\n"
+@@ -659,12 +780,19 @@ void Analyze(bool heterogeneity)
+               !minMaxFrequencies ? "" :
+               "# MinFreq     - minimum frequency for allele 1 across all studies\n"
+               "# MaxFreq     - maximum frequency for allele 1 across all studies\n",
+-              useStandardErrors ?
++              (useStandardErrors || useInteraction) ?
+               "# Effect    - overall estimated effect size for allele1\n"
+               "# StdErr    - overall standard error for effect size estimate" :
+               "# Weight    - the sum of the individual study weights (typically, N) for this marker\n"
+               "# Z-score   - the combined z-statistic for this marker",
++              !useInteraction ? "" :
++              "# IntEffect    - overall estimated interaction effect size for allele1\n"
++              "# IntStdErr    - overall standard error for interaction effect size estimate\n"
++              "# IntCov       - overall covariance for main and interaction effect size estimates\n"
++              "# ChiSq2df     - 2df chi-squared statistic in joint test of main and interaction effect size estimates\n",
+               logPValue ? "log(P)    - log of" : "P-value   -",
++              !useInteraction ? "" :
++              "# DirectionInt - summary of interaction effect direction for each study, with one '+' or '-' per study\n",
+               !heterogeneity ? "" :
+               "# HetChiSq  - chi-squared statistic in simple test of heterogeneity\n"
+               "# df        - degrees of freedom for heterogeneity statistic\n",
+@@ -723,7 +851,7 @@ void ProcessFile(String & filename, File
+       }
+ 
+    int pvalueColumn = history->pvalueColumn = tokens.SlowFind(pvalueLabel);
+-   if (pvalueColumn < 0 && !useStandardErrors)
++   if (pvalueColumn < 0 && !useStandardErrors && !useInteraction)
+       {
+       printf("## ERROR: No '%s' column found\n\n", (const char *) pvalueLabel);
+       ifclose(f);
+@@ -739,7 +867,7 @@ void ProcessFile(String & filename, File
+       }
+ 
+    if (effectColumn < 0)
+-      if (!useStandardErrors)
++      if (!useStandardErrors && !useInteraction)
+          printf("## WARNING: No '%s' column found -- assuming all effects are positive!\n", (const char *) effectLabel);
+       else
+          {
+@@ -749,7 +877,7 @@ void ProcessFile(String & filename, File
+          }
+ 
+    int weightColumn = history->weightColumn = tokens.SlowFind(weightLabel);
+-   if (weightColumn < 0 && !useStandardErrors)
++   if (weightColumn < 0 && !useStandardErrors && (!useInteraction || (useInteraction && averageFrequencies)))
+       printf("## WARNING: No '%s' column found -- using DEFAULTWEIGHT = %g\n", (const char *) weightLabel, weight);
+ 
+    int firstColumn = history->firstColumn = tokens.SlowFind(firstAllele);
+@@ -768,13 +896,37 @@ void ProcessFile(String & filename, File
+              (const char *) firstAllele, (const char *) secondAllele, firstColumn = 0);
+ 
+    int stderrColumn = history->stderrColumn = tokens.SlowFind(stderrLabel);
+-   if (stderrColumn < 0 && useStandardErrors)
++   if (stderrColumn < 0 && (useStandardErrors || useInteraction))
+       {
+       printf("## ERROR: Analysis based on standard errors requested but no '%s' column found\n\n", (const char *) stderrLabel);
+       ifclose(f);
+       return;
+       }
+ 
++   int inteffectColumn = history->inteffectColumn = tokens.SlowFind(inteffectLabel);
++   if (inteffectColumn < 0 && useInteraction)
++      {
++      printf("## ERROR: Column '%s' not found\n\n", (const char *) inteffectLabel);
++      ifclose(f);
++      return;
++      }
++
++   int intstderrColumn = history->intstderrColumn = tokens.SlowFind(intstderrLabel);
++   if (intstderrColumn < 0 && useInteraction)
++      {
++      printf("## ERROR: Column '%s' not found\n\n", (const char *) intstderrLabel);
++      ifclose(f);
++      return;
++      }
++
++   int intcovColumn = history->intcovColumn = tokens.SlowFind(intcovLabel);
++   if (intcovColumn < 0 && useInteraction)
++      {
++      printf("## ERROR: Column '%s' not found\n\n", (const char *) intcovLabel);
++      ifclose(f);
++      return;
++      }
++
+    bool useFrequencies = minMaxFrequencies || averageFrequencies;
+    int freqColumn = history->freqColumn = tokens.SlowFind(frequencyLabel);
+    if (freqColumn < 0 && useFrequencies)
+@@ -802,12 +954,15 @@ void ProcessFile(String & filename, File
+    history->filterCounts = filterCounts;
+ 
+    int minColumns = markerColumn + 1;
+-   if (weightColumn >= minColumns && !useStandardErrors) minColumns = weightColumn + 1;
++   if (weightColumn >= minColumns && !useStandardErrors && !useInteraction) minColumns = weightColumn + 1;
+    if (effectColumn >= minColumns) minColumns = effectColumn + 1;
+-   if (pvalueColumn >= minColumns && !useStandardErrors) minColumns = pvalueColumn + 1;
++   if (pvalueColumn >= minColumns && !useStandardErrors && !useInteraction) minColumns = pvalueColumn + 1;
+    if (firstColumn >= minColumns)  minColumns = firstColumn + 1;
+    if (secondColumn >= minColumns) minColumns = secondColumn + 1;
+-   if (stderrColumn >= minColumns && useStandardErrors) minColumns = stderrColumn + 1;
++   if (stderrColumn >= minColumns && (useStandardErrors || useInteraction)) minColumns = stderrColumn + 1;
++   if (inteffectColumn >= minColumns && useInteraction) minColumns = inteffectColumn + 1;
++   if (intstderrColumn >= minColumns && useInteraction) minColumns = intstderrColumn + 1;
++   if (intcovColumn >= minColumns && useInteraction) minColumns = intcovColumn + 1;
+    if (strandColumn >= minColumns && useStrand) minColumns = strandColumn + 1;
+    if (freqColumn >= minColumns && useFrequencies) minColumns = freqColumn + 1;
+    if (filterColumn.Max() >= minColumns) minColumns = filterColumn.Max() + 1;
+@@ -834,8 +989,9 @@ void ProcessFile(String & filename, File
+ 
+    Vector backupStatistics, backupWeights, backupFrequencies, backupFrequencies2;
+    Vector chiSquareds;
++   Vector backupWtV_iW11, backupWtV_iW12, backupWtV_iW22, backupTempeff, backupTempinteff;
+ 
+-   if (genomicControl)
++   if (genomicControl && !useInteraction)
+       {
+       backupStatistics = statistics;
+       statistics.Zero();
+@@ -851,12 +1007,33 @@ void ProcessFile(String & filename, File
+       frequencies.Zero();
+       weights.Zero();
+       }
++      
++   if (genomicControl && useInteraction)
++      {
++      backupWtV_iW11 = WtV_iW11;
++      backupWtV_iW12 = WtV_iW12;
++      backupWtV_iW22 = WtV_iW22;
++      backupTempeff = tempeff;
++      backupTempinteff = tempinteff;
++      WtV_iW11.Zero();
++      WtV_iW12.Zero();
++      WtV_iW22.Zero();
++      tempeff.Zero();
++      tempinteff.Zero();
++      }
+ 
+    String direction;
+    direction.Fill('?', allele1.Length());
++   String directionInt;
++   if (useInteraction) directionInt.Fill('?', allele1.Length());
+ 
+    int invalid = 0;
+    int invalidEffect = 0;
++   int invalidint = 0;
++   int invalidInteffect = 0;
++   int invalidcovmatrix = 0;
++   int largese = 0;
++   int largecov = 0;
+    int badAlleles = 0;
+    int badGuesses = 0;
+    int duplicates = 0;
+@@ -933,16 +1110,27 @@ void ProcessFile(String & filename, File
+          weights.Push(0);
+          allele1.Push("");
+          allele2.Push("");
++         WtV_iW11.Push(0);
++         WtV_iW12.Push(0);
++         WtV_iW22.Push(0);
++         covbeta11.Push(0);
++         covbeta12.Push(0);
++         covbeta22.Push(0);
++         tempeff.Push(0);
++         tempinteff.Push(0);
++         coefbeta.Push(0);
++         coefbetaint.Push(0);
+          original_flipped += '?';
+          direction += '?';
++         directionInt += '?';
+ 
+          for (int i = 0; i < customColumns.Length(); i++)
+             custom[i].Push(0);
+          }
+ 
+-      double w, z;
++      double w, z, zint, sd, inteff, intsd, intcov;
+ 
+-      if (!useStandardErrors)
++      if (!useStandardErrors && !useInteraction)
+          {
+          long double p = tokens[pvalueColumn].AsLongDouble();
+ 
+@@ -978,7 +1166,34 @@ void ProcessFile(String & filename, File
+       else
+          {
+          double eff = tokens[effectColumn].AsDouble();
+-         double sd  = tokens[stderrColumn].AsDouble();
++         sd  = tokens[stderrColumn].AsDouble();
++         if (useInteraction)
++            {
++            inteff = tokens[inteffectColumn].AsDouble();
++            intsd = tokens[intstderrColumn].AsDouble();
++            if (sd * intsd > 1.34078e+154)
++               {
++               if (++largese <= maxWarnings)
++                  printf("## WARNING: The standard error for marker %s is extremely large, ignored\n", 
++                  (const char *) tokens[markerColumn]);
++               continue;
++               }
++            intcov = tokens[intcovColumn].AsDouble();
++            if (intcov < -1.34078e+154 || intcov > 1.34078e+154)
++               {
++               if (++largecov <= maxWarnings)
++                  printf("## WARNING: The covariance for marker %s is extremely large, ignored\n", 
++                  (const char *) tokens[markerColumn]);
++               continue;
++               }
++            if (intcov * intcov > sd * sd * intsd * intsd)
++               {
++               if (++invalidcovmatrix <= maxWarnings)
++                  printf("## WARNING: The covariance matrix for marker %s is not positive definite, ignored\n", 
++                  (const char *) tokens[markerColumn]);
++               continue;
++               }
++            }
+ 
+          if (logTransform)
+             {
+@@ -990,6 +1205,17 @@ void ProcessFile(String & filename, File
+                }
+ 
+             eff = log(eff);
++            
++            if (useInteraction)
++               {
++               if (inteff <= 0.0)
++                  {
++                  if (++invalidInteffect > maxWarnings) continue;
++                  printf("## WARNING: Invalid log(inteffect) for marker %s, ignored\n", (const char *) tokens[markerColumn]);
++                  continue;
++                  }
++               inteff = log(inteff);
++               }
+             }
+ 
+          if (sd <= 0)
+@@ -999,8 +1225,26 @@ void ProcessFile(String & filename, File
+             continue;
+             }
+ 
++         if (useInteraction)
++            {
++            if (intsd <= 0)
++               {
++               if (++invalidint > maxWarnings) continue;
++               printf("## WARNING: Invalid standard error for interaction term of marker %s, ignored\n", (const char *) tokens[markerColumn]);
++               continue;
++               }
++            }
++
+          z = eff;
+-         w = 1.0 / (sd * sd);
++         if (useStandardErrors)
++            {
++            w = 1.0 / (sd * sd);
++            }
++         if (useInteraction)
++            {
++            zint = inteff;
++            w = weightColumn >= 0 ? tokens[weightColumn].AsDouble() : weight;
++            }
+          }
+ 
+       double freq = 0.0;
+@@ -1008,7 +1252,10 @@ void ProcessFile(String & filename, File
+          freq = tokens[freqColumn].AsDouble();
+ 
+       if (flip)
+-         z *= -1;
++         {
++         z *= -1.0;
++         if (useInteraction) zint *= -1.0;
++         }
+ 
+       if (firstColumn >= 0 && secondColumn >= 0)
+          {
+@@ -1021,7 +1268,8 @@ void ProcessFile(String & filename, File
+             FlipAllele(tokens[secondColumn]);
+             }
+ 
+-         bool flip = FlipAlleles(tokens[firstColumn], tokens[secondColumn], z, freq);
++         bool flip = useInteraction ? FlipIntAlleles(tokens[firstColumn], tokens[secondColumn], z, zint, freq) : 
++              FlipAlleles(tokens[firstColumn], tokens[secondColumn], z, freq);
+ 
+          if (allele1[marker] == "")
+             allele1[marker] = tokens[firstColumn],
+@@ -1055,7 +1303,8 @@ void ProcessFile(String & filename, File
+                             (const char *) tokens[firstColumn]);
+              continue;
+              }
+-         FlipAlleles(tokens[firstColumn], tokens.Last(), z, freq);
++         if (useInteraction) FlipIntAlleles(tokens[firstColumn], tokens.Last(), z, zint, freq);
++         else FlipAlleles(tokens[firstColumn], tokens.Last(), z, freq);
+          }
+ 
+       if (direction[marker] != '?')
+@@ -1067,6 +1316,7 @@ void ProcessFile(String & filename, File
+          }
+ 
+       direction[marker] = z == 0.0 ? '0' : (z > 0.0 ? '+' : '-');
++      if (useInteraction) directionInt[marker] = zint == 0.0 ? '0' : (zint > 0.0 ? '+' : '-');
+ 
+       if (verbose)
+          {
+@@ -1091,18 +1341,38 @@ void ProcessFile(String & filename, File
+          printf("%s\n", (const char *) filenames.Last());
+          }
+ 
+-      if (!useStandardErrors)
++      if (!useStandardErrors && !useInteraction)
+          {
+          statistics[marker] += sqrt(w) * z;
+          weights[marker] += w;
+          chiSquareds.Push(z * z);
+          }
+-      else
++      else if (useStandardErrors)
+          {
+          statistics[marker] += w * z;
+          weights[marker] += w;
+          chiSquareds.Push(z * z * w);
+          }
++      else
++          {
++          weights[marker] += w;
++          double covb_i11 = (intsd * intsd) / (sd * sd * intsd * intsd - intcov * intcov);
++          double covb_i12 = - intcov / (sd * sd * intsd * intsd - intcov * intcov);
++          double covb_i22 = (sd * sd) / (sd * sd * intsd * intsd - intcov * intcov);
++          double WtV_ibeff = covb_i11 * z + covb_i12 * zint;
++          double WtV_ibinteff = covb_i12 * z + covb_i22 * zint;
++          WtV_iW11[marker] += covb_i11;
++          WtV_iW12[marker] += covb_i12;
++          WtV_iW22[marker] += covb_i22;
++          covbeta11[marker] = WtV_iW22[marker] / (WtV_iW11[marker] * WtV_iW22[marker] - WtV_iW12[marker] * WtV_iW12[marker]);
++          covbeta12[marker] = - WtV_iW12[marker] / (WtV_iW11[marker] * WtV_iW22[marker] - WtV_iW12[marker] * WtV_iW12[marker]);
++          covbeta22[marker] = WtV_iW11[marker] / (WtV_iW11[marker] * WtV_iW22[marker] - WtV_iW12[marker] * WtV_iW12[marker]);
++          tempeff[marker] += WtV_ibeff;
++          tempinteff[marker] += WtV_ibinteff;
++          coefbeta[marker] = covbeta11[marker] * tempeff[marker] + covbeta12[marker] * tempinteff[marker];
++          coefbetaint[marker] = covbeta12[marker] * tempeff[marker] + covbeta22[marker] * tempinteff[marker];
++          chiSquareds.Push((z * covb_i11 + zint * covb_i12) * z + (z * covb_i12 + zint * covb_i22) * zint);
++          }
+ 
+       if (averageFrequencies)
+          {
+@@ -1126,10 +1396,25 @@ void ProcessFile(String & filename, File
+ 
+    if (invalid > maxWarnings)
+       printf("## WARNING: Invalid %s for %d other markers also ignored\n",
+-             useStandardErrors ? "standard errors" : "p-values", invalid - maxWarnings);
++             (useStandardErrors || useInteraction) ? "standard errors" : "p-values", invalid - maxWarnings);
+ 
+    if (invalidEffect > maxWarnings)
+-      printf("## WARNING: Invalid log(effect) for %d other markers also ignored\n", invalid - maxWarnings);
++      printf("## WARNING: Invalid log(effect) for %d other markers also ignored\n", invalidEffect - maxWarnings);
++   
++   if (invalidint > maxWarnings)
++      printf("## WARNING: Invalid standard errors for interaction term for %d other markers also ignored\n", invalidint - maxWarnings);
++      
++   if (invalidInteffect > maxWarnings)
++      printf("## WARNING: Invalid log(inteffect) for %d other markers also ignored\n", invalidInteffect - maxWarnings);
++
++   if (invalidcovmatrix > maxWarnings)
++      printf("## WARNING: The covariance matrices for %d other markers are also not positive definite, ignored\n", invalidcovmatrix - maxWarnings);
++
++   if (largese > maxWarnings)
++      printf("## WARNING: The standard errors for %d other markers are also extremely large, ignored\n", largese - maxWarnings);
++
++   if (largecov > maxWarnings)
++      printf("## WARNING: The covariances for %d other markers are also extremely large, ignored\n", largecov - maxWarnings);
+ 
+    if (badGuesses > maxWarnings)
+       printf("## WARNING: Failed to guess second allele for %d other markers\n", badGuesses - maxWarnings);
+@@ -1159,6 +1444,7 @@ void ProcessFile(String & filename, File
+    FilterSummary();
+ 
+    directions.Push(direction);
++   if (useInteraction) directionsInt.Push(directionInt);
+ 
+    history->genomicControl = 1.0;
+    if (genomicControl)
+@@ -1167,21 +1453,35 @@ void ProcessFile(String & filename, File
+          {
+          printf("## WARNING: Genomic control parameter cannot be calculated, no valid input\n");
+ 
+-         statistics.Swap(backupStatistics);
+-
+-         if (useStandardErrors)
++         if (!useInteraction)
+             {
+-            backupFrequencies2.Swap(frequencies2);
+-            backupFrequencies.Swap(frequencies);
+-            backupWeights.Swap(weights);
++            statistics.Swap(backupStatistics);
++
++            if (useStandardErrors)
++               {
++               backupFrequencies2.Swap(frequencies2);
++               backupFrequencies.Swap(frequencies);
++               backupWeights.Swap(weights);
++               }
+             }
++         else
++             {
++             WtV_iW11.Swap(backupWtV_iW11);
++             WtV_iW12.Swap(backupWtV_iW12);
++             WtV_iW22.Swap(backupWtV_iW22);
++             tempeff.Swap(backupTempeff);
++             tempinteff.Swap(backupTempinteff);
++             }
+          }
+       else
+          {
+          if (genomicControlLambda == 0.0)
+             chiSquareds.Sort();
+ 
+-         double gc = genomicControlLambda == 0.0 ? chiSquareds[0.5] / 0.4549364 : genomicControlLambda;
++         double gc = genomicControlLambda;
++         
++         if (gc == 0.0)
++            gc = useInteraction ? chiSquareds[0.5] / 1.386294 : chiSquareds[0.5] / 0.4549364;
+ 
+          if (gc <= 1.0)
+             {
+@@ -1193,30 +1493,59 @@ void ProcessFile(String & filename, File
+ 
+          history->genomicControl = gc;
+ 
+-         if (!useStandardErrors)
+-            statistics *= 1.0 / sqrt(gc);
+-         else
+-            statistics *= 1.0 / gc;
++         if (!useInteraction)
++            {
++            if (!useStandardErrors)
++               statistics *= 1.0 / sqrt(gc);
++            else
++                statistics *= 1.0 / gc;
+ 
+-         for (int i  = 0; i < backupStatistics.Length(); i++)
+-            statistics[i] += backupStatistics[i];
++            for (int i  = 0; i < backupStatistics.Length(); i++)
++                statistics[i] += backupStatistics[i];
+ 
+-         if (useStandardErrors)
+-            {
+-            weights *= 1.0 / gc;
++            if (useStandardErrors)
++               {
++               weights *= 1.0 / gc;
+ 
+-            if (averageFrequencies) frequencies *= 1.0 / gc;
+-            if (averageFrequencies) frequencies2 *= 1.0 / gc;
++               if (averageFrequencies) frequencies *= 1.0 / gc;
++               if (averageFrequencies) frequencies2 *= 1.0 / gc;
+ 
+-            for (int i = 0; i < backupWeights.Length(); i++)
+-               weights[i] += backupWeights[i];
++               for (int i = 0; i < backupWeights.Length(); i++)
++                   weights[i] += backupWeights[i];
+ 
+-            for (int i = 0; i < backupFrequencies.Length(); i++)
+-               {
+-               frequencies2[i] += backupFrequencies2[i];
+-               frequencies[i] += backupFrequencies[i];
++               for (int i = 0; i < backupFrequencies.Length(); i++)
++                   {
++                   frequencies2[i] += backupFrequencies2[i];
++                   frequencies[i] += backupFrequencies[i];
++                   }
+                }
+             }
++         else
++             {
++             WtV_iW11 *= 1.0 / gc;
++             WtV_iW12 *= 1.0 / gc;
++             WtV_iW22 *= 1.0 / gc;
++             tempeff *= 1.0 / gc;
++             tempinteff *= 1.0 / gc;
++             for (int i = 0; i < backupWtV_iW11.Length(); i++)
++                 {
++                 WtV_iW11[i] += backupWtV_iW11[i];
++                 WtV_iW12[i] += backupWtV_iW12[i];
++                 WtV_iW22[i] += backupWtV_iW22[i];
++                 
++                 covbeta11[i] = WtV_iW22[i] / (WtV_iW11[i] * WtV_iW22[i] - WtV_iW12[i] * WtV_iW12[i]);
++                 covbeta12[i] = - WtV_iW12[i] / (WtV_iW11[i] * WtV_iW22[i] - WtV_iW12[i] * WtV_iW12[i]);
++                 covbeta22[i] = WtV_iW11[i] / (WtV_iW11[i] * WtV_iW22[i] - WtV_iW12[i] * WtV_iW12[i]);
++                 }
++             for (int i = 0; i < backupTempeff.Length(); i++)
++                 {
++                 tempeff[i] += backupTempeff[i];
++                 tempinteff[i] += backupTempinteff[i];
++                 
++                 coefbeta[i] = covbeta11[i] * tempeff[i] + covbeta12[i] * tempinteff[i];
++                 coefbetaint[i] = covbeta12[i] * tempeff[i] + covbeta22[i] * tempinteff[i];
++                 }
++             }
+          }
+       }
+ 
+@@ -1259,6 +1588,9 @@ bool ReProcessFile(FileSummary * history
+    int firstColumn = history->firstColumn;
+    int secondColumn = history->secondColumn;
+    int stderrColumn = history->stderrColumn;
++   int inteffectColumn = history->inteffectColumn;
++   int intstderrColumn = history->intstderrColumn;
++   int intcovColumn = history->intcovColumn;
+    int freqColumn = history->freqColumn;
+    int strandColumn = history->strandColumn;
+    int expectedColumns = history->expectedColumns;
+@@ -1287,6 +1619,8 @@ bool ReProcessFile(FileSummary * history
+ 
+    String direction;
+    direction.Fill('?', allele1.Length());
++   String directionInt;
++   if (useInteraction) directionInt.Fill('?', allele1.Length());
+ 
+    while (!ifeof(f))
+       {
+@@ -1311,9 +1645,9 @@ bool ReProcessFile(FileSummary * history
+       if (marker < 0)
+          break;
+ 
+-      double w, z;
++      double w, z, zint, sd, inteff, intsd, intcov;
+ 
+-      if (!useStandardErrors)
++      if (!useStandardErrors && !useInteraction)
+          {
+          long double p = tokens[pvalueColumn].AsLongDouble();
+ 
+@@ -1340,7 +1674,16 @@ bool ReProcessFile(FileSummary * history
+       else
+          {
+          double eff = tokens[effectColumn].AsDouble();
+-         double sd  = tokens[stderrColumn].AsDouble();
++         sd  = tokens[stderrColumn].AsDouble();
++         if (useInteraction)
++            {
++            inteff = tokens[inteffectColumn].AsDouble();
++            intsd = tokens[intstderrColumn].AsDouble();
++            if (sd * intsd > 1.34078e+154) continue;
++            intcov = tokens[intcovColumn].AsDouble();
++            if (intcov < -1.34078e+154 || intcov > 1.34078e+154) continue;
++            if (intcov * intcov > sd * sd * intsd * intsd) continue;
++            }
+ 
+          if (history->logTransform)
+             {
+@@ -1348,13 +1691,32 @@ bool ReProcessFile(FileSummary * history
+                continue;
+ 
+             eff = log(eff);
++            
++            if (useInteraction)
++               {
++               if (inteff <= 0.0)
++                  continue;
++
++               inteff = log(inteff);
++               }
+             }
+ 
+          if (sd <= 0)
+             continue;
++         
++         if (useInteraction)
++            {
++            if (intsd <= 0)
++               continue;
++            }
+ 
+          z = eff;
+          w = 1.0 / (sd * sd);
++         
++         if (useInteraction)
++            {
++            zint = inteff;
++            }
+          }
+ 
+       double freq = 0.0;
+@@ -1362,7 +1724,10 @@ bool ReProcessFile(FileSummary * history
+          freq = tokens[freqColumn].AsDouble();
+ 
+       if (flip)
+-         z *= -1;
++         {
++         z *= -1.0;
++         if (useInteraction) zint *= -1.0;
++         }
+ 
+       if (firstColumn >= 0 && secondColumn >= 0)
+          {
+@@ -1375,7 +1740,8 @@ bool ReProcessFile(FileSummary * history
+             FlipAllele(tokens[secondColumn]);
+             }
+ 
+-         FlipAlleles(tokens[firstColumn], tokens[secondColumn], z, freq);
++         if (useInteraction) FlipIntAlleles(tokens[firstColumn], tokens[secondColumn], z, zint, freq);
++         else FlipAlleles(tokens[firstColumn], tokens[secondColumn], z, freq);
+ 
+          if (allele1[marker] == "")
+             break;
+@@ -1389,8 +1755,9 @@ bool ReProcessFile(FileSummary * history
+          continue;
+ 
+       direction[marker] = z == 0.0 ? '0' : (z > 0.0 ? '+' : '-');
++      if (useInteraction) directionInt[marker] = zint == 0.0 ? '0' : (zint > 0.0 ? '+' : '-');
+ 
+-      if (!useStandardErrors)
++      if (!useStandardErrors && !useInteraction)
+          {
+          if (weights[marker] == 0.0) continue;
+ 
+@@ -1401,13 +1768,22 @@ bool ReProcessFile(FileSummary * history
+          hetStatistic[marker] += (z - ez) * (z - ez);
+          hetDegreesOfFreedom[marker]++;
+          }
+-      else
++      else if (useStandardErrors)
+          {
+          double e = statistics[marker] / weights[marker];
+ 
+          hetStatistic[marker] += (z - e) * (z - e) * w / history->genomicControl;
+          hetDegreesOfFreedom[marker]++;
+          }
++      else
++          {
++          double covb_i11 = (intsd * intsd) / ((sd * sd * intsd * intsd - intcov * intcov) * history->genomicControl);
++          double covb_i12 = - intcov / ((sd * sd * intsd * intsd - intcov * intcov) * history->genomicControl);
++          double covb_i22 = (sd * sd) / ((sd * sd * intsd * intsd - intcov * intcov) * history->genomicControl);
++          hetStatistic[marker] += ((z - coefbeta[marker]) * covb_i11 + (zint - coefbetaint[marker]) * covb_i12) * (z - coefbeta[marker])
++          + ((z - coefbeta[marker]) * covb_i12 + (zint - coefbetaint[marker]) * covb_i22) * (zint - coefbetaint[marker]);
++          hetDegreesOfFreedom[marker]++;
++          }
+ 
+       processedMarkers++;
+       }
+@@ -1467,7 +1843,10 @@ void ShowHelp(bool startup)
+           "#\n"
+           "# Options for inverse variance weighted meta-analysis ...\n"
+           "#   STDERRLABEL      [LABEL]                     (%s = '%s')\n"
+-          "#   SCHEME           [SAMPLESIZE|STDERR]         (%s = %s)\n"
++          "#   SCHEME           [SAMPLESIZE|STDERR|INTERACTION]         (%s = %s)\n"
++          "#   INTEFFECTLABEL   [LABEL]                                 (%s = '%s')\n"
++          "#   INTSTDERRLABEL   [LABEL]                                 (%s = '%s')\n"
++          "#   INTCOVLABEL      [LABEL]                                 (%s = '%s')\n"
+           "#\n"
+           "# Options to enable tracking of allele frequencies ...\n"
+           "#   AVERAGEFREQ      [ON|OFF]                    (%s = %s)\n"
+@@ -1506,7 +1885,10 @@ void ShowHelp(bool startup)
+           setting, weight,
+           setting, minweight,
+           setting, (const char *) stderrLabel,
+-          setting, useStandardErrors ? "STDERR" : "SAMPLESIZE",
++          setting, useStandardErrors ? "STDERR" : (useInteraction ? "INTERACTION" : "SAMPLESIZE"),
++          setting, (const char *) inteffectLabel,
++          setting, (const char *) intstderrLabel,
++          setting, (const char *) intcovLabel,
+           setting, averageFrequencies ? "ON" : "OFF",
+           setting, minMaxFrequencies ? "ON" : "OFF",
+           setting, (const char *) frequencyLabel,
+@@ -1812,6 +2194,27 @@ void RunScript(FILE * file)
+          continue;
+          }
+ 
++      if (tokens[0].MatchesBeginningOf("INTCOVLABEL") == 0 && tokens[0].Length() > 3)
++         {
++         intcovLabel = tokens[1];
++         printf("## Set covariance of main effect and interaction effect header to %s ...\n", (const char *) intcovLabel);
++         continue;
++         }
++
++      if (tokens[0].MatchesBeginningOf("INTEFFECTLABEL") == 0 && tokens[0].Length() > 3)
++         {
++         inteffectLabel = tokens[1];
++         printf("## Set interaction effect header to %s ...\n", (const char *) inteffectLabel);
++         continue;
++         }
++
++      if (tokens[0].MatchesBeginningOf("INTSTDERRLABEL") == 0 && tokens[0].Length() > 3)
++         {
++         intstderrLabel = tokens[1];
++         printf("## Set interaction effect standard error header to %s ...\n", (const char *) intstderrLabel);
++         continue;
++         }
++
+       if (tokens[0].MatchesBeginningOf("STRANDLABEL") == 0 && tokens[0].Length() > 2)
+          {
+          strandLabel = tokens[1];
+@@ -1841,6 +2244,14 @@ void RunScript(FILE * file)
+             printf("## Meta-analysis will be based on effect sizes and their standard errors ...\n");
+             continue;
+             }
++         else if (tokens[1].MatchesBeginningOf("INTERACTION") == 0 &&
++                  tokens[1].Length() > 0)
++            {
++            useInteraction = true;
++            printf("## Meta-analysis will be based on main effect sizes and their standard errors, "
++            "interaction effect sizes and their standard errors, and the covariances ...\n");
++            continue;
++            }
+ 
+       if (tokens[0].MatchesBeginningOf("SEPARATOR") == 0 &&
+           tokens[0].Length() > 1)
+diff -rup generic-metal/metal/Main.h generic-metal-modified/metal/Main.h
+--- generic-metal/metal/Main.h	2010-02-08 14:41:08.000000000 -0500
++++ generic-metal-modified/metal/Main.h	2010-03-22 13:46:25.000000000 -0400
+@@ -48,6 +48,9 @@ class FileSummary
+       int firstColumn;
+       int secondColumn;
+       int stderrColumn;
++      int inteffectColumn;
++      int intstderrColumn;
++      int intcovColumn;
+       int freqColumn;
+       int strandColumn;
+       int minColumns;
+@@ -99,6 +102,7 @@ void ClearFilters();
+ void NumbersToLetters(String & al);
+ void FlipAllele(String & al);
+ bool FlipAlleles(String & al1, String & al2, double & effect, double & freq);
++bool FlipIntAlleles(String & al1, String & al2, double & effect, double & inteffect, double & freq);
+ bool GuessSecondAllele(int marker, String & al1, String & al2);
+ 
+ // Workhorses
