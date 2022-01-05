@@ -43,18 +43,17 @@ ENV LANG en_US.UTF-8
 
 #### Install METAL dependencies, METAL, and METAL patch ####
 
-ADD metal-2010-02-08-patch2.tar.gz /
+ADD metal-2010-02-08-modified2.patch /
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
     && wget http://csg.sph.umich.edu/abecasis/Metal/download/generic-metal-2010-02-08.tar.gz \
     && tar xvzf generic-metal-2010-02-08.tar.gz \
-    && tar xvzf metal-2010-02-08-patch2.tar.gz \
     && cd generic-metal \
     && mv libsrc/Parameters.cpp libsrc/Parameters_old.cpp \
     && perl -pe 's/bool legacy_count/int legacy_count/;' libsrc/Parameters_old.cpp > libsrc/Parameters.cpp \
-    && patch -b -p1 < ../metal-2010-02-08-patch2/metal-2010-02-08-modified2.patch \
+    && patch -b -p1 < ../metal-2010-02-08-modified2.patch \
     && make all \
     && make install INSTALLDIR=/opt
 
