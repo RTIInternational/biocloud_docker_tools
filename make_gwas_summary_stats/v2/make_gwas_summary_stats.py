@@ -244,8 +244,9 @@ for sumStats in pd.read_table(
         inplace = True
     )
 
-    # Remove "chr" from start of CHR if there
+    # Remove "chr" and "0" from start of CHR if there
     sumStats.CHR = sumStats.CHR.astype(str).replace({'chr':''}, regex=True)
+    sumStats.CHR = sumStats.CHR.astype(str).replace({'^0':''}, regex=True)
 
     # Create VARIANT_ID field
     sumStats['VARIANT_ID'] = sumStats['CHR'].astype(str) + ':' + sumStats['POS'].astype(str) + ':' + \
