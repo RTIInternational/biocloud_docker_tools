@@ -6,7 +6,7 @@ option_list = list(
               help="The plot table. Space separated."),
   make_option(c("-b", "--bonferroni"), action="store", type="double",
               help="Bonferroni adjusted genome-wide significance threshold."),
-  make_option(c("-f", "--fdr"), action="store", type="double",
+  make_option(c("-f", "--fdr"), action="store", type="double", default=1,
               help="FDR adjusted genome-wide significance threshold."),
   make_option(c("-c", "--colors"), type="character", default="red blue",
               help="Colors for the Manhattan plot. Enclose them with double quotes. [default %default]"),
