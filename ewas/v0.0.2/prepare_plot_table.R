@@ -44,13 +44,13 @@ find_fdr <- function(target=0.10, start_guess=1e-10, pval_vec) {
     return (signif(start_guess, 4) ) # FDR of <target> is reached at <start_guess>
 }
 
-fdr_value <- find_fdr(target=opt$fdr,  pval_vec=resu_annot_sub$P_VAL)
+#fdr_value <- find_fdr(target=opt$fdr,  pval_vec=resu_annot_sub$P_VAL)
 bonferroni <- signif(0.05 / length(resu_annot_sub$probeID),3)
 
 #p_bh <- p.adjust(c(1.84e-6,resu.annot.sub$P_VAL),method="BH") # Given a set of p-values, returns p-values adjusted using Benjamini & Hochberg (fdr)
 #head(p_bh)[1]
 
-outstring <- paste0("fdr_", opt$fdr, "_adjusted_gw_threshold.txt")
-writeLines(toString(fdr_value), outstring)
+#outstring <- paste0("fdr_", opt$fdr, "_adjusted_gw_threshold.txt")
+#writeLines(toString(fdr_value), outstring)
 writeLines(toString(bonferroni), "bonferroni_adjusted_gw_threshold.txt")
 write.table(resu_annot_sub, "plotting_table.csv", quote=F, row.names=F)
