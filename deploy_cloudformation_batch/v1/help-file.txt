@@ -9,3 +9,12 @@ aws_secret_access_key:  <>
 
 Then use the script /opt/deploy-cloudformation-script.sh to
 create a new batch environment.
+
+Example:
+```
+bash /opt/deploy-cloudformation-batch.sh \
+    --projectNumber 0160470.000.043 \
+    --projectShortName "EOJ-fellows-fund" \
+    --cpuMax 500 \
+    --stackName cromwell-64-7b7bfb4
+```
