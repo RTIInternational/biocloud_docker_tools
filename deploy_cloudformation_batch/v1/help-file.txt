@@ -1,0 +1,11 @@
+This docker image is meant to be ran interactively. Spin up a container and start an interactive session.
+Then you must configure the AWS environment. It will look like this:
+
+$ aws configure
+aws_region_name: us-east-1
+aws_access_key_id:  <>
+aws_secret_access_key:  <>
+
+
+Then use the script /opt/deploy-cloudformation-script.sh to
+create a new batch environment.
