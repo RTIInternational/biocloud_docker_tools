@@ -2,6 +2,8 @@
 This docker image was created to be used interactively. Login, configure your AWS environment, then deploy the batch environment using the wiki guidance provided at
  https://github.com/RTIInternational/bioinformatics/wiki/Cromwell-Cloud-Deployment#aws-cli---create-new-batch-queue
 
+<br><br>
+
 **example**
 ```
 # start interactive mode
@@ -29,5 +31,18 @@ bash /opt/deploy-cloudformation-batch.sh \
   --cpuMax 500 \
   --stackName cromwell-64-7b7bfb4
   
-  
-```
+  #Launch Template ARN: {
+  #    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hmagma-nicotine-0217694-000-001-LaunchTplStack/f801a320-82ae-11ec-8821-0a49dc182711"
+  #}
+  #{
+  #    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hmagma-nicotine-0217694-000-001-BatchStack/04e5cee0-82af-11ec-bdac-0a585512c3c3"
+  #}
+  #{
+  #    "Version": 1,
+  #    "Tier": "Standard"
+  #}
+  #{
+  #    "Version": 1,
+  #    "Tier": "Standard"
+  #}
+  ```
