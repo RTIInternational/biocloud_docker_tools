@@ -22,6 +22,7 @@ RUN apt update \
     && apt upgrade -y \
     && apt install -y --no-install-recommends \
         vim \
+	less \
 	curl \
 	gcc \
 	ca-certificates \
