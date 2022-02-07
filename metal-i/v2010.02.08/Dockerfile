@@ -57,6 +57,10 @@ RUN apt-get update \
     && make all \
     && make install INSTALLDIR=/opt
 
+# Add make_metal_command_file applet
+ADD make_metal_command_file.pl /
+RUN mv make_metal_command_file.pl /opt/
+
 WORKDIR /
 
 ENV PATH=$PATH:/opt/
