@@ -23,7 +23,7 @@ parser.add_argument(
     "--in-file-left-sep",
     dest = "left_sep",
     default = "whitespace",
-    type = str,
+    type = str.lower,
     choices = ["whitespace", "tab", "space", "comma"],
     help = "Left-hand file field separator"
 )
@@ -58,7 +58,7 @@ parser.add_argument(
     "--in-file-right-sep",
     dest = "right_sep",
     nargs = "+",
-    type = str,
+    type = str.lower,
     default = ["whitespace"],
     help = "Right-hand file field separator(s); Choices: whitespace, tab, space, comma"
 )
@@ -89,7 +89,7 @@ parser.add_argument(
     "--how",
     dest = "how",
     nargs = "+",
-    type = str,
+    type = str.lower,
     default = ["inner"],
     help = "Type of joins for each right-hand file; Choices: left, inner"
 )
