@@ -7,7 +7,7 @@ This docker image was created to be used interactively. Login, configure your AW
 **example**
 ```
 # start interactive mode
-docker run -it deploy_cloudformation_batch bash
+docker run -it rtibiocloud/deploy_cloudformation_batch:v1_f01cc3b bash
 
 # configure credentials by running "aws configure".
 aws configure
@@ -46,3 +46,7 @@ bash /opt/deploy-cloudformation-batch.sh \
   #    "Tier": "Standard"
   #}
   ```
+
+Once you create the environment, be sure to upload a new config file to https://github.com/RTIInternational/bioinformatics/tree/master/config/aws_batch_queues
+
+Reach out to Jesse Marks (jmarks@rti.org) for assistance.
