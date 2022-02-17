@@ -9,12 +9,12 @@ This docker image was created to be used interactively. Login, configure your AW
 # start interactive mode
 docker run -it rtibiocloud/deploy_cloudformation_batch:v1_f01cc3b bash
 
-# configure credentials by running "aws configure".
+# configure credentials by running "aws configure". Be sure to use json for output format.
 aws configure
-  #AWS Access Key ID [None]:
-  #AWS Secret Access Key [None]:
-  #Default region name [None]:
-  #Default output format [None]:
+  #AWS Access Key ID [None]: <enter-your-secret-access-key>
+  #AWS Secret Access Key [None]: <enter-your-secret-access-key>
+  #Default region name [None]: us-east-1
+  #Default output format [None]: json
   
 # verify configuration by listing S3 buckets  
 aws s3 ls
