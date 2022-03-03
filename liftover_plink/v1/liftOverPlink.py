@@ -22,7 +22,7 @@ from string import Template
 
 
 def die(msg):
-    print msg
+    print(msg)
     sys.exit(2)
 
 def myopen(fn):
@@ -36,7 +36,7 @@ def myopen(fn):
     return gzip.open(fn)
 
 def map2bed(fin, fout):
-    print "Converting MAP file to UCSC BED file..."
+    print("Converting MAP file to UCSC BED file...")
     fo = open(fout, 'w')
     for ln in myopen(fin):
         chrom, rs, mdist, pos = ln.split()
@@ -50,7 +50,7 @@ def map2bed(fin, fout):
 LIFTED_SET = set()
 UNLIFTED_SET = set()
 def liftBed(fin, fout, funlifted, chainFile, liftOverPath):
-    print "Lifting BED file..."
+    print("Lifting BED file...")
     params = dict()
     params['LIFTOVER_BIN'] = liftOverPath
     params['OLD'] = fin
@@ -71,7 +71,7 @@ def liftBed(fin, fout, funlifted, chainFile, liftOverPath):
     return True
 
 def bed2map(fin, fout):
-    print "Converting lifted BED file back to MAP..."
+    print("Converting lifted BED file back to MAP...")
     fo = open(fout, 'w')
     for ln in myopen(fin):
         chrom, pos0, pos1, rs = ln.split()
@@ -100,10 +100,10 @@ def liftPed(fin, fout, fOldMap):
     # we will use method 2
     marker = [i.strip().split()[1] for i in open(fOldMap)]
     flag = map(lambda x: x not in UNLIFTED_SET, marker)
-    # print marker[:10]
-    # print flag[:10]
+    # print(marker[:10])
+    # print(flag[:10])
     fo = open(fout, 'w')
-    print "Updating PED file..."
+    print("Updating PED file...")
     for ln in myopen(fin):
         f = ln.strip().split()
         l = len(f)
@@ -115,15 +115,15 @@ def liftPed(fin, fout, fOldMap):
         newMarker = [m for i, m in enumerate(f[6:]) if flag[i]]
         fo.write('\t'.join(newMarker))
         fo.write('\n')
-        #print marker[:10]
+        #print(marker[:10]
         #die('test')
     return True
 
 def makesure(result, succ_msg, fail_msg = "ERROR"):
     if result:
-        print 'SUCC: ', succ_msg
+        print('SUCC: ', succ_msg)
     else:
-        print 'FAIL: ', fail_msg
+        print( 'FAIL: ', fail_msg)
         sys.exit(2)
 
 if __name__ == '__main__':
@@ -186,6 +186,6 @@ if __name__ == '__main__':
         makesure(liftPed(args.pedFile, newPed, args.mapFile),
                  'liftPed succ')
 
-    print "cleaning up BED files..."
+    print("cleaning up BED files...")
     os.remove(newBed)
     os.remove(oldBed)
