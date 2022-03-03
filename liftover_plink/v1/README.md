@@ -1,5 +1,8 @@
 # Liftover on Plink files
-Genotypes are often in the Plink [bed/bim/fam](https://www.cog-genomics.org/plink/1.9/formats#bed) format. When we need to perform a liftover to a different genome build (e.g., hg18 -> hg19) we can use this Python wrapper that was copied from the GitHub repository: https://github.com/sritchie73/liftOverPlink
+Genotypes are often in the Plink [bed/bim/fam](https://www.cog-genomics.org/plink/1.9/formats#bed) format. When we need to perform a liftover to a different genome build (e.g., hg18 -> hg19) we can use this Python wrapper. 
+
+liftOverPlink adopted from a script on GitHub [here](https://github.com/sritchie73/liftOverPlink), which was a modification from the [liftMap.py](http://genome.sph.umich.edu/wiki/LiftMap.py) script provided by the [Abecasis Lab](http://genome.sph.umich.edu/wiki/Abecasis_Lab). We updated liftOverPlink from Python2 to Python3.
+
 
 ## Example code
 
