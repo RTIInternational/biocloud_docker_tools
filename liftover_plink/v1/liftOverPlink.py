@@ -77,6 +77,7 @@ def bed2map(fin, fout):
         chrom, pos0, pos1, rs = ln.split()
         chrom = chrom.replace('chr', '')
         fo.write('%s\t%s\t0.0\t%s\n' % (chrom, rs, pos1))
+
     fo.close()
     return True
 
@@ -98,16 +99,16 @@ def liftPed(fin, fout, fOldMap):
     #    use PLINK to do this job using --exclude
     # 2. alternatively, we can write our own method
     # we will use method 2
-    marker = [i.strip().split()[1] for i in open(fOldMap)]
-    flag = map(lambda x: x not in UNLIFTED_SET, marker)
-    # print(marker[:10])
-    # print(flag[:10])
+    marker = [i.strip().split()[1] for i in open(fOldMap)] # [rs1, rs2,...rsn]
+    flag = list(map(lambda x: x not in UNLIFTED_SET, marker)) # [true, true, false, ...]
+    #print(marker[:10])
+    #print(flag[:10])
     fo = open(fout, 'w')
     print("Updating PED file...")
     for ln in myopen(fin):
-        f = ln.strip().split()
-        l = len(f)
-        f = f[:6] + [ f[i*2] + ' '+f[i*2 +1] for i in xrange(3, l/2 )]
+        f = ln.strip().split() # ... 'A', 'A', 'A', 'A']
+        l = len(f) # 2280844
+        f = f[:6] + [ f[i*2] + ' '+f[i*2 +1] for i in range(3, l//2 )]
         fo.write('\t'.join(f[:6]))
         fo.write('\t')
         if len(f[6:]) != len(flag):
@@ -189,3 +190,4 @@ if __name__ == '__main__':
     print("cleaning up BED files...")
     os.remove(newBed)
     os.remove(oldBed)
+
