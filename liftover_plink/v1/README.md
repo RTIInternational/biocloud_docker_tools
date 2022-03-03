@@ -17,13 +17,12 @@ docker run -v $PWD:/data/ -it rtibiocloud/plink:v1.9_178bb91 plink \
     --out /data/liftover/garnet_whi_c1
 
 # apply liftOverPlink.py to update hg18 to hg19 or hg38
-mkdir liftOver
-python ~/bin/liftover/liftOverPlink.py \
-    -m liftOver/garnet_whi_c1.map \
-    -p liftOver/garnet_whi_c1.ped \
-    -o liftOver/garnet_whi_c1_hg19 \
-    -c ~/bin/liftover/hg18ToHg19.over.chain.gz \
-    -e ~/bin/liftover/liftOver
+docker run -v $PWD:/data/ rtibiocloud/liftover_plink:v1_93cbe47 python3 /opt/liftOverPlink.py \
+    -m /data/garnet_whi_c1.map \
+    -p /data/garnet_whi_c1.ped \
+    -o /data/garnet_whi_c1_hg19 \
+    -c /opt/hg18ToHg19.over.chain.gz \ # note to change this based on the liftover you are performing.
+    -e /opt/liftOver
 
 #Converting MAP file to UCSC BED file...
 #SUCC:  map->bed succ
@@ -34,14 +33,12 @@ python ~/bin/liftover/liftOverPlink.py \
 #Converting lifted BED file back to MAP...
 #SUCC:  bed->map succ
 #Updating PED file...
-#jSUCC:  liftPed succ
+#SUCC:  liftPed succ
 #cleaning up BED files...
 
 # convert back to bed/bim/fam
-cd /home/ec2-user/rti-shared/shared_data/pre_qc/whi_garnet/genotype/array/observed/0001/c1/phg000139.v1.GARNET_WHI.genotype-calls-matrixfmt.c1/sample_level_unfiltered_PLINK_set/liftOver
 docker run -v $PWD:/data/ -it rtibiocloud/plink:v1.9_178bb91 plink \
     --file /data/garnet_whi_c1_hg19 \
     --make-bed \
     --out /data/garnet_whi_c1_hg19
 ```
-
