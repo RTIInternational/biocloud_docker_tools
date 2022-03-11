@@ -57,11 +57,12 @@ RUN wget https://data.broadinstitute.org/alkesgroup/EIGENSOFT/EIG-6.1.4.tar.gz \
 	&& mv EIG-6.1.4 /opt/ 
 
 ############################ Final system configurations ################################
-RUN mkdir /data/
 
-WORKDIR /data/
+# a tool called ploteig is expecting perl to be in the local/bin
+RUN ln -s /usr/bin/perl /usr/local/bin/
 
 ENV PATH="/opt/EIG-6.1.4/bin/:${PATH}"
+
 
 # default help command
 RUN cat /opt/EIG-6.1.4/EIGENSTRAT/README > /opt/help_file.txt \
