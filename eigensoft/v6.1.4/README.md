@@ -1,5 +1,5 @@
 # Eigensoft
-The wrapper script smartpca.perl calls smartpca to calculate eigen-vectors and eigen-values.
+The wrapper script smartpca.perl calls smartpca to calculate eigenvalues and eigenvectors.
 
 ## example code
 
