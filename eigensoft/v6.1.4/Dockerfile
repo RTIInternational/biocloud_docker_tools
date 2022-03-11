@@ -27,8 +27,10 @@ RUN useradd docker \
 # all packages cache to reduce the size of the custom image.
 RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list
 RUN apt update && apt install -y --no-install-recommends \
+        libgfortran3 \
+        libgomp1 \
 	git \
-	vim-tiny \
+	vim \
 	cmake \
 	zlib1g-dev \
     dirmngr \
