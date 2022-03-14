@@ -16,9 +16,10 @@ RUN useradd docker \
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list \
-    && apt-get update \ 
+# RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list \
+RUN apt-get update \ 
     && apt-get install -y --no-install-recommends \
+        curl \
         dirmngr \
         software-properties-common \
         lsb-release \
@@ -33,6 +34,14 @@ RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/
         libglib2.0 \
         unzip \
         pigz \
+        gcc \
+        g++ \
+        gfortran \
+        libc-bin \
+        libc-dev \
+        libblas-dev \
+        liblapack-dev \
+        libatlas-base-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure default locale, see https://github.com/rocker-org/rocker/issues/19
@@ -45,13 +54,31 @@ ENV LANG en_US.UTF-8
 
 #### Install plink dependencies and plink ####
 
-RUN wget http://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20200219.zip \
-    && unzip plink_linux_x86_64_20200219.zip -d /plink_tmp \
-    && cp /plink_tmp/plink /opt/ \
-    && rm -rf plink_linux_x86_64_20200219.zip plink_tmp
+# RUN wget http://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20200219.zip \
+#     && unzip plink_linux_x86_64_20200219.zip -d /plink_tmp \
+#     && cp /plink_tmp/plink /opt/ \
+#     && rm -rf plink_linux_x86_64_20200219.zip plink_tmp
+
+# Plink v1.90 beta 5
+# https://www.cog-genomics.org/plink/1.9/dev
+# https://www.cog-genomics.org/plink/
+RUN wget https://github.com/chrchang/plink-ng/archive/refs/tags/b15c19f.tar.gz \
+    && tar -xvzf b15c19f.tar.gz \
+    && mv plink-ng-b15c19f/ /plink_tmp/
+
+COPY plink_common.h /plink_tmp/1.9/plink_common.h
+
+RUN cd /plink_tmp/1.9/ \
+    && wget https://raw.githubusercontent.com/DLTcollab/sse2neon/master/sse2neon.h
+
+RUN cd plink_tmp/1.9/ \
+    && ./plink_first_compile \
+    && cp /plink_tmp/1.9/plink /opt/plink \
+    && cd / \
+    && rm -rf b15c19f.tar.gz plink_tmp
 
 WORKDIR /
 
 ENV PATH=pkg-config:$PATH:/opt/
 
-CMD ["plink2"]
+CMD ["plink"]
