@@ -1,4 +1,3 @@
-
 # Base image
 FROM ubuntu:18.04
 
@@ -68,8 +67,8 @@ RUN wget https://github.com/chrchang/plink-ng/archive/refs/tags/b15c19f.tar.gz \
 
 COPY plink_common.h /plink_tmp/1.9/plink_common.h
 
-RUN cd /plink_tmp/1.9/ \
-    && wget https://raw.githubusercontent.com/DLTcollab/sse2neon/master/sse2neon.h
+COPY sse2neon.h /plink_tmp/1.9/sse2neon.h 
+COPY SFMT.h /plink_tmp/1.9/SFMT.h 
 
 RUN cd plink_tmp/1.9/ \
     && ./plink_first_compile \
