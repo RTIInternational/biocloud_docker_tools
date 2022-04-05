@@ -129,8 +129,10 @@ extern "C" {
   128-bit SIMD like data type for standard C
   ------------------------------------------*/
 #ifdef __LP64__
-  #ifdef __aarch64__
-    #include "sse2neon.h"
+  #ifdef __SSE2__
+      #include <emmintrin.h>
+  #elif __aarch64__
+      #include "sse2neon.h"
   #else
     #define SIMDE_ENABLE_NATIVE_ALIASES
     #include "x86/sse2.h"
