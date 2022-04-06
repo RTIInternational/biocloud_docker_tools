@@ -6,12 +6,13 @@ It is common to run this analysis prior to GWAS.
 
 
 **INPUT:** 
-* phenotype file 
-* top 10 PCs file (from eigenstrat)
+* phenotype file (in [RVTESTS format](https://github.com/zhanxw/rvtests#phenotype-file))
+* top 10 PCs file (from eigenstrat, see output from [genotype_pca workflow](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/genotype_pca))
 
 **OUTPUT:** 
 * phenotype file with top PCs appended
 * PVE Plot
+* PVE analysis log file
 
 <br>
 
@@ -19,40 +20,50 @@ It is common to run this analysis prior to GWAS.
 
 **Sample of phenotype file format**
 ```
-fid iid hivstat gwassex age
-245@1064714500_245@1064714500 245@1064714500_245@1064714500 1 1 26
-266@1064714555_266@1064714555 266@1064714555_266@1064714555 1 1 48
+fid iid fatid matid sex uui age diabetes parity obesity
+111142697 335368 0 0 2 2 52 1 2 1
+111100359 248150 0 0 2 1 57 1 3 2
 ```
 
 <br>
 
 **Sample of PC file format**
 ```
-FID IID EV1 EV2 EV3 EV4 EV5 EV6 EV7 EV8 EV9 EV10
-245@1064714500_245@1064714500 245@1064714500_245@1064714500 0.0051 0.0026 0.0015 -0.0010 -0.0012 0.0029 0.0037 -0.0005 -0.0023 0.0001
-266@1064714555_266@1064714555 266@1064714555_266@1064714555 -0.0083 0.0020 0.0079 0.0101 -0.0009 0.0026 0.0166 0.0162 0.0221 0.0075
+fid iid PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10
+111000103 391350 0.0031 -0.0048 -0.0011 0.0017 0.0006 0.0005 0.0005 0.0002 0.0007 0.0002
+111000143 203913 0.0028 -0.0072 0.0006 -0.0006 -0.0010 -0.0016 0.0010 -0.0003 0.0028 0.0018
 ```
-Notice the PC file must have the same list of fid and iid as the phenotype file.
+Notice the PC file must have the same list of fid and iid as the phenotype file, but not necessarily in the same order.
 
 
 <br><br>
 
 <details>
-  <summary>sample code</summary>
+  <summary>sample code</summary><br>
+  
+  Notice the `--combine_fid_iid` flag. The TOPMed imputation server usually combines the fid and iid with an underscore. If this is the case for your imputed genotype data, and your phenotype data are not in this format, use this flag.
   
   ```bash
-  an=eur
 docker run -it -v $PWD:/data/ \
-    rtibiocloud/select_pcs:v1_54156ec Rscript /opt/select_pcs.R \
-        --file_in_pheno /data/uhs1234_${an}_hivstat_gwassex_age_fid_iid_1_2.txt \
-        --file_in_pcs /data/${an}_ld_pruned_top10_eigenvecs_fid_iid.txt \
-        --pheno_name "hivstat" \
-        --model_type "logistic" \
-        --coded_12 \
-        --ancestry $an \
-        --pve_threshold 75 \
-        --file_out_pheno /data/uhs1234_${an}_hivstat_gwassex_age_pcs.txt \
-        --file_out_prefix /data/uhs1234_${an}_hivstat_gwassex_age_pcs
+  rtibiocloud/select_pcs:v2_bbe9fa4 Rscript /opt/select_pcs.R \
+      --file_in_pheno /data/without_pcs/20220401_final_uui_phenotype_without_pcs_rvtest_format.txt \
+      --file_in_pcs /data/with_pcs/whi_garnet_c1c2_eur_ld_pruned_top10_pcs.txt \
+      --pheno_name "uui" \
+      --model_type "logistic" \
+      --coded_12 \
+      --ancestry "eur" \
+      --pve_threshold 75 \
+      --combine_fid_iid \
+      --file_out_pheno /data/with_pcs/whi_garnet_c1c2_eur_uui_age_diabetes_parity_obesity_pcs_n3139.txt \
+      --file_out_prefix /data/with_pcs/whi_garnet_c1c2_eur_uui
   ```
+  There were three outputs with this command:
+  * whi_garnet_c1c2_eur_uui_age_diabetes_parity_obesity_pcs_n3139.txt
+  * whi_garnet_c1c2_eur_uui_pve.png
+  * whi_garnet_c1c2_eur_uui.log
+
+  
+  This is the final phenotype file with the top PCs appended, a plot of the PCs, and a log file with the model ran and the PVE of the top PCs at the bottom.
+  
   </details>
   
