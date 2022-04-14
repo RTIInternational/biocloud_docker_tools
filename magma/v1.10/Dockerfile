@@ -1,4 +1,3 @@
-########################## Set Inital Image to work from ################################
 FROM ubuntu:18.04
 
 
@@ -36,6 +35,20 @@ RUN cd /opt \
   && wget https://ctg.cncr.nl/software/MAGMA/prog/magma_v1.10_source.zip \
   && unzip magma_v1.10_source.zip \
   && make
+
+# Download gene location files build 37
+RUN mkdir /opt/build37/ \
+  && cd /opt/build37/ \
+  && wget https://ctg.cncr.nl/software/MAGMA/aux_files/NCBI37.3.zip \
+  && unzip NCBI37.3.zip \
+  && rm NCBI37.3.zip
+
+# Download gene location files build 38
+RUN mkdir /opt/build38/ \
+  && cd /opt/build38/ \
+  && wget https://ctg.cncr.nl/software/MAGMA/aux_files/NCBI38.zip \
+  && unzip NCBI38.zip \
+  && rm NCBI38.zip
 
 # clean up
 RUN rm /opt/magma_v1.10_source.zip
