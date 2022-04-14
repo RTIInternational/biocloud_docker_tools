@@ -50,6 +50,11 @@ RUN mkdir /opt/build38/ \
   && unzip NCBI38.zip \
   && rm NCBI38.zip
 
+# Create symlinks
+RUN cd /opt/ \
+  && ln -s build37/NCBI37.3.gene.loc \
+  && ln -s build38/NCBI38.gene.loc
+
 # clean up
 RUN rm /opt/magma_v1.10_source.zip
 
