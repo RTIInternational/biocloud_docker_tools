@@ -47,6 +47,6 @@ bash /opt/deploy-cloudformation-batch.sh \
   #}
   ```
 
-Once you create the environment, be sure to upload a new config file to https://github.com/RTIInternational/bioinformatics/tree/master/config/aws_batch_queues
+Once you create the environment, be sure to upload a new config file to https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/workflow_options
 
 Reach out to Jesse Marks (jmarks@rti.org) for assistance.
