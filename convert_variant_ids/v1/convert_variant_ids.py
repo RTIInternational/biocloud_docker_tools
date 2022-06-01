@@ -94,7 +94,7 @@ parser.add_argument(
     "--out_compression",
     help="(Optional) Type of compression to use for output file",
     type = str,
-    choices = ["gzip", "bz2", "zip", "xz"],
+    choices = ["infer", "gzip", "bz2", "zip", "xz"],
     nargs='?',
     const=None
 )
