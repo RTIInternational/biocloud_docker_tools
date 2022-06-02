@@ -122,7 +122,6 @@ refDelAllele = args.ref_deletion_allele
 chrom = args.chr
 inChunkSize = args.in_chunk_size
 refChunkSize = args.ref_chunk_size
-fileInHeader = (None if args.in_header == 0 else (args.in_header - 1))
 filterChrs = {}
 if chrom == "23" or chrom == "X":
     filterChrs = {
@@ -178,21 +177,15 @@ def flip(allele, missingAllele, deletionAllele):
     return flippedAllele
 
 # Read input file header and write to output file
-if fileInHeader is not None:
-    dfInHeader = pd.read_csv(
-        args.in_file,
-        sep = sep,
-        header = None,
-        nrows=args.in_header
-    )
-    dfInHeader.to_csv(
-        args.out_file,
-        index = False,
-        compression=args.out_compression,
-        sep = sep,
-        header = False,
-        mode = 'w'
-    )
+if args.in_header != 0:
+    header = ''
+    with open(args.in_file) as inFile:
+        for x in range(args.in_header):
+            header += next(inFile)
+    inFile.close()
+    outFile = open(args.out_file, "w")
+    n = outFile.write(header)
+    outFile.close()
 
 # Create iterator for ref
 ref = pd.read_csv(
@@ -212,7 +205,7 @@ refChunkCount += 1
 # Read input file
 inChunkCount = 1
 mode = 'w'
-for dfIn in pd.read_csv(args.in_file, sep=sep, header=fileInHeader, chunksize=inChunkSize):
+for dfIn in pd.read_csv(args.in_file, sep=sep, header=None, skiprows=args.in_header, chunksize=inChunkSize):
     print("Reading input file chunk {0} ({1} records) of chr{2}...".format(inChunkCount, inChunkSize, chrom))
     inChunkCount += 1
 
