@@ -134,7 +134,9 @@ if chrom == "23" or chrom == "X":
         "chr25",
         "chrX",
         "chrX_PAR",
-        "chrX_NONPAR"
+        "chrX_NONPAR",
+        "PAR1",
+        "PAR2"
     }
 elif chrom == "24" or chrom == "Y":
     filterChrs = {
