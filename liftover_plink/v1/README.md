@@ -18,11 +18,11 @@ docker run -v $PWD:/data/ -it rtibiocloud/plink:v1.9_178bb91 plink \
 
 # apply liftOverPlink.py to update hg18 to hg19 or hg38
 docker run -v $PWD:/data/ rtibiocloud/liftover_plink:v1_93cbe47 python3 /opt/liftOverPlink.py \
-    -m /data/garnet_whi_c1.map \
-    -p /data/garnet_whi_c1.ped \
-    -o /data/garnet_whi_c1_hg19 \
-    -c /opt/hg18ToHg19.over.chain.gz \ # note to change this based on the liftover you are performing.
-    -e /opt/liftOver
+    -m /data/garnet_whi_c1.map \ # mapFile
+    -p /data/garnet_whi_c1.ped \ # pedFile
+    -o /data/garnet_whi_c1_hg19 \ # output prefix
+    -c /opt/hg18ToHg19.over.chain.gz \ # chainFile, note to change this based on the liftover you are performing.
+    -e /opt/liftOver # liftOver Executable
 
 #Converting MAP file to UCSC BED file...
 #SUCC:  map->bed succ
