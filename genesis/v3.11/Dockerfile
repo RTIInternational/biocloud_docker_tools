@@ -1,4 +1,4 @@
-FROM bioconductor/bioconductor_docker:RELEASE_3_11
+FROM bioconductor/bioconductor_docker:RELEASE_3_15
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
