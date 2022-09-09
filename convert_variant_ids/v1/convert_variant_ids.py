@@ -180,14 +180,27 @@ def flip(allele, missingAllele, deletionAllele):
 
 # Read input file header and write to output file
 if args.in_header != 0:
-    header = ''
-    with open(args.in_file) as inFile:
-        for x in range(args.in_header):
-            header += next(inFile)
-    inFile.close()
-    outFile = open(args.out_file, "w")
-    n = outFile.write(header)
-    outFile.close()
+    header = pd.read_csv(
+        args.in_file,
+        sep=sep, header=None,
+        nrows=args.in_header
+    )
+    header.to_csv(
+        args.out_file,
+        index = False,
+        compression=args.out_compression,
+        sep = sep,
+        header = False,
+        mode = 'w'
+    )
+    # header = ''
+    # with open(args.in_file) as inFile:
+    #     for x in range(args.in_header):
+    #         header += next(inFile)
+    # inFile.close()
+    # outFile = open(args.out_file, "w")
+    # n = outFile.write(header)
+    # outFile.close()
 
 # Create iterator for ref
 ref = pd.read_csv(
