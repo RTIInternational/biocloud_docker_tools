@@ -53,7 +53,7 @@ parser.add_argument(
     "--file_in_summary_stats_format",
     help="format of the summary stats file to be converted",
     type = str.lower,
-    choices=["rvtests", "gem"]
+    choices=["rvtests", "gem", "genesis"]
 )
 parser.add_argument(
     "--file_in_info",
@@ -164,6 +164,30 @@ elif args.file_in_summary_stats_format == "gem":
         "IMP_QUAL",
         "N"
     ] + sumStatsUseCols[8:len(sumStatsUseCols)]
+elif args.file_in_summary_stats_format == "genesis":
+    sumStatsUseCols = list(pd.read_table(args.file_in_summary_stats, nrows=1).columns)
+    dtype = {"chr": "category", "ref": "category", "alt": "category"}
+    sumStatsColXref = {
+        'variant.id': 'VARIANT_ID',
+        'chr': 'CHR',
+        'pos': 'POS',
+        'ref': 'REF',
+        'alt': 'ALT',
+        'freq': 'ALT_AF',
+        'n.obs': 'N'
+    }
+    outputColumns = [
+        "VARIANT_ID",
+        "CHR",
+        "POS",
+        "REF",
+        "ALT",
+        "ALT_AF",
+        "MAF",
+        "POP_MAF",
+        "IMP_QUAL",
+        "N"
+    ] + sumStatsUseCols[8:len(sumStatsUseCols)]
 
 # Set variables depending on type of info file
 if args.file_in_info_format == "info":
@@ -249,8 +273,12 @@ for sumStats in pd.read_table(
     sumStats.CHR = sumStats.CHR.astype(str).replace({'^0':''}, regex=True)
 
     # Create VARIANT_ID field
-    sumStats['VARIANT_ID'] = sumStats['CHR'].astype(str) + ':' + sumStats['POS'].astype(str) + ':' + \
-        sumStats['REF'].astype(str) + ':' + sumStats['ALT'].astype(str)
+    if args.file_in_summary_stats_format == "genesis":
+        sumStats['VARIANT_ID'] = sumStats['CHR'].astype(str) + ':' + sumStats['POS'].astype(str) + ':' + \
+            sumStats['ALT'].astype(str) + ':' + sumStats['REF'].astype(str)
+    else:
+        sumStats['VARIANT_ID'] = sumStats['CHR'].astype(str) + ':' + sumStats['POS'].astype(str) + ':' + \
+            sumStats['REF'].astype(str) + ':' + sumStats['ALT'].astype(str)
 
     # Add SE to rvtests summary stats
     if args.file_in_summary_stats_format == "rvtests":
