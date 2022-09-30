@@ -16,24 +16,9 @@ Also see the TL;DR section in [Heritability and Genetic Correlation](https://git
 <details>
   <summary>expand code</summary>
 	
-```
-# download files needed for partitioned heritability analysis
-wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_phase3_baseline_ldscores.tgz
-wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_plinkfiles.tgz
-wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_frq.tgz
 
-wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/weights_hm3_no_hla.tgz
-#wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/hapmap3_snps.tgz
-
-# extract files
-tar -xvf 1000G_Phase3_baseline_ldscores.tgz
-tar -xvf 1000G_Phase3_plinkfiles.tgz
-tar -xvf 1000G_Phase3_frq.tgz
-#tar -xvf hapmap3_snps.tgz
-tar -xvf weights_hm3_no_hla.tgz	
-```
   
-```
+```bash
 # start interactive session
 docker run -it -v $PWD:/data/ \
     rtibiocloud/ldsc:v1.0.1_0bb574e /bin/bash
@@ -69,6 +54,22 @@ The code below was used in [this analysis in GitHub issue 166](https://github.co
 
 <details>
   <summary>expand code</summary>
+	
+```bash
+# download files needed for partitioned heritability analysis
+	
+wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/weights_hm3_no_hla.tgz
+tar -xvf weights_hm3_no_hla.tgz	
+
+cd 1000g/
+wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_phase3_baseline_ldscores.tgz
+wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_plinkfiles.tgz
+wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_frq.tgz
+
+tar -xvf 1000G_Phase3_baseline_ldscores.tgz
+tar -xvf 1000G_Phase3_plinkfiles.tgz
+tar -xvf 1000G_Phase3_frq.tgz
+```
 
 ```bash
 # interactive session
@@ -145,6 +146,7 @@ done # end DEG loop
 ```
 	
 combine results
+	
 ```bash
 for fdr in {"0.05","0.10"}; do
     outfile=fdr${fdr}/all_phenotypes_oa_twas_meta_analysis_deg_fdr${fdr}_window100000_final_results.tsv
