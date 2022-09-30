@@ -123,8 +123,8 @@ for fdr in {"0.05","0.10"}; do # loop through each BED file
             --frqfile-chr "/data/1000g/1000G_Phase3_frq/1000G.EUR.QC." \
             --ref-ld-chr "/data/annotations_ldscores/fdr$fdr/oa_twas_meta_fdr${fdr}genes_window${window}_chr,/data/1000g/1000G_EUR_Phase3_baseline/baseline." \
             --out "/data/results/fdr$fdr/${trait}_with_oa_twas_meta_analysis_deg_genes_fdr${fdr}_window${window}"
-    done
-done
+    done # end trait loop
+done # end DEG loop
 ```
 	
 combine results
