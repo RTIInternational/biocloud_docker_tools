@@ -129,16 +129,19 @@ done # end DEG loop
 	
 combine results
 ```bash
-for window in {"10k","100k","400k"}; do
-    outfile=hiv_status_vl_suppressed_degs_cis${window}_combined_traits_results.tsv
-    head -1 alzheimers_disease_hiv_status_vl_suppressed_degs_cis${window}_results.results > $outfile
+for fdr in {"0.05","0.10"}; do
+    outfile=fdr${fdr}/all_phenotypes_oa_twas_meta_analysis_deg_fdr${fdr}_window100000_final_results.tsv
+    touch $outfile
+    head -1 fdr${fdr}/smoking_initiation_with_oa_twas_meta_analysis_deg_genes_fdr${fdr}_window100000.results > $outfile
         
-    for file in *degs_cis${window}_results.results; do
-        trait=$(echo $file |  sed 's/_hiv_status_vl_suppressed_degs_cis.*//')
+    for file in   fdr${fdr}/*_fdr${fdr}_window100000.results; do
+        trait=$(echo $file |  sed "s/_with_oa_twas_meta_analysis_deg_genes_fdr.*//") # remove suffix
+        trait=$(echo $trait |  sed "s/fdr$fdr\///") # remove directory prefix
+        #echo $trait
         awk -v trait=$trait \
         '$1 = trait {print $0}' OFS="\t" <(tail -n +2 $file | head -1) >> $outfile
     done
-done	
+done
 ```	
   </details>
 
