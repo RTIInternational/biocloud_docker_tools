@@ -127,6 +127,20 @@ for trait in {"hiv_acquisition","alzheimers_disease","amyotrophic_lateral_sclero
     done # end BED file loop
 done # end trait file loop
 ```
+	
+combine results
+```bash
+for window in {"10k","100k","400k"}; do
+    outfile=hiv_status_vl_suppressed_degs_cis${window}_combined_traits_results.tsv
+    head -1 alzheimers_disease_hiv_status_vl_suppressed_degs_cis${window}_results.results > $outfile
+        
+    for file in *degs_cis${window}_results.results; do
+        trait=$(echo $file |  sed 's/_hiv_status_vl_suppressed_degs_cis.*//')
+        awk -v trait=$trait \
+        '$1 = trait {print $0}' OFS="\t" <(tail -n +2 $file | head -1) >> $outfile
+    done
+done	
+```	
   </details>
 
 <br><br>
