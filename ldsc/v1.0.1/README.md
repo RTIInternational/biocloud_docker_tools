@@ -58,74 +58,73 @@ The code below was used in [this analysis in GitHub issue 166](https://github.co
 docker run -it -v $PWD:/data/ \
     rtibiocloud/ldsc:v1.0.1_0bb574e bash
 
-# loop through all traits
-for trait in {"hiv_acquisition","alzheimers_disease","amyotrophic_lateral_sclerosis","asthma","atopic_dermatitis","crohns_disease","inflammatory_bowel_disease","neuroticism","parkinsons_disease","platelet_count","primary_biliary_cirrhosis","primary_sclerosing_cholangitis","red_blood_cell_count","rheumatoid_arthritis","systemic_lupus_erythematosus","type2_diabetes","ulcerative_colitis","white_blood_cell_count"}; do
+window=100000
+for fdr in {"0.05","0.10"}; do # loop through each BED file
+    coord_file=/data/deg_bedfiles/meta_analysis_sumstats_no_singletons_20220727_fdr${fdr}_coord.tsv 
+    geneset_file=/data/deg_bedfiles/meta_analysis_sumstats_no_singletons_20220727_fdr${fdr}_geneset.tsv
 
     # store processing files for each meta in separate dir
-    mkdir -p /data/annotations_ldscores/${trait}/
-    
-    # use sumstats files that corresponds to the trait name for the h2 estimate
-    case $trait in 
-        "hiv_acquisition") stats=/data/sumstats/hiv_acquisition_gwas_meta_eur.sumstats.gz
-        "alzheimers_disease")  stats=/data/sumstats/alzheimers_disease_lambert2013_nat_genet.sumstats.gz ;;
-        "amyotrophic_lateral_sclerosis") stats=/data/sumstats/amyotrophic_lateral_sclerosis_rheenen2016_nat_genet.sumstats.gz ;;
-        "asthma") stats=/data/sumstats/asthma_han2020_nat_commun.sumstats.gz ;;
-        "atopic_dermatitis") stats=/data/sumstats/eczema_paternoster2015_nat_genet.sumstats.gz ;;
-        "crohns_disease") stats=/data/sumstats/crohns_disease_liu2015_nat_genet.sumstats.gz ;;
-        "inflammatory_bowel_disease") stats=/data/sumstats/inflammatory_bowel_disease_liu2015_nat_genet.sumstats.gz ;;
-        "neuroticism") stats=/data/sumstats/neuroticism_okbay2016_nat_genet.sumstats.gz ;;
-        "parkinsons_disease") stats=/data/sumstats/parkinsons_disease_sanchez2009_nat_genet.sumstats.gz ;;
-        "platelet_count") stats=/data/sumstats/platelet_count_vuckovic2020_cell.sumstats.gz ;;
-        "primary_biliary_cirrhosis") stats=/data/sumstats/PASS_Primary_biliary_cirrhosis.sumstats.gz ;;
-        "primary_sclerosing_cholangitis") stats=/data/sumstats/primary_sclerosing_cholangitis_ji2017_nat_genet.sumstats.gz ;;
-        "red_blood_cell_count") stats=/data/sumstats/red_blood_cell_count_vuckovic2020_cell.sumstats.gz ;;
-        "rheumatoid_arthritis") stats=/data/sumstats/rheumatoid_arthritis_okada2014_nature.sumstats.gz ;;
-        "systemic_lupus_erythematosus") stats=/data/sumstats/PASS_Lupus.sumstats.gz ;;
-        "type2_diabetes") stats=/data/sumstats/type2_diabetes_xue2018_nat_commun.sumstats.gz ;;
-        "ulcerative_colitis") stats=/data/sumstats/ulcerative_colitis_liu2015_nat_genet.sumstats.gz ;;
-        "white_blood_cell_count") stats=/data/sumstats/white_blood_cell_count_vuckovic2020_cell.sumstats.gz ;;
-    esac
-    
-    # loop through each BED file
-    for window in {cis10k,cis100k,cis400k}; do
-        case $window in
-            cis10k) deg_file=/data/deg_bedfiles/hiv_status_vl_suppressed_degs_cis10k.bed.gz ;;
-            cis100k) deg_file=/data/deg_bedfiles/hiv_status_vl_suppressed_degs_cis100k.bed.gz ;;
-            cis400k) deg_file=/data/deg_bedfiles/hiv_status_vl_suppressed_degs_cis400k.bed.gz ;;
-        esac 
-        
-        # loop through each chromosome
-        for j in {1..22}; do
-        
-            # create annotation files
-            python /opt/ldsc/make_annot.py \
-                --bed-file $deg_file \
-                --bimfile "/data/1000g/1000G_EUR_Phase3_plink/1000G.EUR.QC.$j.bim" \
-                --annot-file "/data/annotations_ldscores/$trait/${trait}_degs_${window}.$j.annot.gz"
+    mkdir -p /data/{annotations_ldscores,results}/fdr$fdr/
 
-            # compute LD scores
-            python /opt/ldsc/ldsc.py \
-                --l2 \
-                --bfile "/data/1000g/1000G_EUR_Phase3_plink/1000G.EUR.QC.$j" \
-                --ld-wind-cm 1 \
-                --annot "/data/annotations_ldscores/$trait/${trait}_degs_${window}.$j.annot.gz" \
-                --thin-annot \
-                --out "/data/annotations_ldscores/$trait/${trait}_degs_${window}.$j" \
-                --print-snps "/data/1000g/1000G_EUR_Phase3_baseline/print_snps.txt"
-        done # end chr loop
+    for j in {1..22}; do # loop through each chromosome
+        python /opt/ldsc/make_annot.py \ # create annotation files
+            --gene-set-file $geneset_file \
+            --gene-coord-file $coord_file \
+            --windowsize $window \
+            --bimfile /data/1000g/1000G_EUR_Phase3_plink/1000G.EUR.QC.$j.bim \
+            --annot-file /data/annotations_ldscores/fdr$fdr/oa_twas_meta_fdr${fdr}genes_window${window}_chr$j.annot.gz
+
+        python /opt/ldsc/ldsc.py \ # compute LD scores
+            --l2 \
+            --thin-annot \
+            --ld-wind-cm 1 \
+            --print-snps /data/1000g/1000G_EUR_Phase3_baseline/print_snps.txt \
+            --bfile /data/1000g/1000G_EUR_Phase3_plink/1000G.EUR.QC.$j \
+            --annot /data/annotations_ldscores/fdr$fdr/oa_twas_meta_fdr${fdr}genes_window${window}_chr$j.annot.gz \
+            --out /data/annotations_ldscores/fdr$fdr/oa_twas_meta_fdr${fdr}genes_window${window}_chr$j
+    done # end chr loop
+
+
+    for trait in {"age_of_initiation","alcohol_dependence","drinks_per_week","alzheimers_disease","als","anorexia","adhd","autism","bipolar","cannabus_use_disorder","cigarettes_per_day","cotinine_levels","depressive_symptoms","ftnd","heaviness_smoking_index","lifetime_cannabis_use","major_depressive_disorder","neuroticism","opioid_addiction_gsem","parkinsons","ptsd","schizophrenia","smoking_cessation","smoking_initiation"}; do  # loop through all traits
+        case $trait in  # use sumstats files that corresponds to the trait name for the h2 estimate
         
+            "age_of_initiation") stats=/data/sumstats/AgeOfInitiation.txt.munged.merged.txt.gz ;;
+            "alcohol_dependence") stats=/data/sumstats/pgc_alcdep.eur_discovery.aug2018_release.txt.munged.merged.txt.gz ;;
+            "drinks_per_week") stats=/data/sumstats/DrinksPerWeek.txt.munged.merged.txt.gz ;;
+            "alzheimers_disease") stats=/data/sumstats/alzheimers_disease_lambert2013_nat_genet.sumstats.gz ;;
+            "als") stats=/data/sumstats/amyotrophic_lateral_sclerosis_rheenen2016_nat_genet.sumstats.gz ;;
+            "anorexia") stats=/data/sumstats/anorexia_watson2019_workflow_ready.txt.munged.merged.txt.gz ;;
+            "adhd") stats=/data/sumstats/daner_meta_filtered_NA_iPSYCH23_PGC11_sigPCs_woSEX_2ell6sd_EUR_Neff_70.meta.munged.merged.txt.gz ;;
+            "autism") stats=/data/sumstats/iPSYCH-PGC_ASD_Nov2017.munged.merged.txt.gz ;;
+            "bipolar") stats=/data/sumstats/daner_PGC_BIP32b_mds7a_0416a.munged.merged.txt.gz ;;
+            "cannabis_use_disorder") stats=/data/sumstats/CUD_GWAS_iPSYCH_June2019.munged.merged.txt.gz ;;
+            "cigarettes_per_day") stats=/data/sumstats/CigarettesPerDay.txt.munged.merged.txt.gz ;;
+            "cotinine_levels") stats=/data/sumstats/cotinine_ware2016_workflow_ready.txt.munged.merged.txt.gz ;;
+            "depressive_symptoms") stats=/data/sumstats/DS_Full.txt.munged.merged.txt.gz ;;
+            "ftnd") stats=/data/sumstats/ftnd_wave3_eur_quach2020_workflow_ready.txt.munged.merged.txt.gz ;;
+            "heaviness_smoking_index") stats=/data/sumstats/ukb_gwa_003_workflow_ready.txt.munged.merged.txt.gz ;;
+            "lifetime_cannabis_use") stats=/data/sumstats/cannabis_icc_ukb_workflow_ready.txt.munged.merged.txt.gz ;;
+            "major_depressive_disorder") stats=/data/sumstats/pgc_ukb_depression_gwas_workflow_ready.txt.munged.merged.txt.gz ;;
+            "neuroticism") stats=/data/sumstats/neuroticism_okbay2016_nat_genet.sumstats.gz ;;
+            "opioid_addiction_gsem") stats=/data/sumstats/genomicSEM_GWAS.oaALL.MVP1_MVP2_YP_SAGE.PGC.Song.table.sumstats.gz ;;
+            "parkinsons") stats=/data/sumstats/parkinsons_disease_sanchez2009_nat_genet.sumstats.gz ;;
+            "ptsd") stats=/data/sumstats/pts_eur_freeze2_overall.results.munged.merged.txt.gz ;;
+            "schizophrenia") stats=/data/sumstats/daner_natgen_pgc_eur.munged.merged.txt.gz ;;
+            "smoking_cessation") stats=/data/sumstats/SmokingCessation.txt.munged.merged.txt.gz ;;
+            "smoking_initiation") stats=/data/sumstats/SmokingInitiation.txt.munged.merged.txt.gz ;;
+        esac
+
         # computed partitioned heritability estimate
         python /opt/ldsc/ldsc.py \
             --h2 $stats \
-            --w-ld-chr "/data/1000g/weights_hm3_no_hla/weights." \
-            --ref-ld-chr "/data/annotations_ldscores/$trait/${trait}_degs_${window}.,/data/1000g/1000G_EUR_Phase3_baseline/baseline." \
             --overlap-annot \
-            --out "/data/results/${trait}_hiv_status_vl_suppressed_degs_${window}_results" \
             --print-coefficients \
-            --frqfile-chr "/data/1000g/1000G_Phase3_frq/1000G.EUR.QC."
-    
-    done # end BED file loop
-done # end trait file loop
+            --w-ld-chr "/data/weights_hm3_no_hla/weights." \
+            --frqfile-chr "/data/1000g/1000G_Phase3_frq/1000G.EUR.QC." \
+            --ref-ld-chr "/data/annotations_ldscores/fdr$fdr/oa_twas_meta_fdr${fdr}genes_window${window}_chr,/data/1000g/1000G_EUR_Phase3_baseline/baseline." \
+            --out "/data/results/fdr$fdr/${trait}_with_oa_twas_meta_analysis_deg_genes_fdr${fdr}_window${window}"
+    done
+done
 ```
 	
 combine results
