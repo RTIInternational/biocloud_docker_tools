@@ -52,21 +52,21 @@ if ( any(is.na(pheno[, opt$t])) ) {
 cat("Phenotype data has ",dim(pheno)[1]," rows and ",dim(pheno)[2]," columns.\n\n")
 
 cat("Loading DNA methylation data......\n")
-    load(opt$dnam)
-    
-beta_matrix <- t(bVals_chr[,colnames(bVals_chr) %in% pheno[, opt$s]])
-dim(beta_matrix)
+dnam_chr <- get(load(opt$dnam))
+   
+dnam_matrix <- t(dnam_chr[,colnames(dnam_chr) %in% pheno[, opt$s]])
+dim(dnam_matrix)
 
-cat("DNAm data has ",dim(beta_matrix)[1]," rows and ",dim(beta_matrix)[2]," columns.\n\n")
+cat("DNAm data has ",dim(dnam_matrix)[1]," rows and ",dim(dnam_matrix)[2]," columns.\n\n")
 
 # combine the DNAm data and the phenotype data, which includes test-var and covars
-ewas_mat <- merge(beta_matrix, pheno, by.x="row.names", by.y = opt$s)
-#pheno_ordered <- pheno[match(row.names(beta_matrix), pheno$Sample_Name),] # (first) matches of its first argument in its second argument.
-#ewas_mat <- cbind(beta_matrix, pheno_ordered)
+ewas_mat <- merge(dnam_matrix, pheno, by.x="row.names", by.y = opt$s)
+#pheno_ordered <- pheno[match(row.names(dnam_matrix), pheno$Sample_Name),] # (first) matches of its first argument in its second argument.
+#ewas_mat <- cbind(dnam_matrix, pheno_ordered)
 
 #Run adjusted EWAS
 system.time(
-    ind.res <- mclapply(X=dimnames(unlist(beta_matrix))[[2]], 
+    ind.res <- mclapply(X=dimnames(unlist(dnam_matrix))[[2]], 
                         FUN=lmtest,
                         model_data=ewas_mat,
                         test_var=opt$t,
@@ -74,7 +74,7 @@ system.time(
 
 # https://stackoverflow.com/questions/14427253/passing-several-arguments-to-fun-of-lapply-and-others-apply
 )
-names(ind.res) <- dimnames(beta_matrix)[[2]]
+names(ind.res) <- dimnames(dnam_matrix)[[2]]
 
 setattr(ind.res, 'class', 'data.frame')
 setattr(ind.res, "row.names", c(NA_integer_,4))
@@ -88,9 +88,9 @@ setcolorder(all.results, c("probeID","BETA","SE", "P_VAL"))
 rm(probelistnames, ind.res)
 
 #Add column for number of samples for each probe
-tbeta_matrix<-t(beta_matrix) #transform methylation data again so that rows are probes and columns are samples
-all.results<-all.results[match(rownames(tbeta_matrix),all.results$probeID),] # match order of all.results with order of probes in tbeta_matrix
-all.results$N<- rowSums(!is.na(tbeta_matrix))
+tdnam_matrix<-t(dnam_matrix) #transform methylation data again so that rows are probes and columns are samples
+all.results<-all.results[match(rownames(tdnam_matrix),all.results$probeID),] # match order of all.results with order of probes in tdnam_matrix
+all.results$N<- rowSums(!is.na(tdnam_matrix))
 
 #Add columns to include Illumina probe annotation
 annEPIC = getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
