@@ -59,6 +59,9 @@ dim(dnam_matrix)
 
 cat("DNAm data has ",dim(dnam_matrix)[1]," rows and ",dim(dnam_matrix)[2]," columns.\n\n")
 
+# Replace NaN, Inf, and -Inf with NA. Else lm will throw error < NA/NaN/Inf in 'y'>
+dnam_matrix[is.na(dnam_matrix) | dnam_matrix=="Inf" | dnam_matrix=="-Inf"] <- NA
+
 # combine the DNAm data and the phenotype data, which includes test-var and covars
 ewas_mat <- merge(dnam_matrix, pheno, by.x="row.names", by.y = opt$s)
 #pheno_ordered <- pheno[match(row.names(dnam_matrix), pheno$Sample_Name),] # (first) matches of its first argument in its second argument.
