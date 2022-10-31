@@ -10,7 +10,7 @@ library(optparse)
 
 option_list = list(
   make_option(c("-p", "--phenotype-file"), action="store", type="character",
-              help="Phenotype file name and path."),
+              help="RDA Phenotype file object name."),
   make_option(c("-t", "--test-var"), type='character',
               help="The name of the phenotype of interest that was measured as shown in the header of the phenotype file. The test variable."),
   make_option(c("-s", "--sample-name"), type='character',
@@ -43,7 +43,7 @@ lmtest <- function(model_data, probe_id, test_var, covariates) {
 
 # read in phenotype file
 cat("Reading phenotype data......\n")
-pheno <- read.csv(opt$p, header=T, stringsAsFactors=F, sep=" ")
+pheno <- get(load(opt$p))
 
 if ( any(is.na(pheno[, opt$t])) ) {
     pheno[is.na(pheno[, opt$t]),][, opt$t] <- 0 # remove NA from phenotypes
