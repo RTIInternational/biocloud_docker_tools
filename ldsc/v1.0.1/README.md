@@ -62,7 +62,7 @@ wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/weights_hm3_
 tar -xvf weights_hm3_no_hla.tgz	
 
 cd 1000g/
-wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_phase3_baseline_ldscores.tgz
+wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_baseline_ldscores.tgz
 wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_plinkfiles.tgz
 wget https://storage.googleapis.com/broad-alkesgroup-public/LDSCORE/1000G_Phase3_frq.tgz
 
