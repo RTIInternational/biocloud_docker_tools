@@ -47,6 +47,12 @@ bash /opt/deploy-cloudformation-batch.sh \
   #}
   ```
 
-Once you create the environment, be sure to upload a new config file to https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/workflow_options
+Once you create the environment, be sure to create a new config file to https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/workflow_options
+This config file should contain the job queue ARN. Example 
+
+```
+Amazon Resource Name (ARN)
+arn:aws:batch:us-east-1:404545384114:job-queue/default-Dana-Addiction-GNetii-R01-0217734-001-001`
+```
 
 Reach out to Jesse Marks (jmarks@rti.org) for assistance.
