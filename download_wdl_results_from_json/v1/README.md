@@ -18,28 +18,37 @@ To use this script, you will need to have the following:
 
 ## Usage
 Download results JSON from S3:
-```
+```bash
 $ curl -X GET "http://localhost:8000/api/workflows/v1/$job/outputs" > outputs.json
 ```
 
-Run the Docker container interactively. Make sure the `outputs.json` file is in your PWD:
-```
-$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json bash
+Run the Docker container. Make sure the `outputs.json` file is in your PWD:
+```bash
+$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json \
+    --bucket <s3-bucket-name> \
+    --file <outputs-json-file> \
+    --aws-access-key-id <access-key-id> \
+    --aws-secret-access-key <secred-access-key>
 ```
 
-Configure AWS so that the awscli has the properly credentials:
+- view DockerHub for the latest tag: https://hub.docker.com/repository/docker/rtibiocloud/download_wdl_results_from_json/tags?page=1&ordering=last_updated
+
+example: 
 ```
-$ aws configure
+$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json \
+    --bucket rti-cromwell-output \
+    --file outputs.json 
+    --aws-access-key-id AKIA12345 \
+    --aws-secret-access-key abcde12345
 ```
 
-Download results files listed in the `outputs.json`:
+<br>
+
+Alternatively, you could run the Docker container interactively. Make sure the `outputs.json` file is in your PWD:
+```bash
+$ docker run -it -v $PWD/:/data --entrypoint /bin/bash rtibiocloud/download_wdl_results_from_json 
 ```
-python3 /opt/download_wdl_results_from_json.py \
-    --bucket <bucket-name> \
-    --file outputs.json
-```
-- if this is from a WDL workflow, then replace <bucket-name> with `rti-cromwell-output`.
-  
+
 
 <br><br>
   
