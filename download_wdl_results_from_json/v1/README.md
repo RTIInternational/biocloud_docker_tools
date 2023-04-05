@@ -24,7 +24,7 @@ $ curl -X GET "http://localhost:8000/api/workflows/v1/$job/outputs" > outputs.js
 
 Run the Docker container. Make sure the `outputs.json` file is in your PWD:
 ```bash
-$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json \
+$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:<latest-tag> \
     --bucket <s3-bucket-name> \
     --file <outputs-json-file> \
     --aws-access-key-id <access-key-id> \
@@ -35,9 +35,9 @@ $ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json \
 
 example: 
 ```
-$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json \
+$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_5cc8134 \
     --bucket rti-cromwell-output \
-    --file outputs.json 
+    --file /data/outputs.json 
     --aws-access-key-id AKIA12345 \
     --aws-secret-access-key abcde12345
 ```
