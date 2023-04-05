@@ -3,10 +3,32 @@ import json
 import boto3
 from urllib.parse import urlparse
 
+"""
+Downloads files from an S3 bucket based on a JSON file containing the file URLs.
+
+Usage:
+  python download_files_from_s3.py [--bucket BUCKET_NAME] --file JSON_FILE_NAME --aws_access_key_id ACCESS_KEY_ID --aws_secret_access_key SECRET_ACCESS_KEY
+
+Arguments:
+  --bucket (-b)         The name of the S3 bucket (default: "rti-cromwell-output")
+  --file (-f)           The name of the JSON file containing the file URLs (required)
+  --aws_access_key_id (-a) AWS access key ID (required)
+  --aws_secret_access_key (-s) AWS secret access key (required)
+
+Example:
+  To download files from an S3 bucket named 'my-bucket' based on a JSON file named 'file_list.json' using AWS access key ID 'AKIA12345' and AWS secret access key 'abcde12345':
+  $ python download_files_from_s3.py --bucket my-bucket --file file_list.json --aws_access_key_id AKIA12345 --aws_secret_access_key abcde12345
+"""
+
+
+
 # Define the command-line arguments
 parser = argparse.ArgumentParser(description='Download files from an S3 bucket based on a JSON file containing the file URLs')
-parser.add_argument('--bucket', '-b', required=True, help='The name of the S3 bucket')
+parser.add_argument('--bucket', '-b', required=False, default="rti-cromwell-output", help='The name of the S3 bucket')
 parser.add_argument('--file', '-f', required=True, help='The name of the JSON file containing the file URLs')
+parser.add_argument('--aws_access_key_id', '-a', required=True, type=str, help='AWS access key ID')
+parser.add_argument('--aws_secret_access_key', '-s', required=True, type=str, help='AWS secret access key')
+
 
 # Parse the command-line arguments
 args = parser.parse_args()
@@ -14,7 +36,11 @@ bucket_name = args.bucket
 results_file = args.file
 
 # Create an S3 client
-s3 = boto3.client('s3')
+s3 = boto3.client(
+        's3',
+        aws_access_key_id = args.aws_access_key_id,
+        aws_secret_access_key = args.aws_secret_access_key
+        )
 
 def download_parsed(parsed_url):
     filename = parsed_url.path.split('/')[-1]
@@ -33,4 +59,3 @@ for url in data['outputs'].values():
             download_parsed(urlparse(list_item))
     else:
         download_parsed(urlparse(url))
-
