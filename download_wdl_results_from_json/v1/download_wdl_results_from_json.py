@@ -26,7 +26,7 @@ Example:
 parser = argparse.ArgumentParser(description='Download files from an S3 bucket based on a JSON file containing the file URLs')
 parser.add_argument('--bucket', '-b', required=False, default="rti-cromwell-output", help='The name of the S3 bucket')
 parser.add_argument('--file', '-f', required=True, help='The name of the JSON file containing the file URLs')
-parser.add_argument('--aws-access-key-id', '-a', required=True, type=str, help='AWS access key ID')
+parser.add_argument('--aws-access-key', '-a', required=True, type=str, help='AWS access key ID')
 parser.add_argument('--aws-secret-access-key', '-s', required=True, type=str, help='AWS secret access key')
 
 
@@ -38,8 +38,8 @@ results_file = args.file
 # Create an S3 client
 s3 = boto3.client(
         's3',
-        aws_access_key_id = args.aws-access-key-id,
-        aws_secret_access_key = args.aws-secret-access-key
+        aws_access_key_id = args.aws_access_key,
+        aws_secret_access_key = args.aws_secret_access_key
         )
 
 def download_parsed(parsed_url):
@@ -59,3 +59,4 @@ for url in data['outputs'].values():
             download_parsed(urlparse(list_item))
     else:
         download_parsed(urlparse(url))
+
