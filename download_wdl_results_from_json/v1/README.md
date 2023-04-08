@@ -37,7 +37,7 @@ example:
 ```
 $ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_5cc8134 \
     --bucket rti-cromwell-output \
-    --file /data/outputs.json 
+    --file /data/outputs.json \
     --aws-access-key-id AKIA12345 \
     --aws-secret-access-key abcde12345
 ```
