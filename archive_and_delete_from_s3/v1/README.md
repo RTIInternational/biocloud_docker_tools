@@ -1,6 +1,7 @@
 # Archive and Delete Files from S3
 Archives S3 objects recursively in a folder or deletes them if they have been archived for a specified time.
 
+<br><br>
 
 ## Usage
 
@@ -28,6 +29,10 @@ This will move all objects in the "cromwell-execution/metal_gwas_meta_analysis_w
 folder of the "rti-cromwell-output" bucket that are older than 30 days from Standard storage to Intelligent-Tiering storage,
 and delete any objects in the same folder that are currently in Intelligent-Tiering and are older than 180 days.
 The default values for --days_to_archive and --days_to_delete are 180.
+
+
+<br><br>
+
 
 
 ## Contact
