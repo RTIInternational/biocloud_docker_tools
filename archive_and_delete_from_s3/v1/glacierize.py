@@ -19,7 +19,7 @@ from botocore.exceptions import ClientError
         None
 
     Example usage:
-    python s3_object_archiver.py \
+    python glacierize.py \
         --bucket-name my-bucket \
         --prefix my-folder \
         --days_to_archive 30 \
