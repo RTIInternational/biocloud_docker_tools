@@ -3,12 +3,13 @@ import boto3
 import datetime
 import pytz
 import botocore
+import json
 from botocore.exceptions import ClientError
 
 """Archives S3 objects recursively in a folder or deletes them if they have been archived for a specified time.
 
     Args:
-        --bucket_name (str): The name of the S3 bucket that contains the object. (required)
+        --bucket-name (str): The name of the S3 bucket that contains the object. (required)
         --prefix (str): The prefix of the object in the S3 bucket. (required)
         --aws-access-key-id (-a) AWS access key ID (required)
         --aws-secret-access-key (-s) AWS secret access key (required)
@@ -147,6 +148,11 @@ def main():
             move_to_glacier(bucket_name, key)
         else:
             print("No action necessary.")
+
+    return {
+        "statusCode": 200,
+        "body": json.dumps(f"{bucket_name} cleanup was successful!")
+    }
 
 if __name__ == "__main__":
     main()
