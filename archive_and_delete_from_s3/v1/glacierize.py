@@ -56,7 +56,9 @@ days_to_delete = args.days_to_delete
 prefix = args.prefix
 
 # Create an S3 client
-client = boto3.client("s3")
+client = boto3.client("s3",
+        aws_access_key_id = args.aws_access_key,
+        aws_secret_access_key = args.aws_secret_access_key)
 s3 = boto3.resource("s3",
         aws_access_key_id = args.aws_access_key,
         aws_secret_access_key = args.aws_secret_access_key)
@@ -148,3 +150,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
