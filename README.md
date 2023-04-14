@@ -24,3 +24,8 @@ The repository is the tool name. Images are tagged in the format `<tool-version>
 ## GitHub Action Notes
 
 The GitHub action is based on code from this GitHub Action: https://github.com/elgohr/Publish-Docker-Github-Action
+
+
+## Contact
+
+If you have any questions or suggestions, please feel free to contact Nathan Gaddis (ngaddis@rti.org), Jesse Marks (jmarks@rti.org), or Bryan Quach (bquach@rti.org).
