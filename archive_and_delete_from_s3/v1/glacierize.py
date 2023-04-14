@@ -49,7 +49,8 @@ parser.add_argument("--days-to-delete", dest="days_to_delete", type=int, default
 args = parser.parse_args()
 aws_access_key = args.aws_access_key
 aws_secret_access_key = args.aws_secret_access_key
-bucket_name = args.bucket_name
+#bucket_name = args.bucket_name
+bucket_name = "rti-cromwell-output
 days_to_archive = args.days_to_archive
 days_to_delete = args.days_to_delete
 prefix = args.prefix
