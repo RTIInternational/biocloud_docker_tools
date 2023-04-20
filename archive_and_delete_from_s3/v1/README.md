@@ -19,7 +19,7 @@ $ docker run -it rtibiocloud/archive_and_delete_from_s3:<latest-tag> \
 
 example:
 ```
-$ docker run -it rtibiocloud/archive_and_delete_from_s3:v1_d530ae5 \
+$ docker run -it rtibiocloud/archive_and_delete_from_s3:v1_9940a86  \
     --bucket-name rti-cromwell-output \
     --prefix cromwell-execution/metal_gwas_meta_analysis_wf/07c84f1f-d272-4808-94cc-c39332c65d87/ \
     --days-to-archive 30 \
