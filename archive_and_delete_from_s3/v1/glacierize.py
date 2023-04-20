@@ -1,9 +1,11 @@
 import argparse
+import os
 import boto3
 import datetime
 import pytz
 import botocore
 import json
+import sys
 from botocore.exceptions import ClientError
 
 """Archives S3 objects recursively in a folder or deletes them if they have been archived for a specified time.
@@ -113,47 +115,60 @@ def delete_object(bucket_name, key):
 
 
 def main():
-    try:
-        # Check if the bucket exists
-        s3.meta.client.head_bucket(Bucket=bucket_name)
-    except Exception as e:
-        if e.response["Error"]["Code"] == "404":
-            print(f"\nError: Bucket '{bucket_name}' does not exist.\n\n")
-        elif e.response["Error"]["Code"] == "NoSuchKey":
-            logger.info("Access key wrong.")
+    # generate the log file name with the current date
+    now = datetime.datetime.now()
+    log_file_name = f"rti_cromwell_output_cleanup_{now:%Y_%m_%d_%Hh_%Mm_%Ss}.txt"
 
-        else:
-            print(f"\nError: {e}\n\n")
+    # open the log file and redirect standard output to it
+    with open(log_file_name, "w") as log_file:
+        sys.stdout = log_file
 
-    # Check if the prefix exists
-    objects = list(s3.Bucket(bucket_name).objects.filter(Prefix=prefix))
-    if not objects:
-        print(f"\nError: Prefix '{prefix}' does not exist in bucket '{bucket_name}'.\n\n")
+        try:
+            # Check if the bucket exists
+            s3.meta.client.head_bucket(Bucket=bucket_name)
+        except Exception as e:
+            if e.response["Error"]["Code"] == "404":
+                print(f"\nError: Bucket '{bucket_name}' does not exist.\n\n")
+            elif e.response["Error"]["Code"] == "NoSuchKey":
+                logger.info("Access key wrong.")
 
-    for object in objects:
-        key = object.key
-        if key[-1] == '/':
-            #print("Skipping folder object.\n")
-            continue
-        storage_class = object.storage_class
-        last_modified = object.last_modified
-        print(f"\nobject: s3://{bucket_name}/{key}")
-        print(f"current storage class: {storage_class}")
+            else:
+                print(f"\nError: {e}\n\n")
 
-        if storage_class == "GLACIER" and last_modified.replace(tzinfo=pytz.utc) < utc.localize(delete_date):
-            delete_object(bucket_name, key)
-        elif storage_class == "INTELLIGENT_TIERING" and last_modified.replace(tzinfo=pytz.utc) < utc.localize(delete_date):
-            delete_object(bucket_name, key)
-        elif storage_class == "STANDARD" and last_modified.replace(tzinfo=pytz.utc) < utc.localize(archive_date):
-            move_to_glacier(bucket_name, key)
-        else:
-            print("No action necessary.")
+        # Check if the prefix exists
+        objects = list(s3.Bucket(bucket_name).objects.filter(Prefix=prefix))
+        if not objects:
+            print(f"\nError: Prefix '{prefix}' does not exist in bucket '{bucket_name}'.\n\n")
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(f"{bucket_name} cleanup was successful!")
-    }
+        for object in objects:
+            key = object.key
+            if key[-1] == '/':
+                #print("Skipping folder object.\n")
+                continue
+            storage_class = object.storage_class
+            last_modified = object.last_modified
+            print(f"\nobject: s3://{bucket_name}/{key}")
+            print(f"current storage class: {storage_class}")
+
+            if storage_class == "GLACIER" and last_modified.replace(tzinfo=pytz.utc) < utc.localize(delete_date):
+                delete_object(bucket_name, key)
+            elif storage_class == "INTELLIGENT_TIERING" and last_modified.replace(tzinfo=pytz.utc) < utc.localize(delete_date):
+                delete_object(bucket_name, key)
+            elif storage_class == "STANDARD" and last_modified.replace(tzinfo=pytz.utc) < utc.localize(archive_date):
+                move_to_glacier(bucket_name, key)
+            else:
+                message = "No action necessary."
+                print(message)
+
+    # Reset standard output to console
+    sys.stdout = sys.__stdout__
+
+    # upload logfile to s3
+    s3.meta.client.upload_file(log_file_name, bucket_name, f"cromwell-cleanup-logs/{log_file_name}")
+
+    # Delete the logfile from local
+    os.remove(log_file_name)
+    return
 
 if __name__ == "__main__":
     main()
-
