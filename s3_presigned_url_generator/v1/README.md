@@ -78,7 +78,7 @@ The generated `upload_script.sh` will contain the curl commands necessary to upl
 **This is the recommended approach.**<br>
 Here is a toy example of how you can use this script with just a docker command. 
 ```
-docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_3e22a60 \
+docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_23c8ea4 \
     --infile /data/file_list.txt \
     --outfile /data/upload_script3.sh \
     --bucket rti-cool-project \
@@ -87,7 +87,7 @@ docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_3e22a6
     --aws-access-key AKIACCESSkeyEXAMPLE \
     --aws-secret-access-key qFyQSECRECTaccessKEYexample
 ```
-* _Note_: check the DockerHub rtibiocloud repository for the latest tag (i.e., replace `v1_3e22a60` if necessary), and don't forget to change the access keys in this toy example.
+* _Note_: check the DockerHub rtibiocloud repository for the latest tag (i.e., replace `v1_23c8ea4` if necessary), and don't forget to change the access keys in this toy example.
 
 <br>
 
