@@ -1,7 +1,6 @@
 import argparse
 import boto3
 
-#s3 = boto3.client('s3')
 
 def generate_presigned_urls(infile, outfile, bucket, key_prefix, expiration_days, access_key, secret_access_key):
     """
@@ -72,6 +71,9 @@ def generate_presigned_urls(infile, outfile, bucket, key_prefix, expiration_days
             outF.write(outline2)
             line = inF.readline()
 
+        outF.write("echo 'File(s) successfully uploaded to S3!'")
+    print(f"Success!\nCreated the bash script '{outfile}' for uploading files to S3 via presigned URLs.")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate presigned URLs for S3 objects")
     parser.add_argument("--infile", required=True, help="Input file path")
@@ -93,4 +95,3 @@ if __name__ == "__main__":
         args.access_key,
         args.secret_access_key
     )
-
