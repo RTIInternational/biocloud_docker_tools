@@ -77,6 +77,62 @@ docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_9eed02
 ```
 * Note check the DockerHub rtibiocloud repository for the latest tag (i.e., replace `v1_9eed02d` if necessary), and don't forget to change the access keys in this toy example.
 
+## Using the Upload Script
+
+The generated `upload_script.sh` contains the necessary `curl` commands to upload files to the S3 location using presigned URLs. To use the script, follow these steps:
+
+1. Ensure that you have the `upload_script.sh` and the files you want to upload in the same directory.
+2. Open a terminal and navigate to the directory containing the `upload_script.sh` and the files.
+3. Make the `upload_script.sh` file executable.`chmod +x upload_script.sh`
+4. Execute the `upload_script.sh` script. `./upload_script.sh`
+
+The script will start executing the `curl` commands, uploading each file to the specified S3 location using the presigned URLs.
+
+_Note_: Depending on the number and size of the files, the upload process may take some time. Monitor the progress in the terminal.
+Once the script finishes executing, all the files should be successfully uploaded to the S3 bucket and location specified in the script.
+
+
+## Communicating with Collaborators
+
+To ensure the successful upload of files by external collaborators, it is recommended to communicate with them and provide necessary instructions. Here's a template for an email you can send to collaborators:
+
+<details>
+  <summary>mock email</summary>
+
+  <br>
+  
+  **Subject**: Uploading files to [Your Project Name] - Action Required
+
+Dear Collaborator,
+
+We are excited to work with you on [Your Project Name]. As part of our collaboration, we kindly request you to upload your files to our Amazon S3 bucket using the provided presigned URLs. This process ensures secure and efficient file transfers without requiring separate AWS accounts.
+
+Here are the steps to upload your files:
+
+1. Place the attached `upload_script.sh` file in the same directory as the files you want to upload.
+
+2. Open a terminal and navigate to the directory containing the `upload_script.sh` and your files.
+  
+3. Execute the `upload_script.sh` script:
+  ```shell
+  bash upload_script.sh
+  ```
+  
+This will start the upload process. The script will automatically upload your files to our S3 bucket using presigned URLs.
+Once the upload is complete, please reply to this email with the MD5 checksum for each uploaded file. This will allow us to verify the integrity of the transferred files. 
+  
+If you encounter any issues or have any questions during the upload process, please feel free to reach out to us. We are here to assist you.
+
+Thank you for your collaboration!
+
+Best regards,<br>
+[Your Name]<br>
+[Your Organization]
+</details>
+
+
+
+
 <br><br>
 ___
 
