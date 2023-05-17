@@ -4,6 +4,11 @@ A command-line interface (CLI) tool to generate a bash script containing `curl` 
 
 <br>
 
+
+[Click here to go to the recommended docker usage example](#docker-anchor)
+
+<br>
+
 ## Usage
 
 ```shell
@@ -57,6 +62,23 @@ python s3_presigned_upload.py \
 
 The generated `upload_script.sh` will contain the curl commands necessary to upload the files using presigned URLs. Share the `upload_script.sh` with the external collaborators, and they can execute it in the same folder as their files to upload them to your S3 account.
 
+## Docker usage <a id="docker-anchor"></a>
+**This is the recommended approach.**<br>
+Here is a toy example of how you can use this script with just a docker command. 
+```
+docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_9eed02d \
+    --infile /data/file_list.txt \
+    --outfile /data/upload_script3.sh \
+    --bucket rti-cool-project \
+    --key-prefix scratch/some_rti_user/ \
+    --expiration-days 7 \
+    --aws-access-key AKIACCESSkeyEXAMPLE \
+    --aws-secret-access-key qFyQSECRECTaccessKEYexample
+```
+* Note check the DockerHub rtibiocloud repository for the latest tag (i.e., replace `v1_9eed02d` if necessary), and don't forget to change the access keys in this toy example.
+
+<br><br>
+___
 
 ## Support
 For support or any questions, please reach out to Jesse Marks (jmarks@rti.org)
