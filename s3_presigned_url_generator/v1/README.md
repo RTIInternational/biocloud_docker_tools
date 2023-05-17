@@ -9,6 +9,11 @@ A command-line interface (CLI) tool to generate a bash script containing `curl` 
 
 <br>
 
+
+
+
+
+
 ## Usage
 
 ```shell
@@ -33,7 +38,7 @@ Replace the following placeholders with the appropriate values:
 - `<access_key>`: AWS access key ID for authentication.
 - `<secret_access_key>`: AWS secret access key for authentication.
 
-* Note, you can typically find your access keys in your AWS CLI Configuration Files (`~/.aws/credentials`)
+* _Note_: you can typically find your access keys in your AWS CLI Configuration Files (`~/.aws/credentials`)
 
 Example:
 
@@ -62,11 +67,18 @@ python s3_presigned_upload.py \
 
 The generated `upload_script.sh` will contain the curl commands necessary to upload the files using presigned URLs. Share the `upload_script.sh` with the external collaborators, and they can execute it in the same folder as their files to upload them to your S3 account.
 
+<br>
+
+
+
+
+
+
 ## Docker usage <a id="docker-anchor"></a>
 **This is the recommended approach.**<br>
 Here is a toy example of how you can use this script with just a docker command. 
 ```
-docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_9eed02d \
+docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_3e22a60 \
     --infile /data/file_list.txt \
     --outfile /data/upload_script3.sh \
     --bucket rti-cool-project \
@@ -75,7 +87,14 @@ docker run --rm -v $PWD/:/data/ rtibiocloud/s3_presigned_url_generator:v1_9eed02
     --aws-access-key AKIACCESSkeyEXAMPLE \
     --aws-secret-access-key qFyQSECRECTaccessKEYexample
 ```
-* Note check the DockerHub rtibiocloud repository for the latest tag (i.e., replace `v1_9eed02d` if necessary), and don't forget to change the access keys in this toy example.
+* _Note_: check the DockerHub rtibiocloud repository for the latest tag (i.e., replace `v1_3e22a60` if necessary), and don't forget to change the access keys in this toy example.
+
+<br>
+
+
+
+
+
 
 ## Using the Upload Script
 
@@ -90,6 +109,11 @@ The script will start executing the `curl` commands, uploading each file to the 
 
 _Note_: Depending on the number and size of the files, the upload process may take some time. Monitor the progress in the terminal.
 Once the script finishes executing, all the files should be successfully uploaded to the S3 bucket and location specified in the script.
+
+<br>
+
+
+
 
 
 ## Communicating with Collaborators
@@ -135,6 +159,11 @@ Best regards,<br>
 
 <br><br>
 ___
+
+
+
+
+
 
 ## Support
 For support or any questions, please reach out to Jesse Marks (jmarks@rti.org)
