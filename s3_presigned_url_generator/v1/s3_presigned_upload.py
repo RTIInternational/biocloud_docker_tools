@@ -52,7 +52,9 @@ def generate_presigned_urls(infile, outfile, bucket, key_prefix, expiration_days
     s3 = session.client("s3")
 
     with open(infile) as inF, open(outfile, "w") as outF:
+        outF.write("#!/bin/bash\n\n")
         line = inF.readline()
+
         while line:
             seconds = expiration_days * 60 * 60 * 24
 
@@ -72,7 +74,7 @@ def generate_presigned_urls(infile, outfile, bucket, key_prefix, expiration_days
             line = inF.readline()
 
         outF.write("echo 'File(s) successfully uploaded to S3!'")
-    print(f"Success!\nCreated the bash script '{outfile}' for uploading files to S3 via presigned URLs.")
+    print(f"\n\nSuccess!\nCreated the bash script '{outfile}' for uploading files to S3 via presigned URLs.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate presigned URLs for S3 objects")
