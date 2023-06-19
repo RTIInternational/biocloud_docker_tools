@@ -1,12 +1,18 @@
-FROM python:3.7.6-slim-stretch
+FROM python:3.9.10-slim-buster
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
 
 # update the OS related packages
-RUN apt-get update
+RUN apt-get update && apt-get install -y \
+    less \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Add scripts to make it run
+# Install Python packages
+RUN pip install argparse
+
+# Add script
 ADD get_wf_outputs.py /
 
 # Add to /opt folder
@@ -20,4 +26,5 @@ RUN chmod 755 /opt/get_wf_outputs.py
 
 ENV PATH=$PATH:/opt/
 
-CMD ["python", "/opt/get_wf_outputs.py", "--help"]
+ENTRYPOINT ["python", "/opt/glacierize.py"]
+CMD ["-h"]
