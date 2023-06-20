@@ -26,5 +26,5 @@ RUN chmod 755 /opt/get_wf_outputs.py
 
 ENV PATH=$PATH:/opt/
 
-ENTRYPOINT ["python", "/opt/glacierize.py"]
+ENTRYPOINT ["python", "/opt/get_wf_outputs.py"]
 CMD ["-h"]
