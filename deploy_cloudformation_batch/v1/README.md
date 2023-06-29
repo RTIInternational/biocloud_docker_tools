@@ -29,7 +29,7 @@ bash /opt/deploy-cloudformation-batch.sh \
   --projectNumber 0217694.000.001 \
   --projectShortName "hmagma-nicotine" \
   --cpuMax 500 \
-  --stackName cromwell-64-7b7bfb4
+  --stackName gwfcore03
   
   #Launch Template ARN: {
   #    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hmagma-nicotine-0217694-000-001-LaunchTplStack/f801a320-82ae-11ec-8821-0a49dc182711"
