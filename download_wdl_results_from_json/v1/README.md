@@ -35,7 +35,7 @@ $ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:<late
 
 example: 
 ```
-$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_5cc8134 \
+$ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_377bef8 \
     --bucket rti-cromwell-output \
     --file /data/outputs.json \
     --aws-access-key-id AKIA12345 \
