@@ -27,7 +27,7 @@ Run the Docker container. Make sure the `outputs.json` file is in your PWD:
 $ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:<latest-tag> \
     --bucket <s3-bucket-name> \
     --file <outputs-json-file> \
-    --aws-access-key-id <access-key-id> \
+    --aws-access-key <access-key-id> \
     --aws-secret-access-key <secred-access-key>
 ```
 
@@ -38,7 +38,7 @@ example:
 $ docker run -it -v $PWD/:/data rtibiocloud/download_wdl_results_from_json:v1_377bef8 \
     --bucket rti-cromwell-output \
     --file /data/outputs.json \
-    --aws-access-key-id AKIA12345 \
+    --aws-access-key AKIA12345 \
     --aws-secret-access-key abcde12345
 ```
 
