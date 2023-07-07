@@ -12,7 +12,7 @@ Usage:
 Arguments:
   --bucket (-b)         The name of the S3 bucket (default: "rti-cromwell-output")
   --file (-f)           The name of the JSON file containing the file URLs (required)
-  --aws-access-key-id (-a) AWS access key ID (required)
+  --aws-access-key (-a) AWS access key ID (required)
   --aws-secret-access-key (-s) AWS secret access key (required)
 
 Example:
