@@ -1,4 +1,26 @@
-# Deploying a new Batch stack
+# New job queue for WDL workflows
+## Create new `Launch Template Stack` and `Batch Stack`
+
+We use AWS Batch to facilitate the execution of our WDL workflows. Each project/analysis requires that compute time is charged to the appropriate project.
+Thus, for each analysis using WDL we have to create an appropriate job-queue, so that charge codes are prolifereted to the EC2 instances running the jobs.
+
+This script simplifies the process of creating a new job-queue and compute environment within AWS Batch.
+In particular, this Bash script creates a Launch Template and a Batch Compute Stack for a given project based on existing infrastructure as a template.
+
+The script requires the following parameters:
+* `projectNumber`: The project number (charge code).
+* `projectShortName`: A short descriptive name of the project.
+
+The user can optionally supply these additional parameters:
+* `cpuMax`: The maximum number of vCPUs for each EC2 instance. 
+* `stackName`: The name of the master stack to be used as a template.
+* `profile`: The AWS profile to use.
+
+<br>
+
+
+## Usage
+
 This docker image was created to be used interactively. Login, configure your AWS environment, then deploy the batch environment using the wiki guidance provided at
  https://github.com/RTIInternational/bioinformatics/wiki/Cromwell-Cloud-Deployment#aws-cli---create-new-batch-queue
 
