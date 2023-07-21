@@ -4,20 +4,11 @@ set -e
 
 projectNumber=""
 projectShortName=""
-# Default = 100
-cpuMax=""
-# Default = cromwell-54
-stackName=""
-# Default = default
-profile=""
 
-# Get from master stack in stackName
-launchTemplateID=""
-vpcID=""
-vpcSubnetIDs=""
-batchServiceRoleARN=""
-ec2InstanceProfileARN=""
-spotFleetRoleARN=""
+# Optional Parameters
+stackName="" # Default = gwfcore03
+cpuMax="" # Default = 100
+profile="" # Default = default
 
 while [ "$1" != "" ]; 
 do
@@ -43,7 +34,7 @@ done
 
 if [ -z "$stackName" ]
 then
-    stackName="cromwell-64-7b7bfb4"
+    stackName="gwfcore03"
 fi
 
 if [ -z "$cpuMax" ]
@@ -65,39 +56,20 @@ do
     fi
 done
 
-BatchstackDetails=$(aws cloudformation describe-stacks --stack-name ${batchStackName} --profile ${profile})
-declare -a stackDetailsDict
-BatchStackDetailsDict=$(echo $BatchstackDetails | jq -r .Stacks | jq -r .[] | jq -r .Parameters | jq -r .[] | jq -r .[])
-eval "arr=($BatchStackDetailsDict)"
-for ((index=0; index <= ${#arr[@]}; ++index))
-do
-    position=$(( $index + 1 ))
-    case ${arr[$index]} in
-        # LaunchTemplateId )
-        #                 launchTemplateID=${arr[$position]}
-        #                 ;;
-        VpcId )
-                        vpcID=${arr[$position]}
-                        ;;
-        SubnetIds )
-                        vpcSubnetIDs=${arr[$position]}
-                        ;;
-        BatchServiceRoleArn )
-                        batchServiceRoleARN=${arr[$position]}
-                        ;;
-        Ec2InstanceProfileArn )
-                        ec2InstanceProfileARN=${arr[$position]}
-                        ;;
-        SpotFleetRoleArn )
-                        spotFleetRoleARN=${arr[$position]}
-                        ;;
-    esac
-done
+# Get BatchstackDetails using AWS CLI
+BatchstackDetails=$(aws cloudformation describe-stacks --stack-name "${batchStackName}" --profile "${profile}")
+
+# Extract relevant information from BatchstackDetails using jq
+vpcID=$(echo "$BatchstackDetails" | jq -r '.Stacks[].Parameters[] | select(.ParameterKey == "VpcId") | .ParameterValue')
+vpcSubnetIDs=$(echo "$BatchstackDetails" | jq -r '.Stacks[].Parameters[] | select(.ParameterKey == "SubnetIds") | .ParameterValue')
+batchServiceRoleARN=$(echo "$BatchstackDetails" | jq -r '.Stacks[].Parameters[] | select(.ParameterKey == "BatchServiceRoleArn") | .ParameterValue')
+ec2InstanceProfileARN=$(echo "$BatchstackDetails" | jq -r '.Stacks[].Parameters[] | select(.ParameterKey == "Ec2InstanceProfileArn") | .ParameterValue')
+spotFleetRoleARN=$(echo "$BatchstackDetails" | jq -r '.Stacks[].Parameters[] | select(.ParameterKey == "SpotFleetRoleArn") | .ParameterValue')
 
 # Create Launch Template that uses charge code on EBS volumes
-launchTempletARN=$(aws cloudformation create-stack \
+launchTemplateARN=$(aws cloudformation create-stack \
     --stack-name "${projectShortName// /-}-${projectNumber//./-}-LaunchTplStack" \
-    --template-url https://cromwell-templates.s3.amazonaws.com/cromwell-64-7b7bfb4/templates/gwfcore/gwfcore-launch-template-projectNumbers.template.yaml \
+    --template-url "https://cromwell-templates.s3.amazonaws.com/gwfcore03/templates/gwfcore/gwfcore-launch-template-20230720.yaml" \
     --parameters ParameterKey=Namespace,ParameterValue="${projectShortName// /-}-${projectNumber//./-}" \
                 ParameterKey=LaunchTemplateNamePrefix,ParameterValue="${projectShortName// /-}-${projectNumber//./-}" \
                 ParameterKey=DockerStorageVolumeSize,ParameterValue=100 \
@@ -105,20 +77,22 @@ launchTempletARN=$(aws cloudformation create-stack \
     --tags Key="project-number",Value="$projectNumber" \
     --profile ${profile})
 
-echo "Launch Template ARN: $launchTempletARN"
+echo "Launch Template ARN: $launchTemplateARN"
 # Need time for the Launch Template to actually have an ID.
 sleep 20
-launchTemplateInfo=$(aws cloudformation describe-stacks --stack-name $(echo $launchTempletARN | jq -r .StackId))
+launchTemplateInfo=$(aws cloudformation describe-stacks --stack-name $(echo $launchTemplateARN | jq -r .StackId))
 launchTemplateID=$(echo $launchTemplateInfo | jq -r .Stacks | jq -r .[] | jq -r .Outputs | jq -r .[] | jq -r .OutputValue)
 
 arrSubnets=(${vpcSubnetIDs//,/ })
 
+
 # Create Batch compute stack that creates EC2 instances with charge code tag
+# other optional parameters: BatchComputeInstanceTypes, BatchSpotBidPercentage, and FSxSubnetId
 aws cloudformation create-stack \
     --stack-name "${projectShortName// /-}-${projectNumber//./-}-BatchStack" \
-    --template-url https://cromwell-templates.s3.amazonaws.com/cromwell-64-7b7bfb4/templates/gwfcore/gwfcore-batch.updated.template.yaml \
+    --template-url https://cromwell-templates.s3.amazonaws.com/gwfcore03/templates/gwfcore/gwfcore-batch-template-20230720.yaml \
     --parameters ParameterKey=Namespace,ParameterValue="${projectShortName// /-}-${projectNumber//./-}" \
-                ParameterKey=LaunchTemplateId,ParameterValue="$launchTemplateID" \
+		ParameterKey=LaunchTemplateId,ParameterValue="$launchTemplateID" \
                 ParameterKey=VpcId,ParameterValue="$vpcID" \
                 ParameterKey=SubnetIds,ParameterValue="${arrSubnets[1]}" \
                 ParameterKey=DefaultCEMinvCpus,ParameterValue="0" \
@@ -132,15 +106,14 @@ aws cloudformation create-stack \
     --tags Key="project-number",Value="$projectNumber" \
     --profile ${profile}
 
-# Add launch template required SSM paramiters for this namespace
+# Add launch template required SSM parameters for this namespace (note: delete existing parameters if already exist!)
 s3Rooturl=$(aws ssm get-parameter --name /gwfcore/$stackName/installed-artifacts/s3-root-url --query 'Parameter.Value' --output text)
-sharedFileSystem=$(aws ssm get-parameter --name /gwfcore/$stackName/efs-shared-file-system --query 'Parameter.Value' --output text)
+#sharedFileSystem=$(aws ssm get-parameter --name /gwfcore/$stackName/efs-shared-file-system --query 'Parameter.Value' --output text)
 
 aws ssm put-parameter --name /gwfcore/"${projectShortName// /-}-${projectNumber//./-}"/installed-artifacts/s3-root-url \
     --value "$s3Rooturl" \
     --type String
 
-aws ssm put-parameter --name /gwfcore/"${projectShortName// /-}-${projectNumber//./-}"/efs-shared-file-system \
-    --value "$sharedFileSystem" \
-    --type String
-
+#aws ssm put-parameter --name /gwfcore/"${projectShortName// /-}-${projectNumber//./-}"/efs-shared-file-system \
+#    --value "$sharedFileSystem" \
+#    --type String
