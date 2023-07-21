@@ -49,23 +49,15 @@ aws s3 ls
   
 # create environment
 bash /opt/deploy-cloudformation-batch.sh \
-  --projectNumber 0216573.000.001 \
-  --projectShortName "hiv-omics"
+  --projectNumber 0217653.001.001 \
+  --projectShortName "hiv-gnetii"
   
-  #Launch Template ARN: {
-  #    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hmagma-nicotine-0217694-000-001-LaunchTplStack/f801a320-82ae-11ec-8821-0a49dc182711"
-  #}
-  #{
-  #    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hmagma-nicotine-0217694-000-001-BatchStack/04e5cee0-82af-11ec-bdac-0a585512c3c3"
-  #}
-  #{
-  #    "Version": 1,
-  #    "Tier": "Standard"
-  #}
-  #{
-  #    "Version": 1,
-  #    "Tier": "Standard"
-  #}
+Launch Template ARN: {
+    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hiv-gnetii-0217653-001-001-LaunchTplStack/adaafc20-27d7-11ee-83b6-0add2cf4754b"
+}
+{
+    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hiv-gnetii-0217653-001-001-BatchStack/ba699e80-27d7-11ee-9636-0ec67d5da3f3"
+}
   ```
 
 Once you create the environment, be sure to create a new config file to https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/workflow_options
@@ -73,7 +65,7 @@ This config file should contain the job queue ARN. Example
 
 ```
 Amazon Resource Name (ARN)
-arn:aws:batch:us-east-1:404545384114:job-queue/default-hiv-omics-0216573-000-001
+arn:aws:batch:us-east-1:404545384114:job-queue/default-hiv-gnetii-0217653-001-001
 ```
 
 ## Contact
