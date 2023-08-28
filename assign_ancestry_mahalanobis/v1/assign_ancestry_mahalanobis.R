@@ -144,6 +144,7 @@ calculate_mahalanobis_distance = function(pcs, use_pcs, midpoint_formula) {
     return(pcs)
 }
 
+# Get command line arguments
 args = parse_args(OptionParser(option_list=option_list))
 check_for_required_args(args)
 cat("Arguments:\n")
@@ -155,9 +156,23 @@ if (nchar(out_dir) > 0 && substr(out_dir, nchar(out_dir), nchar(out_dir)) != '/'
     out_dir = paste0(out_dir, '/')
 }
 
-# Parse ref-pops and ref-pops-legend-labels into vectors
+# Get pops
+study = get_arg(args, 'study')
 ancestries = unlist(strsplit(get_arg(args, 'ref-pops'), split = ","))
-ancestry_legend_labels = unlist(strsplit(get_arg(args, 'ref-pops-legend-labels'), split = ","))
+pops = c(ancestries, study)
+
+# Get legend-labels
+if (is.null(get_arg(args, 'study-legend-label'))) {
+    study_legend_label = study
+} else {
+    study_legend_label = get_arg(args, 'study-legend-label')
+}
+if (is.null(get_arg(args, 'ref-pops-legend-labels'))) {
+    ancestry_legend_labels = ancestries
+} else {
+    ancestry_legend_labels = unlist(strsplit(get_arg(args, 'ref-pops-legend-labels'), split = ","))
+}
+legend_labels = c(ancestry_legend_labels, study_legend_label)
 
 # Read PCs
 pcs = read.table(
@@ -169,9 +184,7 @@ pcs = read.table(
 # Concatenate FID & IID
 pcs$ID = paste(pcs$FID, pcs$IID, sep="___")
 
-# Set up legend labels and colors for plots
-pops = c(ancestries, get_arg(args, 'study'))
-legend_labels = c(ancestry_legend_labels, get_arg(args, 'study-legend-label'))
+# Set colors for plots
 n_ref_pops = length(ancestries)
 colors = c(rainbow(n_ref_pops), 'black')
 plot_settings = data.frame(pops, legend_labels, colors)
