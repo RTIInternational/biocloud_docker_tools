@@ -210,7 +210,7 @@ generate_pc_plot(
     plot_settings[plot_settings$pop %in% ancestries, 'legend_label'],
     plot_settings[plot_settings$pop %in% ancestries, 'color'],
     out_dir,
-    'REF_POPS_PC1_PC2_PC3'
+    'ref_pc1_pc2_pc3'
 )
 
 # Generate plot of PC1, PC2, and PC3 for study
@@ -222,10 +222,10 @@ generate_pc_plot(
     pc1_lim,
     pc2_lim,
     pc3_lim,
-    plot_settings[plot_settings$pop %in% get_arg(args, 'study'), 'legend_label'],
-    plot_settings[plot_settings$pop %in% get_arg(args, 'study'), 'color'],
+    plot_settings[plot_settings$pop %in% study, 'legend_label'],
+    plot_settings[plot_settings$pop %in% study, 'color'],
     out_dir,
-    'STUDY_PC1_PC2_PC3'
+    paste0(study, '_pc1_pc2_pc3')
 )
 
 # Generate plot of PC1, PC2, and PC3 for reference populations and study
@@ -240,7 +240,7 @@ generate_pc_plot(
     plot_settings$legend_label,
     plot_settings$color,
     out_dir,
-    'STUDY_REF_POPS_PC1_PC2_PC3'
+    paste0(study, '_ref_pc1_pc2_pc3')
 )
 
 # Calculate Mahalanobis distance
@@ -263,7 +263,7 @@ out_drop = cbind(drop$POP, ids)
 colnames(out_drop) = c('POP', 'FID', 'IID')
 write.table(
     out_drop,
-    file=paste0(out_dir, 'dropped_ref_samples.tsv'),
+    file=paste0(out_dir, 'ref_dropped_samples.tsv'),
     quote=FALSE,
     sep="\t",
     row.names=F
@@ -283,7 +283,7 @@ for (i in 1:nrow(filtered_pcs)){
 
 # Write reference assignments with mahalanobis distances
 write.table(
-    filtered_pcs[!(filtered_pcs$POP == get_arg(args, 'study')), c('FID', 'IID', 'POP', ancestries, 'ANCESTRY')],
+    filtered_pcs[!(filtered_pcs$POP == study), c('FID', 'IID', 'POP', ancestries, 'ANCESTRY')],
     file=paste0(out_dir, 'ref_raw_ancestry_assignments.tsv'),
     quote=FALSE,
     sep="\t",
@@ -291,20 +291,20 @@ write.table(
 )
 
 # Write summary of reference assignments
-ref_samples = filtered_pcs[!(filtered_pcs$POP == get_arg(args, 'study')), c("POP", "ANCESTRY")]
+ref_samples = filtered_pcs[!(filtered_pcs$POP == study), c("POP", "ANCESTRY")]
 summary = as.data.frame.matrix(table(ref_samples$POP, ref_samples$ANCESTRY))
 summary = cbind(rownames(summary), summary)
 colnames(summary)[1] = 'POP'
 write.table(
     summary,
-    file=paste0(out_dir, 'ref_raw_ancestry_assignment_summary.tsv'),
+    file=paste0(out_dir, 'ref_raw_ancestry_assignments_summary.tsv'),
     quote=FALSE,
     sep="\t",
     row.names=F
 )
 
 # Calculate scaled Mahalanobis distance for study samples
-study_samples = filtered_pcs[filtered_pcs$POP == get_arg(args, 'study'),]
+study_samples = filtered_pcs[filtered_pcs$POP == study,]
 scaled = data.frame(matrix(ncol = 2, nrow = 0))
 colnames(scaled) = c("ID","SCALED_MAHAL")
 for (ancestry in ancestries) {
@@ -319,23 +319,16 @@ study_samples = study_samples[order(study_samples$ANCESTRY,study_samples$SCALED_
 # Write raw study ancestry assignments with mahalanobis distances
 write.table(
     study_samples[, c('FID', 'IID', 'POP', ancestries, 'SCALED_MAHAL', 'ANCESTRY')],
-    file=paste0(out_dir, get_arg(args, 'study'), '_raw_ancestry_assignments.tsv'),
+    file=paste0(out_dir, study, '_raw_ancestry_assignments.tsv'),
     quote=FALSE,
     sep="\t",
     row.names=F
 )
 
-# Write summary or raw study ancestry assignments
+# Get summary of raw study ancestry assignments
 summary = as.data.frame.matrix(table(study_samples$POP, study_samples$ANCESTRY))
-summary = cbind(rownames(summary), summary)
-colnames(summary)[1] = 'POP'
-write.table(
-    summary,
-    file=paste0(out_dir, get_arg(args, 'study'), '_raw_ancestry_assignment_summary.tsv'),
-    quote=FALSE,
-    sep="\t",
-    row.names=F
-)
+summary = cbind(c('Raw'), summary)
+colnames(summary)[1] = 'FILTER'
 
 # Generate plots of raw study ancestry assignments
 for (ancestry in ancestries) {
@@ -352,7 +345,7 @@ generate_pc_plot(
     plot_settings[plot_settings$pop %in% ancestries, 'pop'],
     plot_settings[plot_settings$pop %in% ancestries, 'color'],
     out_dir,
-    paste0('STUDY_raw_ancestry_assignment')
+    paste0(study, '_raw_ancestry_assignment')
 )
 
 # Create lists for each ancestry, summary, and plots for different # of standard deviations
@@ -362,24 +355,18 @@ for (sd in c(4,3,2)) {
         out = study_samples[study_samples$ANCESTRY == ancestry & study_samples$SCALED_MAHAL <= sd,]
         write.table(
             out[, c('FID', 'IID')],
-            file=paste0(out_dir, get_arg(args, 'study'), '_', ancestry, '_', sd, '_stddev.tsv'),
+            file=paste0(out_dir, study, '_', tolower(ancestry), '_', sd, '_stddev_keep.tsv'),
             quote=FALSE,
             sep="\t",
             row.names=F
         )
     }
-    # Write summary
+    # Get summary of ancestry assignments
     out = study_samples[study_samples$SCALED_MAHAL <= sd,]
-    summary = as.data.frame.matrix(table(out$POP, out$ANCESTRY))
-    summary = cbind(rownames(summary), summary)
-    colnames(summary)[1] = 'POP'
-    write.table(
-        summary,
-        file=paste0(out_dir, get_arg(args, 'study'), '_', sd, '_stddev_ancestry_assignment_summary.tsv'),
-        quote=FALSE,
-        sep="\t",
-        row.names=F
-    )
+    newSummary = as.data.frame.matrix(table(out$POP, out$ANCESTRY))
+    newSummary = cbind(c(paste0(sd, '_StdDev')), newSummary)
+    colnames(newSummary)[1] = 'FILTER'
+    summary = rbind(summary, newSummary)
     # Generate plots
     plot_data = data.frame(study_samples)
     plot_data[plot_data$SCALED_MAHAL > sd, 'color'] = 'black'
@@ -394,9 +381,18 @@ for (sd in c(4,3,2)) {
         plot_settings[plot_settings$pop %in% ancestries, 'pop'],
         plot_settings[plot_settings$pop %in% ancestries, 'color'],
         out_dir,
-        paste0('STUDY_', sd, '_stddev_ancestry_assignment')
+        paste0(study, '_', sd, '_stddev_ancestry_assignments')
     )
 }
+
+# Write study ancestry assignment summary for different std devs
+write.table(
+    summary,
+    file=paste0(out_dir, study, '_ancestry_assignments_summary.tsv'),
+    quote=FALSE,
+    sep="\t",
+    row.names=F
+)
 
 # Generate plots of ancestry outliers using different stddev thresholds
 for (ancestry in ancestries) {
@@ -416,6 +412,6 @@ for (ancestry in ancestries) {
         c("StdDev <2","StdDev 2-3","StdDev 3-4","StdDev >4"),
         c("green","yellow","orange","red"),
         out_dir,
-        paste0('STUDY_', ancestry, '_outliers')
+        paste0(study, '_', tolower(ancestry), '_outliers')
     )
 }
