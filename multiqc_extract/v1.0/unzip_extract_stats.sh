@@ -2,10 +2,10 @@
 
 if [ ! -f *.zip ]
 then
-  echo "No zip file found.  Exiting"
+  echo "No input zip file found.  Exiting"
   exit 1
 else
-  echo "Ding!  Found zip file.  Proceeding with extraction script"
+  echo "Found input zip file.  Proceeding with extraction script"
 fi
 
 if [ ! -d output_dir ]
