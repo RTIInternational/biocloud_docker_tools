@@ -66,6 +66,13 @@ option_list = list(
         default='median',
         type='character',
         help="Formula to use for calculating PC midpoint (mean or median)"
+    ),
+    make_option(
+        c('--std-dev-cutoff'),
+        action='store',
+        default=3,
+        type='integer',
+        help="StdDev threshold for filtering ancestries"
     )
 )
 
@@ -173,6 +180,13 @@ if (is.null(get_arg(args, 'ref-pops-legend-labels'))) {
     ancestry_legend_labels = unlist(strsplit(get_arg(args, 'ref-pops-legend-labels'), split = ","))
 }
 legend_labels = c(ancestry_legend_labels, dataset_legend_label)
+
+# Set standard deviation cutoffs
+if (is.null(get_arg(args, 'std-dev-cutoff'))) {
+    sd_cutoffs = c(4,3,2)
+} else {
+    sd_cutoffs = get_arg(args, 'std-dev-cutoff')
+}
 
 # Read PCs
 pcs = read.table(
@@ -349,7 +363,7 @@ generate_pc_plot(
 )
 
 # Create lists for each ancestry, summary, and plots for different # of standard deviations
-for (sd in c(4,3,2)) {
+for (sd in sd_cutoffs) {
     # Write lists
     for (ancestry in ancestries) {
         out = dataset_samples[dataset_samples$ANCESTRY == ancestry & dataset_samples$SCALED_MAHAL <= sd,]
