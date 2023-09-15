@@ -19,7 +19,7 @@ docker build -t multiqc_extract:v1 .
 
 Run
 ```
-docker run -it -v $PWD:/usr/local/src/myscripts multiqc_extract:v1.0
+docker run -it -v $PWD:/usr/local/src/myscripts multiqc_extract:v1 bash
 ```
 
 ## Files included

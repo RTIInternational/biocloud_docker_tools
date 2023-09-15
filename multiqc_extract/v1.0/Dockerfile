@@ -1,9 +1,5 @@
-# Docker image name: multiqc_extract
-# Sample build: docker build -t multiqc_extract:v1 .
-# Sample run: docker run -it -v $PWD:/data multiqc_extract:v1 bash
-
 # FROM arm64v8/r-base
-FROM r-base
+FROM r-base:4.3.1
 
 LABEL maintainer=dnwilliams@rti.org
 
