@@ -1,6 +1,6 @@
 # Docker image name: multiqc_extract
 # Sample build: docker build -t multiqc_extract:v1 .
-# Sample run: docker run -it -v $PWD:/data multiqc_extract:v1.0 bash
+# Sample run: docker run -it -v $PWD:/data multiqc_extract:v1 bash
 
 # FROM arm64v8/r-base
 FROM r-base
@@ -20,7 +20,8 @@ RUN chmod u+x /opt/unzip_extract_stats.sh
 
 # Set wrkdir
 RUN mkdir /data
-COPY . /data
+COPY ./*.r /data
+COPY ./*.zip /data
 WORKDIR /data
 
 # Add to environment
