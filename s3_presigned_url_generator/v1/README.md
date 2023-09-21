@@ -163,7 +163,7 @@ Best regards,<br>
 
 
 ## Limitations
-When using AWS presigned URLs, there is a limitation of 5GB for file uploads. If your file size exceeds this limit, you will need to consider alternative methods or break down the file into smaller parts to accommodate the restriction.
+When using AWS presigned URLs, there is a limitation of 5GB for file uploads ([reference](https://docs.aws.amazon.com/AmazonS3/latest/userguide/upload-objects.html)). If your file size exceeds this limit, you will need to consider alternative methods or break down the file into smaller parts to accommodate the restriction.
 
 
 
