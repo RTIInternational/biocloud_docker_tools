@@ -306,7 +306,7 @@ write.table(
 
 # Write summary of reference assignments
 ref_samples = filtered_pcs[!(filtered_pcs$POP == dataset), c("POP", "ANCESTRY")]
-summary = as.data.frame.matrix(table(ref_samples$POP, ref_samples$ANCESTRY))
+summary = as.data.frame.matrix(table(ref_samples$ANCESTRY, ref_samples$POP))
 summary = cbind(rownames(summary), summary)
 colnames(summary)[1] = 'POP'
 write.table(
@@ -340,9 +340,9 @@ write.table(
 )
 
 # Get summary of raw dataset ancestry assignments
-summary = as.data.frame.matrix(table(dataset_samples$POP, dataset_samples$ANCESTRY))
-summary = cbind(c('Raw'), summary)
-colnames(summary)[1] = 'FILTER'
+summary = as.data.frame.matrix(table(dataset_samples$ANCESTRY, dataset_samples$POP))
+colnames(summary) = c('Raw')
+summary$ANCESTRY = rownames(summary)
 
 # Generate plots of raw dataset ancestry assignments
 for (ancestry in ancestries) {
@@ -377,12 +377,15 @@ for (sd in sd_cutoffs) {
     }
     # Get summary of ancestry assignments
     out = dataset_samples[dataset_samples$SCALED_MAHAL <= sd,]
-    newSummary = as.data.frame.matrix(table(out$POP, out$ANCESTRY))
-    newSummary = cbind(c(paste0(sd, '_StdDev')), newSummary)
-    colnames(newSummary)[1] = 'FILTER'
-    summary = rbind(summary, newSummary)
+    newSummary = as.data.frame.matrix(table(out$ANCESTRY, out$POP))
+    colnames(newSummary) = c(paste0(sd, '_StdDev'))
+    newSummary$ANCESTRY = rownames(newSummary)
+    summary = merge(summary, newSummary, by='ANCESTRY', all.x=TRUE)
     # Generate plots
     plot_data = data.frame(dataset_samples)
+    nrow(plot_data)
+    plot_data = plot_data[!is.null(plot_data$SCALED_MAHAL),]
+    nrow(plot_data)
     plot_data[plot_data$SCALED_MAHAL > sd, 'color'] = 'black'
     generate_pc_plot(
         out,
