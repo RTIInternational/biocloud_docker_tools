@@ -1,0 +1,96 @@
+{
+    "name": "ancestry_assignment",
+    "working_files": {
+        "ancestry_id_xref": "/home/ubuntu/mnt/temp/ancestry_pipeline/work_dir/ancestry_id_xref.tsv",
+        "ref_samples": "/home/ubuntu/mnt/temp/ancestry_pipeline/work_dir/ref_samples.tsv",
+        "dataset_fam_with_pop_ids": "/home/ubuntu/mnt/temp/ancestry_pipeline/work_dir/dataset_with_pop_ids.fam",
+        "ref_fam_with_pop_ids": "/home/ubuntu/mnt/temp/ancestry_pipeline/work_dir/ref_with_pop_ids.fam"
+    },
+    "output_files": {
+        "log": "ancestry_assignment.log"
+    },
+    "tasks": [
+        {
+            "name": "get_ref_samples",
+            "args": [
+                "perl",
+                "/home/ubuntu/mnt/git/biocloud_docker_tools/ancestry_pipeline/get_ref_samples.pl",
+                "--file_in_psam",
+                "str|arguments|ref_psam",
+                "--pop_type",
+                "str|arguments|ancestry_pop_type",
+                "--ancestries_to_include",
+                "array|arguments|ancestries_to_include",
+                "--file_out_ancestry_id_xref",
+                "str|working_files|ancestry_id_xref",
+                "--file_out_ref_samples",
+                "str|working_files|ref_samples"
+            ],
+            "outputs": {
+                "ancestry_id_xref": {
+                    "type": "file",
+                    "value": "str|working_files|ancestry_id_xref"
+                },
+                "ref_samples": {
+                    "type": "file",
+                    "value": "str|working_files|ref_samples"
+                }
+            }
+        },
+        {
+            "name": "add_pop_ids_to_fam_files",
+            "args": [
+                "perl",
+                "/home/ubuntu/mnt/git/biocloud_docker_tools/ancestry_pipeline/add_pop_ids_to_fam_files.pl",
+                "--file_in_dataset_fam",
+                "str|arguments|dataset_fam",
+                "--file_in_ref_fam",
+                "str|arguments|ref_fam",
+                "--file_in_ref_samples",
+                "str|working_files|ref_samples",
+                "--file_out_dataset_fam",
+                "str|working_files|dataset_fam_with_pop_ids",
+                "--file_out_ref_fam",
+                "str|working_files|ref_fam_with_pop_ids"
+            ],
+            "outputs": {
+                "dataset_fam_with_pop_ids": {
+                    "type": "file",
+                    "value": "str|working_files|dataset_fam_with_pop_ids"
+                },
+                "ref_fam_with_pop_ids": {
+                    "type": "file",
+                    "value": "str|working_files|ref_fam_with_pop_ids"
+                }
+            }
+        },
+        {
+            "name": "split_dataset_by_chr",
+            "args": [
+                "plink",
+                "/home/ubuntu/mnt/git/biocloud_docker_tools/ancestry_pipeline/add_pop_ids_to_fam_files.pl",
+                "--file_in_dataset_fam",
+                "str|arguments|dataset_fam",
+                "--file_in_ref_fam",
+                "str|arguments|ref_fam",
+                "--file_in_ref_samples",
+                "str|working_files|ref_samples",
+                "--file_out_dataset_fam",
+                "str|working_files|dataset_fam_with_pop_ids",
+                "--file_out_ref_fam",
+                "str|working_files|ref_fam_with_pop_ids"
+            ],
+            "outputs": {
+                "dataset_fam_with_pop_ids": {
+                    "type": "file",
+                    "value": "str|working_files|dataset_fam_with_pop_ids"
+                },
+                "ref_fam_with_pop_ids": {
+                    "type": "file",
+                    "value": "str|working_files|ref_fam_with_pop_ids"
+                }
+            }
+        }
+    ]
+
+}
