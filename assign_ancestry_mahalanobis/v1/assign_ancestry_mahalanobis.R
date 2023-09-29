@@ -362,6 +362,9 @@ generate_pc_plot(
     paste0(dataset, '_raw_ancestry_assignment')
 )
 
+# Remove dataset samples with NA SCALED_MAHAL
+dataset_samples = dataset_samples[!is.na(dataset_samples$SCALED_MAHAL),]
+
 # Create lists for each ancestry, summary, and plots for different # of standard deviations
 for (sd in sd_cutoffs) {
     # Write lists
@@ -383,9 +386,7 @@ for (sd in sd_cutoffs) {
     summary = merge(summary, newSummary, by='ANCESTRY', all.x=TRUE)
     # Generate plots
     plot_data = data.frame(dataset_samples)
-    nrow(plot_data)
     plot_data = plot_data[!is.null(plot_data$SCALED_MAHAL),]
-    nrow(plot_data)
     plot_data[plot_data$SCALED_MAHAL > sd, 'color'] = 'black'
     generate_pc_plot(
         out,
@@ -414,21 +415,23 @@ write.table(
 # Generate plots of ancestry outliers using different stddev thresholds
 for (ancestry in ancestries) {
     plot_data = dataset_samples[dataset_samples$ANCESTRY == ancestry,]
-    plot_data$color = "green"
-    plot_data[plot_data$SCALED_MAHAL > 2,'color'] = "yellow"
-    plot_data[plot_data$SCALED_MAHAL > 3,'color'] = "orange"
-    plot_data[plot_data$SCALED_MAHAL > 4,'color'] = "red"
-    generate_pc_plot(
-        plot_data,
-        'PC1',
-        'PC2',
-        'PC3',
-        pc1_lim,
-        pc2_lim,
-        pc3_lim,
-        c("StdDev <2","StdDev 2-3","StdDev 3-4","StdDev >4"),
-        c("green","yellow","orange","red"),
-        out_dir,
-        paste0(dataset, '_', tolower(ancestry), '_outliers')
-    )
+    if (nrow(plot_data) > 0) {
+        plot_data$color = "green"
+        plot_data[plot_data$SCALED_MAHAL > 2,'color'] = "yellow"
+        plot_data[plot_data$SCALED_MAHAL > 3,'color'] = "orange"
+        plot_data[plot_data$SCALED_MAHAL > 4,'color'] = "red"
+        generate_pc_plot(
+            plot_data,
+            'PC1',
+            'PC2',
+            'PC3',
+            pc1_lim,
+            pc2_lim,
+            pc3_lim,
+            c("StdDev <2","StdDev 2-3","StdDev 3-4","StdDev >4"),
+            c("green","yellow","orange","red"),
+            out_dir,
+            paste0(dataset, '_', tolower(ancestry), '_outliers')
+        )
+    }
 }
