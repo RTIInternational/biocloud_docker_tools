@@ -29,9 +29,9 @@ If a software tool does not have a version, with a custom script for example, us
 
 **Committing**
 
-- [ ] Organize each tool based off of the guide above in the [Respository Structure](respository-structure) section above.
+- [ ] Organize each tool based off of the guide above in the [Respository Structure](#repository-structure) section above.
 - [ ] Commit changes to a single Dockerfile and its associated files at a time. No multi-directory commits.
-- [ ] Verify build was successful and that the tool is available on Docker Hub (see the [Docker Hub](docker-hub) section below). 
+- [ ] Verify build was successful and that the tool is available on Docker Hub (see the [Docker Hub](#docker-hub) section below). 
 
 
 <br><br>
