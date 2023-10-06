@@ -8,16 +8,59 @@ This Dockerfile sets up an environment for running [Cell Ranger](https://www.10x
 
 Cell Ranger is a set of analysis pipelines that process Chromium Next GEM single-cell data to align reads, generate feature-barcode matrices, perform clustering, and other secondary analyses. It supports various workflows and libraries. For detailed usage instructions and documentation, visit the [official Cell Ranger documentation](https://www.10xgenomics.com/support/software/cell-ranger/getting-started/cr-getting-started-with-cell-ranger).
 
+
+<br>
+
+
 ## Usage
 For comprehensive instructions, please refer to the official Cell Ranger documentation. However, for a quick start, you can use the following command which will provide you with basic usage information: 
 `docker run -it b55e1a301011 cellranger --help`
 
-Note that we do not include the Human reference (GRCh38) dataset required for Cell Ranger (https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz)
-Because when these data are extracted the Docker image size becomes over 32GB.
+
+### Important Note on Reference Data
+Please note that we do not include the Human reference (GRCh38) dataset required for Cell Ranger within this Docker image.
+The reference data can be obtained directly from the 10x Genomics website: [Download GRCh38 Reference Data](https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz).
+Due to the substantial size of these reference files, including them in the Docker image would significantly increase its size, making it impractical for distribution.
+Therefore, we kindly ask users to follow these steps to use the reference data effectively:
+
+1. **Download the Reference Data:**
+   - Click the link provided above to download the reference data archive (`refdata-gex-GRCh38-2020-A.tar.gz`) from the 10x Genomics website.
+
+2. **Extract the Reference Data:**
+   - After downloading, extract the contents of the archive to a location on your local machine.
+
+3. **Mount the Reference Data as a Volume:**
+   - When running the Docker container, you will need to mount the directory containing the extracted reference data as a volume within the container. This ensures that Cell Ranger can access the necessary reference files.
+
+Example Docker run command with volume mounting:
+```bash
+docker run -v /path/to/extracted/reference:/mnt/reference -d your-cellranger-image:tag
+```
+
+Replace `/path/to/extracted/reference` with the actual path on your host system where you extracted the reference data, and your-cellranger-image:tag with the appropriate Docker image and tag.
+
+
+<br>
+
+
+## Build
+To build this Docker image, you can use the following command:
+```
+docker build --rm -t /cellranger:v7.2.0 -f Dockerfile .`
+```
+Here's what each part of the command does:
+
+`docker build`: This command tells Docker to build an image.
+`--rm`: This flag removes any intermediate containers that are created during the build process, helping to keep your system clean.
+`-t cellranger:v7.2.0`: The -t flag specifies the name and tag for the image. In this case, it's named cellranger with version v7.2.0.
+`-f Dockerfile`: This flag specifies the Dockerfile to use for building the image. You can replace Dockerfile with the actual name of your Dockerfile if it's different.
+`.`: The dot at the end of the command indicates that the build context is the current directory, where the Dockerfile is located.
+Running this command will build a Docker image with the name `cellranger:v7.2.0`. Make sure you are in the directory containing the Dockerfile you want to use for building the image.
 
 
 ## Perform a testrun
 `docker run -it 69d989ee9140 cellranger testrun --id=check_install`
+
 <details>
 
 ```
@@ -73,7 +116,9 @@ Pipestance completed successfully!
 2023-09-29 16:33:06 Shutting down.
 Saving pipestance info to "check_install/check_install.mri.tgz"
 ```
-<detals>
+</details>
+
+<br><br>
 
 ## Contact
 For additional information or assistance, please contact Jesse Marks (jmarks@rti.org).
