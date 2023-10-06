@@ -5,6 +5,8 @@ FROM ubuntu:22.04
 LABEL maintainer="Jesse Marks <jmarks@rti.org>"
 LABEL description="Cell Ranger software for single-cell analyses."
 LABEL software-website="https://support.10xgenomics.com/single-cell-gene-expression/software/overview/welcome"
+LABEL software-version="7.2.0"
+LABEL license="https://www.10xgenomics.com/legal/end-user-software-license-agreement"
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
@@ -12,7 +14,9 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN apt-get update && apt-get install -y \
     curl \
     vim \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && apt-get autoremove
 
 # Set working directory
 WORKDIR /opt
