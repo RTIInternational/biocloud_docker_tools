@@ -13,7 +13,7 @@ If a software tool does not have a version (e.g., a custom script), use `v1` for
 Commiting a Dockerfile to this repository will automatically result in the building of a new docker image that is uploaded to Docker Hub. To submit a commit developers should complete the following steps: 
 1. Fork this repository to their account (if not previously done).
 2. Create a branch for the specific docker you working on.
-* Create the necessary directory structure when applicable as described above. **Not sure how to make this just an indented bullet**
+    * Create the necessary directory structure when applicable as described above.
 4. Create the Dockerfile and appropriate documentation and commit to the branch you created in step 2.
 5. Create a pull request to merge this with this repository
 6. Address any comments that come up during the review.
