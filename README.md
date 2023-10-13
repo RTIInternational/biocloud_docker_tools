@@ -4,8 +4,8 @@ Welcome to the RTI BioCloud Docker Library! This repository serves as a central 
 
 ## Repository Structure
 
-The Dockerfiles are organized in the following structure: `<tool-name>/<tool-version>/Dockerfile`. Each tool has its own directory containing the Dockerfile and related files.
-If a software tool does not have a version, with a custom script for example, use `v1` for the tool-version folder (e.g., RTI_tool/v1/Dockerfile).
+The Dockerfiles are organized in the following structure: `<tool_name>/<tool_version>/Dockerfile`. Each tool has its own directory containing the Dockerfile and related files.
+If a software tool does not have a version (e.g., a custom script), use `v1` for the tool-version folder (e.g., rti_tool/v1/Dockerfile). Tool names should contain only lowercase characters and underscores (not hyphens) should be used to separate words. 
 
 <br><br>
 
@@ -13,7 +13,7 @@ If a software tool does not have a version, with a custom script for example, us
 Commiting a Dockerfile to this repository will automatically result in the building of a new docker image that is uploaded to Docker Hub. To submit a commit developers should complete the following steps: 
 1. Fork this repository to their account (if not previously done).
 2. Create a branch for the specific docker you working on.
->A. Create the necessary directory structure when applicable as described above. **Not sure how to make this just an indented bullet**
+* Create the necessary directory structure when applicable as described above. **Not sure how to make this just an indented bullet**
 4. Create the Dockerfile and appropriate documentation and commit to the branch you created in step 2.
 5. Create a pull request to merge this with this repository
 6. Address any comments that come up during the review.
@@ -41,6 +41,14 @@ Once a pull request has been received, the repository administrators will review
 - [ ] Maintain documentation alongside the Dockerfile, describing how to build, run, and use the image.
 
 <br><br>
+
+## Review Process
+Each pull request received will be subject to a review process that will confirm that checklist items are addressed. The review process will consist of 
+1. **Review Code:** Check for syntax errors, coding standards, and best practices.
+2. **Review Documentation:** Ensure that comments and READMEs are clear and informative.
+3. **Review Execution:** Verify that the Dockerfile builds locally.
+
+If all three of these review stages are satisfactory then the approval will be given to merge the pull request and initiate the build of the docker image. 
 
 # Docker Hub
 
