@@ -30,9 +30,11 @@ Once a pull request has been received, the repository administrators will review
 - [ ] Ensure sensitive data (e.g., API keys, passwords) is not hardcoded in the Dockerfile.
 - [ ] Specify a meaningful `ENTRYPOINT` or `CMD` to define how the container should run.
 - [ ] Include minimum LABELs:
-  - [ ] `LABEL maintainer="Your Name <your.email@example.com>"`
+  - [ ] `LABEL maintainer="Your Name <your.email@rti.org>"`
   - [ ] `LABEL description="Short description of the purpose of this image"`
   - [ ] `LABEL software-website="https://example.com"`
+  - [ ] `LABEL software-version="1.0.0"`
+  - [ ] `LABEL license="https://www.example.com/legal/end-user-software-license-agreement"`
 
 **Committing**
 - [ ] Organize each tool based off of the guide above in the [Respository Structure](#repository-structure) section above.
