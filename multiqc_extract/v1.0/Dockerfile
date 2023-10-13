@@ -1,22 +1,25 @@
-# FROM arm64v8/r-base
-FROM r-base:4.3.1
+FROM rocker/r-ubuntu:20.04
 
-LABEL maintainer=dnwilliams@rti.org
+LABEL maintainer="David Williams <dnwilliams@rti.org>"
+LABEL description="This Docker image contains an in-house script written to extract several key stats of interest from a MultiQC run coming off of a FastQC analysis."
 
-RUN apt update && apt install -y jq && jq --version
+RUN apt update
+RUN apt install -y vim
+
+# Installing R package to extract JSON info
+RUN R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/jsonlite/jsonlite_1.8.0.tar.gz')"
 
 # Add scripts to make it run
-ADD unzip_extract_stats.sh /
+ADD unzip_extract_stats.R /
 
 # Add to /opt folder
-RUN mv unzip_extract_stats.sh /opt/
+RUN mv unzip_extract_stats.R /opt/
 
 # Change permissions to make things exectuable
-RUN chmod u+x /opt/unzip_extract_stats.sh
+RUN chmod u+x /opt/unzip_extract_stats.R
 
 # Set wrkdir
 RUN mkdir /data
-COPY ./*.r /data
 COPY ./*.zip /data
 WORKDIR /data
 
