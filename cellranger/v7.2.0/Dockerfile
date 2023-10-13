@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /opt
 
 # Download and unpack the cellranger-7.1.0.tar.gz tar file
-RUN curl -o cellranger-7.2.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.2.0.tar.gz?Expires=1696039695&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=J8boUOw-~-wL~21yRmpJ5q5xOGetDKjaqxghUzGD4SIXJQA5Opnl197lyG0CrCOESqrPh2olhfgKfSBmF0-lcQnwH8onnFJ6-XkMCG2l1dqIhU6~UpWXGz95WHHGsXojVv9gllcyYL~lJwRFJLZbbY3C0pR5wEi5~onf4GkOKlT1q~o~pWwX5i0W7Cl4sWy4-MnS0sm6Y9lRmtGYP-TGZwdL4o3A0XUmMjnCn3O-Fc0DuiF1Gm5kg3RKswEOPHHZuXtd9VIx73ATOsiqXpcVUUWkzE8IFOFHVpmoE2Vd0qERbHqu1MxSUrzqL2mgEMgzLjBTEC~AWmflRI4qby-V4w__"
+RUN curl -o cellranger-7.2.0.tar.gz "https://cf.10xgenomics.com/releases/cell-exp/cellranger-7.2.0.tar.gz?Expires=1697256046&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&Signature=WSr9QEqQgKktdrM7GnIX26Z1-eTf3Y939X0RmVHVyTHcz97dphrPeYxvFZo7-BikxFLLakE1SUVwuITGpw-~0ga3K3Ip4ogspsqv85mYtdG1OVxx6FHJcUN5Lsk~iZ1jVLb8J67-nlfhfKuTRjpZvdT~I-oF9YcrJXRa1ombOVg1lM4wEzSWqkhanduBMVTVfKIf8-BI5dVJEMP6yH298ol3MCF6FJnwiuHiQ12D7rcWfbJ-847RjZOTjNneN1A7uzkzLCJNRwm1AMCvYUOngdpvlyePM7eJOQ2jDsGsJiUNZ4TJEFBEhBGtHaRlOTuXrZqiEXn3JNjN~DVTe3cfcw__"
 
 # Download and unpack reference data files
 #RUN curl -O https://cf.10xgenomics.com/supp/cell-exp/refdata-gex-GRCh38-2020-A.tar.gz
