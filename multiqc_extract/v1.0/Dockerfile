@@ -7,7 +7,7 @@ RUN apt update
 RUN apt install -y vim
 
 # Installing R package to extract JSON info
-RUN R -e "install.packages('https://cran.r-project.org/src/contrib/Archive/jsonlite/jsonlite_1.8.0.tar.gz')"
+RUN R -e "install.packages('jsonlite')"
 
 # Add scripts to make it run
 ADD unzip_extract_stats.R /
