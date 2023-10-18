@@ -1,6 +1,10 @@
 library(jsonlite)
 
-zip_files <- list.files(path = ".", pattern = "\\.zip")
+zip_files <- list.files(path = ".", pattern = "multiqc_data\\.zip")
+
+if(length(zip_files)==0){
+  stop("No MultiQC ZIP files found. Exiting")
+}
 
 for (zip_file in zip_files){
   output_dir_name <- "output_dir"
