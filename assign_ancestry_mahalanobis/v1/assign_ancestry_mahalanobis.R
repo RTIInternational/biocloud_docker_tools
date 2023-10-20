@@ -440,7 +440,6 @@ write.table(
 # Generate plots of ancestry outliers using different stddev thresholds
 for (ancestry in ancestries) {
     plot_data = dataset_samples[dataset_samples$ANCESTRY == ancestry,]
-    print(plot_data)
     if (nrow(plot_data) > 0) {
         plot_data$color = "green"
         plot_data[plot_data$SCALED_MAHAL > 2,'color'] = "yellow"
