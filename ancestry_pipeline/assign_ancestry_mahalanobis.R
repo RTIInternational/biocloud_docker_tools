@@ -73,6 +73,12 @@ option_list = list(
         default=3,
         type='integer',
         help="StdDev threshold for filtering ancestries"
+    ),
+    make_option(
+        c('--scale-to-ref'),
+        action='store_true',
+        default=FALSE,
+        help="Scale Mahalanobis distance to reference for SD cutoffs rather than within scaling within dataset"
     )
 )
 
@@ -323,9 +329,23 @@ scaled = data.frame(matrix(ncol = 2, nrow = 0))
 colnames(scaled) = c("ID","SCALED_MAHAL")
 for (ancestry in ancestries) {
     tempScaled = dataset_samples[dataset_samples$ANCESTRY == ancestry, c("ID", ancestry)]
-    tempScaled$SCALED_MAHAL = abs(scale(tempScaled[, ancestry], center=median(tempScaled[, ancestry]), scale=sd(tempScaled[, ancestry])))
-    tempScaled = tempScaled[, c("ID", "SCALED_MAHAL")]
-    scaled = rbind(scaled, tempScaled)
+    if (nrow(tempScaled) > 0) {
+        if (get_arg(args, 'scale-to-ref')) {
+            tempScaled$SCALED_MAHAL = abs(scale(
+                tempScaled[, ancestry], 
+                center=median(filtered_pcs[filtered_pcs$POP == ancestry, ancestry]),
+                scale=sd(filtered_pcs[filtered_pcs$POP == ancestry, ancestry])
+            ))
+        } else {
+            tempScaled$SCALED_MAHAL = abs(scale(
+                tempScaled[, ancestry], 
+                center=median(tempScaled[, ancestry]), 
+                scale=sd(tempScaled[, ancestry])
+            ))
+        }
+        tempScaled = tempScaled[, c("ID", "SCALED_MAHAL")]
+        scaled = rbind(scaled, tempScaled)
+    }
 }
 dataset_samples = merge(dataset_samples, scaled, sort=FALSE)
 dataset_samples = dataset_samples[order(dataset_samples$ANCESTRY,dataset_samples$SCALED_MAHAL),]
@@ -380,16 +400,21 @@ for (sd in sd_cutoffs) {
     }
     # Get summary of ancestry assignments
     out = dataset_samples[dataset_samples$SCALED_MAHAL <= sd,]
-    newSummary = as.data.frame.matrix(table(out$ANCESTRY, out$POP))
-    colnames(newSummary) = c(paste0(sd, '_StdDev'))
-    newSummary$ANCESTRY = rownames(newSummary)
+    if (nrow(out) == 0) {
+        newSummary = data.frame(ancestries, rep(0, length(ancestries)))
+        colnames(newSummary) = c('ANCESTRY', paste0(sd, '_StdDev'))
+    } else {
+        newSummary = as.data.frame.matrix(table(out$ANCESTRY, out$POP))
+        colnames(newSummary) = c(paste0(sd, '_StdDev'))
+        newSummary$ANCESTRY = rownames(newSummary)
+    }
     summary = merge(summary, newSummary, by='ANCESTRY', all.x=TRUE)
     # Generate plots
     plot_data = data.frame(dataset_samples)
     plot_data = plot_data[!is.null(plot_data$SCALED_MAHAL),]
     plot_data[plot_data$SCALED_MAHAL > sd, 'color'] = 'black'
     generate_pc_plot(
-        out,
+        plot_data,
         'PC1',
         'PC2',
         'PC3',

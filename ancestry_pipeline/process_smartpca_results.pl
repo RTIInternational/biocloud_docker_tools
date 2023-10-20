@@ -23,7 +23,7 @@ GetOptions (
     'file_in_bim_id_xref=s' => \$fileInBimIdXref,
     'file_in_fam_id_xref=s' => \$fileInFamIdXref,
     'file_out_prefix=s' => \$fileOutPrefix
-);
+) or die("Invalid options");
 
 my %bimIdXref = ();
 my %famIdXref = ();

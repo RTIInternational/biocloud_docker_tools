@@ -21,7 +21,7 @@ GetOptions (
     'file_in_ref_samples=s' => \$fileInRefSamples,
     'file_out_dataset_fam=s' => \$fileOutDatasetFam,
     'file_out_ref_fam=s' => \$fileOutRefFam,
-);
+) or die("Invalid options");
 
 # Process dataset fam
 open(FILE_IN_DATASET_FAM, $fileInDatasetFam);

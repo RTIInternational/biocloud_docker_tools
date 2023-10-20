@@ -16,6 +16,7 @@ my $fileInPopIdXref = '';
 my $datasetName = '';
 my $refPops = '';
 my $fileOutPrefix = '';
+my $smartpcaOutPrefix = '';
 my $threads = 1;
 
 GetOptions (
@@ -26,8 +27,9 @@ GetOptions (
     'dataset_name=s' => \$datasetName,
     'ref_pops=s' => \$refPops,
     'file_out_prefix=s' => \$fileOutPrefix,
+    'smartpca_out_prefix=s' => \$smartpcaOutPrefix,
     'threads=i' => \$threads
-);
+) or die("Invalid options");
 
 my $nextId = 1;
 my $id = "";
@@ -88,9 +90,9 @@ print FILE_OUT_PAR "genotypename: $fileInBed\n";
 print FILE_OUT_PAR "snpname: $fileOutPrefix.bim\n";
 print FILE_OUT_PAR "indivname: $fileOutPrefix.fam\n";
 print FILE_OUT_PAR "poplistname: ".$fileOutPrefix."_pop_list.tsv\n";
-print FILE_OUT_PAR "evecoutname: $fileOutPrefix.evec\n";
-print FILE_OUT_PAR "evaloutname: $fileOutPrefix.eval\n";
-print FILE_OUT_PAR "snpweightoutname: $fileOutPrefix.snpweight\n";
+print FILE_OUT_PAR "evecoutname: $smartpcaOutPrefix.evec\n";
+print FILE_OUT_PAR "evaloutname: $smartpcaOutPrefix.eval\n";
+print FILE_OUT_PAR "snpweightoutname: $smartpcaOutPrefix.snpweight\n";
 print FILE_OUT_PAR "altnormstyle: YES\n";
 print FILE_OUT_PAR "numoutevec: 10\n";
 print FILE_OUT_PAR "numoutlieriter: 5\n";

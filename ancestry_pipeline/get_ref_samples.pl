@@ -21,7 +21,7 @@ GetOptions (
     'ancestries_to_include=s' => \$ancestriesToInclude,
     'file_out_ancestry_id_xref=s' => \$fileOutAncestryIdXref,
     'file_out_ref_samples=s' => \$fileOutRefSamples,
-);
+) or die("Invalid options");
 
 # Set population column to search in PSAM
 my $popCol = ($popType eq "SUPERPOP") ? 2 : (($popType eq "POP") ? 3 : 0);

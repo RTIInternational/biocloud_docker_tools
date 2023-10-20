@@ -11,15 +11,19 @@ RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 
+#### Install general packages
+RUN rm -Rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get install -y \
+        curl \
+        awscli
+
 #### Install plink ####
 ENV DEBIAN_FRONTEND noninteractive
-RUN rm -Rf /var/lib/apt/lists/*
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get install -y \
         curl \
         fonts-texgyre \
-        libatlas-base-dev \
-    && rm -rf /var/lib/apt/lists/*
+        libatlas-base-dev
 RUN wget https://github.com/chrchang/plink-ng/archive/refs/tags/b15c19f.tar.gz \
     && tar -xvzf b15c19f.tar.gz \
     && mv plink-ng-b15c19f/ /plink_tmp/
@@ -46,10 +50,16 @@ RUN apt-get update \
     && make clobber \
     && make install
 ENV PATH=$PATH:/EIG-7.2.1/bin
+RUN rm -Rf /var/lib/apt/lists/*
+
+#### Install R libraries
+RUN R -e "install.packages('scatterplot3d',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('optparse',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
 #### Install custom scripts ####
 # Add scripts
 ADD run_pipeline.py /opt/
+ADD ancestry_pipeline_config.json /opt/
 ADD get_dataset_variants.pl /opt/
 ADD get_ref_samples.pl /opt/
 ADD add_pop_ids_to_fam_files.pl /opt/
@@ -65,4 +75,16 @@ RUN chmod 755 /opt/prepare_smartpca_input.pl
 RUN chmod 755 /opt/process_smartpca_results.pl
 RUN chmod 755 /opt/assign_ancestry_mahalanobis.R
 
-WORKDIR /
+RUN mkdir /data
+
+#### Add reference data
+# Note: prior to build get new presigned URLs and insert below
+RUN mkdir /data/.ref
+WORKDIR /data/.ref
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20231019%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231019T140401Z&X-Amz-Expires=172800&X-Amz-SignedHeaders=host&X-Amz-Signature=b30e4491b496ca74a759636544c97a50c9f35a039410bc65035fdcee1ae4e377"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20231019%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231019T140402Z&X-Amz-Expires=172800&X-Amz-SignedHeaders=host&X-Amz-Signature=3fb179df81c8e47dfe54aa8bb45e97fe3d97263b5ab2f25aa9f7831bd4d3f03c"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20231019%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231019T140403Z&X-Amz-Expires=172800&X-Amz-SignedHeaders=host&X-Amz-Signature=435a0a2974b071b92dc216fdf7145718488b3df824ad2e29142c31353e960018"
+RUN wget -O 1000g_variants.tsv "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20231019%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231019T140404Z&X-Amz-Expires=172800&X-Amz-SignedHeaders=host&X-Amz-Signature=415a800144b50ee9778eb5903effdc4f87dca5537ad4c6f8a8aaff98311b538b"
+RUN wget -O phase3_orig.psam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/phase3_orig.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20231019%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20231019T140406Z&X-Amz-Expires=172800&X-Amz-SignedHeaders=host&X-Amz-Signature=714dfba0454e921e849ccaa0517836978cac290ae9e10c218f4a28e913009c39"
+
+WORKDIR /data

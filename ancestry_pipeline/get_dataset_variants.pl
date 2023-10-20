@@ -17,7 +17,7 @@ GetOptions (
     'file_in_gvcf=s' => \$fileInGVCF,
     'file_in_pos_list=s' => \$fileInPosList,
     'file_out_prefix=s' => \$fileOutPrefix
-);
+) or die("Invalid options");
 
 sub flip {
     my ($allele) = @_;

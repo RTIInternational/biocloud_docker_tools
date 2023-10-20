@@ -18,9 +18,9 @@
 <summary>Test ancestry_pipeline.py</summary>
 
 ``` shell
-python3 ~/git/biocloud_docker_tools/ancestry_pipeline/run_pipeline.py \
-    --pipeline_config ~/git/biocloud_docker_tools/ancestry_pipeline/ancestry_pipeline_config.json \
-    --pipeline_arguments ~/git/biocloud_docker_tools/ancestry_pipeline/test_ancestry_pipeline_superpop.json
+python3 /mnt/git/biocloud_docker_tools/ancestry_pipeline/run_pipeline.py \
+    --pipeline_config /mnt/git/biocloud_docker_tools/ancestry_pipeline/ancestry_pipeline_config.json \
+    --pipeline_arguments /mnt/data/temp/t1d/ancestry_pipeline_test.json
 ```
 </summary>
 
@@ -132,14 +132,14 @@ perl ~/git/biocloud_docker_tools/ancestry_pipeline/process_smartpca_results.pl \
 
 # Run assign_ancestry_mahalanobis
 docker run -ti -v /rti-01/ngaddis/data:/data --rm rtibiocloud/assign_ancestry_mahalanobis:v1_6207f45 bash
-Rscript /opt/assign_ancestry_mahalanobis.R \
-    --file-pcs "/data/temp/t1d/ref_dataset_merged_smartpca_evec.tsv" \
+Rscript /mnt/git/biocloud_docker_tools/ancestry_pipeline/assign_ancestry_mahalanobis.R \
+    --file-pcs /mnt/data/temp/t1d/process_smartpca_results/dataset_ref_smartpca_evec.tsv \
     --pc-count 10 \
-    --dataset "T1D" \
-    --dataset-legend-label "T1D" \
-    --ref-pops "AFR,AMR,EAS,EUR,SAS" \
-    --ref-pops-legend-labels "African,American Admixed,East Asian,European,South Asian" \
-    --out-dir "/data/temp/t1d/ancestry" \
+    --dataset PFNA12878 \
+    --dataset-legend-label PFNA12878 \
+    --ref-pops AFR,AMR,EAS,EUR,SAS \
+    --ref-pops-legend-labels AFR,AMR,EAS,EUR,SAS \
+    --out-dir /mnt/data/temp/t1d/assign_ancestry_mahalanobis \
     --use-pcs-count 10 \
     --midpoint-formula "median" \
     --std-dev-cutoff 3
