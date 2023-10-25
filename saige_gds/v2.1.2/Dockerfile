@@ -8,7 +8,7 @@ ADD saige_gds.R /opt/
 
 
 # change permissions to make executable
-RUN chmod 755 /opt/genesis.R
+RUN chmod 755 /opt/saige_gds.R
 
 # Install libraries
 RUN Rscript -e 'BiocManager::install(c("R.utils"), ask = FALSE)'
