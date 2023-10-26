@@ -1,5 +1,8 @@
 #!/usr/local/bin/Rscript
 
+library(SeqArray)
+library(SAIGEgds)
+library(SNPRelate)
 
 args <- commandArgs(TRUE)
 loop = TRUE
@@ -42,9 +45,6 @@ while (loop) {
 
 
 
-library(SeqArray)
-library(SAIGEgds)
-library(SNPRelate)
 
 #### only need to calculate kinship once; skip all these steps ####
 
