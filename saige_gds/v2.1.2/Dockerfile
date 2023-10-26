@@ -20,7 +20,7 @@ RUN mkdir /data
 WORKDIR /data
 
 # Install libraries
-RUN Rscript -e 'BiocManager::install(c("R.utils"), ask = FALSE)'
+#RUN Rscript -e 'BiocManager::install(c("R.utils"), ask = FALSE)'
 RUN Rscript -e 'BiocManager::install(c("SeqArray"), ask = FALSE)'
 RUN Rscript -e 'BiocManager::install(c("SAIGEgds"), ask = FALSE)'
 RUN Rscript -e 'BiocManager::install(c("SNPRelate"), ask = FALSE)'
