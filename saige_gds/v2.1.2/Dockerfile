@@ -12,6 +12,9 @@ RUN mv /saige_gds.R /opt/
 # Change permissions to make things exectuable
 RUN chmod -R u+x /opt/
 
+CMD ["ls", "/opt/"]
+
+
 # Set wrkdir
 RUN mkdir /data
 WORKDIR /data
@@ -25,4 +28,4 @@ RUN Rscript -e 'BiocManager::install(c("SNPRelate"), ask = FALSE)'
 # add to PATH variable
 RUN PATH=$PATH:/opt/
 
-#ENTRYPOINT ["Rscript", "saige_gds.R"]
+ENTRYPOINT ["Rscript", "/opt/saige_gds.R"]
