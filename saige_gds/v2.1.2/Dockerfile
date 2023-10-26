@@ -20,3 +20,8 @@ RUN Rscript -e 'BiocManager::install(c("SNPRelate"), ask = FALSE)'
 # Set wrkdir
 RUN mkdir /data
 WORKDIR /data
+
+# add to PATH variable
+RUN PATH=$PATH:/opt/
+
+ENTRYPOINT ["Rscript", "saige_gds.R"]
