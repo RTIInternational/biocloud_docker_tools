@@ -2,6 +2,8 @@ FROM bioconductor/bioconductor_docker:RELEASE_3_15
 
 # author
 LABEL maintainer="Eric Earley <eearley@rti.org>"
+LABEL description="Run SAIGE analysis on genotype and phenotype data."
+LABEL software_version="2.1.2"
 
 # add R script
 ADD saige_gds.R /
