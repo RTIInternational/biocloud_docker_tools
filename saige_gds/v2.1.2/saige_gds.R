@@ -5,6 +5,7 @@ library(R.utils)
 library(SeqArray)
 library(SAIGEgds)
 library(SNPRelate)
+library(optparse)
 
 
 option_list = list(
