@@ -4,11 +4,17 @@ FROM bioconductor/bioconductor_docker:RELEASE_3_15
 LABEL maintainer="Eric Earley <eearley@rti.org>"
 
 # add R script
-#ADD saige_gds.R /opt/
-COPY saige_gds.R /opt/
+ADD saige_gds.R /
 
-# change permissions to make executable
-RUN chmod 755 /opt/saige_gds.R
+# Move scripts to
+RUN mv /saige_gds.R /opt/
+
+# Change permissions to make things exectuable
+RUN chmod -R u+x /opt/
+
+# Set wrkdir
+RUN mkdir /data
+WORKDIR /data
 
 # Install libraries
 RUN Rscript -e 'BiocManager::install(c("R.utils"), ask = FALSE)'
@@ -16,12 +22,7 @@ RUN Rscript -e 'BiocManager::install(c("SeqArray"), ask = FALSE)'
 RUN Rscript -e 'BiocManager::install(c("SAIGEgds"), ask = FALSE)'
 RUN Rscript -e 'BiocManager::install(c("SNPRelate"), ask = FALSE)'
 
-
-# Set wrkdir
-RUN mkdir /data
-WORKDIR /data
-
 # add to PATH variable
 RUN PATH=$PATH:/opt/
 
-ENTRYPOINT ["Rscript", "saige_gds.R"]
+#ENTRYPOINT ["Rscript", "saige_gds.R"]
