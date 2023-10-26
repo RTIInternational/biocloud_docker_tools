@@ -4,8 +4,8 @@ FROM bioconductor/bioconductor_docker:RELEASE_3_15
 LABEL maintainer="Eric Earley <eearley@rti.org>"
 
 # add R script
-ADD saige_gds.R /opt/
-
+#ADD saige_gds.R /opt/
+COPY saige_gds.R /opt/
 
 # change permissions to make executable
 RUN chmod 755 /opt/saige_gds.R
