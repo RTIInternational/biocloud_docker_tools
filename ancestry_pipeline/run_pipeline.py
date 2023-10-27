@@ -96,39 +96,45 @@ with open(args.wf_arguments) as f:
 
 # Set general wf vars
 wf_vars = process_wf_inputs(wf_args, wf_vars)
+wf_vars['inputs.final_file_location'] = wf_vars['inputs.final_file_location'] if (wf_vars['inputs.final_file_location'][-1] == "/") else (wf_vars['inputs.final_file_location'] + "/")
 
 # Open log file
-final_file_location = wf_vars['inputs.final_file_location']
-final_file_location = final_file_location if (final_file_location[-1] == "/") else (final_file_location + "/")
-os.system("mkdir -p {}".format(final_file_location))
-wf_log = "{}{}.log".format(final_file_location, wf_config['name'])
+os.system("mkdir -p {}".format(wf_vars['inputs.final_file_location']))
+wf_log = "{}{}.log".format(wf_vars['inputs.final_file_location'], wf_config['name'])
 sys.stdout = log_stdout(wf_log)
 print("Initializing workflow {}\n".format(wf_config['name']))
 
 # Run wf
 for task in wf_config['tasks']:
-    print("Running task {}".format(task['name']))
-    os.system("mkdir -p /data/{}".format(task['name']))
     wf_vars = create_task_vars(task, wf_vars)
     if task['active']:
+        print("Running task {}".format(task['name']))
+        os.system("mkdir -p {}{}".format(wf_vars['inputs.final_file_location'], task['name']))
+        task_log = "{}{}/{}.log".format(wf_vars['inputs.final_file_location'], task['name'], task['name'])
+        f = open(task_log, 'w')
         cmd = prepare_cmd(task['cmd'], wf_vars)
-        print(cmd)
-        task_log = "/data/{}/{}.log".format(task['name'], task['name'])
+        f.write("\n".join(str(item) for item in cmd))
         try:
-            with open(task_log, 'w') as f:
-                result = subprocess.run(
-                    cmd,
-                    text=True,
-                    check=True,
-                    stdout=f
-                )
-            
-            os.system("cp -r /data/{} {}".format(task['name'], final_file_location))
+            result = subprocess.run(
+                cmd,
+                text=True,
+                check=True,
+                capture_output=True
+            )
+            f.write(result.stdout + "\n")
             print("Task {} complete\n".format(task['name']))
         except subprocess.CalledProcessError as e:
             if task['kill_wf_on_error']:
+                f.write(e.stderr)
                 print(e.stderr)
-                os.system("cp -r /data/{} {}".format(task['name'], final_file_location))
                 sys.exit(e.stderr)
+            else:
+                print("Task {} complete\n".format(task['name']))
+
+        f.close()
+
+    else:
+        print("Using cached outputs for task {}\n".format(task['name']))
+
 
 print("Workflow {} complete".format(wf_config['name']))

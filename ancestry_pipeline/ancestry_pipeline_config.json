@@ -26,6 +26,11 @@
             "default": "",
             "required": true
         },
+        "std_dev_cutoff": {
+            "type": "int",
+            "default": 3,
+            "required": false
+        },
         "threads": {
             "type": "int",
             "default": 1,
@@ -57,11 +62,6 @@
             "required": false
         }
     },
-    "outputs": {
-        "log": {
-            "type": "file"
-        }
-    },
     "tasks": [
         {
             "active": false,
@@ -77,7 +77,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/get_dataset_variants/dataset"
+                    "value": "<inputs.final_file_location>get_dataset_variants/dataset"
                 }
             },
             "cmd": [
@@ -115,7 +115,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/convert_dataset_to_bfile/dataset"
+                    "value": "<inputs.final_file_location>convert_dataset_to_bfile/dataset"
                 },
                 "threads": {
                     "type": "int",
@@ -174,11 +174,11 @@
                 },
                 "file_out_ancestry_id_xref": {
                     "type": "str",
-                    "value": "/data/get_ref_samples/ancestry_id_xref.tsv"
+                    "value": "<inputs.final_file_location>get_ref_samples/ancestry_id_xref.tsv"
                 },
                 "file_out_ref_samples": {
                     "type": "str",
-                    "value": "/data/get_ref_samples/ref_samples.tsv"
+                    "value": "<inputs.final_file_location>get_ref_samples/ref_samples.tsv"
                 }
             },
             "cmd": [
@@ -228,11 +228,11 @@
                 },
                 "file_out_dataset_fam": {
                     "type": "str",
-                    "value": "/data/add_pop_ids_to_fam_files/dataset.fam"
+                    "value": "<inputs.final_file_location>add_pop_ids_to_fam_files/dataset.fam"
                 },
                 "file_out_ref_fam": {
                     "type": "str",
-                    "value": "/data/add_pop_ids_to_fam_files/ref.fam"
+                    "value": "<inputs.final_file_location>add_pop_ids_to_fam_files/ref.fam"
                 }
             },
             "cmd": [
@@ -290,7 +290,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/get_ref_genotypes/ref"
+                    "value": "<inputs.final_file_location>get_ref_genotypes/ref"
                 },
                 "threads": {
                     "type": "str",
@@ -369,7 +369,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/get_merge_conflicts/dataset_ref"
+                    "value": "<inputs.final_file_location>get_merge_conflicts/dataset_ref"
                 },
                 "threads": {
                     "type": "str",
@@ -430,7 +430,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/flip_ref/ref"
+                    "value": "<inputs.final_file_location>flip_ref/ref"
                 },
                 "threads": {
                     "type": "str",
@@ -507,7 +507,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/merge_dataset_ref/dataset_ref"
+                    "value": "<inputs.final_file_location>merge_dataset_ref/dataset_ref"
                 },
                 "threads": {
                     "type": "str",
@@ -587,11 +587,11 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/prepare_smartpca_input/dataset_ref_smartpca"
+                    "value": "<inputs.final_file_location>prepare_smartpca_input/dataset_ref_smartpca"
                 },
                 "smartpca_out_prefix": {
                     "type": "str",
-                    "value": "/data/smartpca/dataset_ref_smartpca"
+                    "value": "<inputs.final_file_location>smartpca/dataset_ref_smartpca"
                 },
                 "threads": {
                     "type": "str",
@@ -661,7 +661,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/smartpca/dataset_ref_smartpca"
+                    "value": "<inputs.final_file_location>smartpca/dataset_ref_smartpca"
                 }
             },
             "cmd": [
@@ -690,7 +690,7 @@
             }
         },
         {
-            "active": true,
+            "active": false,
             "name": "process_smartpca_results",
             "inputs": {
                 "file_in_evec": {
@@ -715,7 +715,7 @@
                 },
                 "file_out_prefix": {
                     "type": "str",
-                    "value": "/data/process_smartpca_results/dataset_ref_smartpca"
+                    "value": "<inputs.final_file_location>process_smartpca_results/dataset_ref_smartpca"
                 }
             },
             "cmd": [
@@ -754,7 +754,7 @@
             }
         },
         {
-            "active": true,
+            "active": false,
             "name": "assign_ancestry_mahalanobis",
             "inputs": {
                 "file_in_evec": {
@@ -768,6 +768,14 @@
                 "dataset_name": {
                     "type": "file",
                     "value": "<inputs.dataset_name>"
+                },
+                "std_dev_cutoff": {
+                    "type": "int",
+                    "value": "<inputs.std_dev_cutoff>"
+                },
+                "out_dir": {
+                    "type": "str",
+                    "value": "<inputs.final_file_location>assign_ancestry_mahalanobis/"
                 }
             },
             "cmd": [
@@ -786,13 +794,13 @@
                 "--ref-pops-legend-labels",
                 "<tasks.assign_ancestry_mahalanobis.inputs.ref_ancestries>",
                 "--out-dir",
-                "/data/assign_ancestry_mahalanobis/",
+                "<tasks.assign_ancestry_mahalanobis.inputs.out_dir>",
                 "--use-pcs-count",
                 "10",
                 "--midpoint-formula",
                 "median",
                 "--std-dev-cutoff",
-                "3",
+                "<tasks.assign_ancestry_mahalanobis.inputs.std_dev_cutoff>",
                 "--scale-to-ref"
             ],
             "kill_wf_on_error": true,
@@ -800,8 +808,60 @@
                 "log": {
                     "type": "file",
                     "value": "assign_ancestry_mahalanobis.log"
+                },
+                "raw_ancestry_assignment": {
+                    "type": "file",
+                    "value": "<tasks.assign_ancestry_mahalanobis.inputs.dataset_name>_raw_ancestry_assignments.tsv"
+                }
+            }
+        },
+        {
+            "active": true,
+            "name": "get_ancestry_assignment",
+            "inputs": {
+                "file_in_raw_ancestry_assignment": {
+                    "type": "file",
+                    "value": "<tasks.assign_ancestry_mahalanobis.outputs.raw_ancestry_assignment>"
+                },
+                "std_dev_cutoff": {
+                    "type": "int",
+                    "value": "<inputs.std_dev_cutoff>"
+                },
+                "file_out_ancestry_assignment": {
+                    "type": "str",
+                    "value": "<inputs.final_file_location>ancestry_assignment.txt"
+                }
+            },
+            "cmd": [
+                "/opt/get_ancestry_assignment.pl",
+                "--file_in_raw_ancestry_assignment",
+                "<tasks.get_ancestry_assignment.inputs.file_in_raw_ancestry_assignment>",
+                "--std_dev_cutoff",
+                "<tasks.get_ancestry_assignment.inputs.std_dev_cutoff>",
+                "--file_out_ancestry_assignment",
+                "<tasks.get_ancestry_assignment.inputs.file_out_ancestry_assignment>"
+            ],
+            "kill_wf_on_error": true,
+            "outputs": {
+                "ancestry_assignmment": {
+                    "type": "file",
+                    "value": "<tasks.get_ancestry_assignment.inputs.file_out_ancestry_assignment>"
+                },
+                "log": {
+                    "type": "file",
+                    "value": "get_ancestry_assignment.log"
                 }
             }
         }
-    ]
+    ],
+    "outputs": {
+        "ancestry_assignmment": {
+            "type": "file",
+            "value": "<tasks.get_ancestry_assignment.outputs.ancestry_assignment>"
+        },
+        "log": {
+            "type": "file",
+            "value": "<inputs.final_file_location>ancestry_assignment.log"
+        }
+    }
 }

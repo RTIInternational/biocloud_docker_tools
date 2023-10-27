@@ -15,6 +15,11 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
+    "--temp_dir",
+    help="Temporary directory for processing outputs",
+    type = str
+)
+parser.add_argument(
     "--operation_type",
     help="mv or cp",
     type = str.lower,
@@ -31,13 +36,14 @@ def traverse(o, tree_types=(list, tuple)):
         yield o
 
 out_dir = args.out_dir if (args.out_dir[-1] == "/") else (args.out_dir + "/")
+temp_dir = args.temp_dir if (args.temp_dir[-1] == "/") else (args.temp_dir + "/")
 
 # Get job ID
 with open(args.job_id_json) as f:
     job_id_json = json.load(f)
 
 # Get outputs json
-outputs_json = out_dir + "outputs.json"
+outputs_json = temp_dir + "outputs.json"
 get_outputs_cmd = "curl -X GET \"http://localhost:8000/api/workflows/v1/{}/outputs\" > {}".format(job_id_json['id'], outputs_json)
 os.system(get_outputs_cmd)
 
