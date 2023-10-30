@@ -64,7 +64,7 @@
     },
     "tasks": [
         {
-            "active": false,
+            "active": true,
             "name": "get_dataset_variants",
             "inputs": {
                 "file_in_gvcf": {
@@ -87,7 +87,8 @@
                 "--file_in_pos_list",
                 "<tasks.get_dataset_variants.inputs.file_in_pos_list>",
                 "--file_out_prefix",
-                "<tasks.get_dataset_variants.inputs.file_out_prefix>"
+                "<tasks.get_dataset_variants.inputs.file_out_prefix>",
+                "--variants_only"
             ],
             "kill_wf_on_error": true,
             "outputs": {
@@ -106,7 +107,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "convert_dataset_to_bfile",
             "inputs": {
                 "file_in_vcf": {
@@ -157,7 +158,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "get_ref_samples",
             "inputs": {
                 "file_in_psam": {
@@ -211,7 +212,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "add_pop_ids_to_fam_files",
             "inputs": {
                 "file_in_dataset_fam": {
@@ -265,7 +266,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "get_ref_genotypes",
             "inputs": {
                 "bed": {
@@ -340,7 +341,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "get_merge_conflicts",
             "inputs": {
                 "ref_bed": {
@@ -409,7 +410,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "flip_ref",
             "inputs": {
                 "bed": {
@@ -478,7 +479,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "merge_dataset_ref",
             "inputs": {
                 "ref_bed": {
@@ -558,7 +559,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "prepare_smartpca_input",
             "inputs": {
                 "file_in_bed": {
@@ -652,7 +653,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "smartpca",
             "inputs": {
                 "file_in_par": {
@@ -690,7 +691,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "process_smartpca_results",
             "inputs": {
                 "file_in_evec": {
@@ -754,7 +755,7 @@
             }
         },
         {
-            "active": false,
+            "active": true,
             "name": "assign_ancestry_mahalanobis",
             "inputs": {
                 "file_in_evec": {

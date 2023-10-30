@@ -12,11 +12,13 @@ select((select(STDOUT), $|=1)[0]);
 my $fileInGVCF = '';
 my $fileInPosList = '';
 my $fileOutPrefix = '';
+my $variantsOnly = FALSE;
 
 GetOptions (
     'file_in_gvcf=s' => \$fileInGVCF,
     'file_in_pos_list=s' => \$fileInPosList,
-    'file_out_prefix=s' => \$fileOutPrefix
+    'file_out_prefix=s' => \$fileOutPrefix,
+    'variants_only' => \$variantsOnly
 ) or die("Invalid options");
 
 sub flip {
@@ -70,7 +72,7 @@ while(<GVCF>){
         chomp;
         @F =split();
         if ($F[6] eq "PASS") {
-            if ($F[7] =~ /END=(\d+)/) {
+            if ($F[7] =~ /END=(\d+)/ && !$variantsOnly) {
                 my $end = $1;
                 for (my $i=$F[1]; $i<=$end; $i++) {
                     if (exists($variants{$F[0]})) {

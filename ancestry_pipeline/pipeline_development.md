@@ -31,9 +31,10 @@ python3 /mnt/git/biocloud_docker_tools/ancestry_pipeline/run_pipeline.py \
 ```shell
 # Get variants from dataset
 perl ~/git/biocloud_docker_tools/ancestry_pipeline/get_dataset_variants.pl \
-    --file_in_gvcf ~/data/temp/t1d/PFNA12878.hard-filtered.gvcf.gz \
+    --file_in_gvcf ~/data/temp/t1d_test/PFNA12878.hard-filtered.gvcf.gz \
     --file_in_pos_list ~/data/rti-common/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv \
-    --file_out_prefix ~/data/temp/t1d/PFNA12878
+    --file_out_prefix ~/data/temp/t1d_test/PFNA12878 \
+    --variants_only
 
 # Convert dataset vcf to bfile
 docker run -ti -v ~:/mnt --rm rtibiocloud/plink:v2.0_c6004f7 bash
@@ -144,5 +145,9 @@ Rscript /mnt/git/biocloud_docker_tools/ancestry_pipeline/assign_ancestry_mahalan
     --midpoint-formula "median" \
     --std-dev-cutoff 3
 
+# Run get_ancestry_assignment
+perl /rti-01/ngaddis/git/biocloud_docker_tools/ancestry_pipeline/get_ancestry_assignment.pl \
+    --file_in_raw_ancestry_assignment /rti-01/ngaddis/data/temp/t1d_test/assign_ancestry_mahalanobis/PFNA12878_raw_ancestry_assignments.tsv \
+    --file_out_ancestry_assignment /rti-01/ngaddis/data/temp/t1d_test/ancestry_assignment.txt
 ```
 </details>
