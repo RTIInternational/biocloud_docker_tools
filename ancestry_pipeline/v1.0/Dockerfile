@@ -94,3 +94,4 @@ RUN wget -O phase3_orig.psam "https://rti-common.s3.us-east-1.amazonaws.com/ance
 WORKDIR /data
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
