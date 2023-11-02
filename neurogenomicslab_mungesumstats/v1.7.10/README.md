@@ -5,12 +5,13 @@ The image includes a an additional R script called `neurogenomics_liftover.R` wh
 
 <br>
 
-## Usage
+# Usage
+## Docker
 
 You can use this Docker image as a stand-alone tool by running the following command:
 
 ```bash
-docker run -i rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_3d50aed Rscript /opt/neurogenomics_liftover.R \
+docker run -i rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_ee6e848 Rscript /opt/neurogenomics_liftover.R \
     --file_name "~{file_name}" \
     --output_name "~{output_name}" \
     --sep "~{sep}" \
@@ -23,7 +24,50 @@ docker run -i rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_3d50aed Rscript 
 ```
 * _be sure to use the latest tag_
 
-For more information on how to use the image and its available options, refer to the [liftover documentation](https://neurogenomics.github.io/MungeSumstats/reference/liftover.html).
+<br>
+
+## `neurogenomics_liftover.R` parameters
+
+You can obtain the help message for the `neurogenomics_liftover.R` script by running the default command with your Docker image. When you run the following command:
+
+```bash
+docker run rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_ee6e848
+```
+
+The output will display the help message for the script, providing information on its usage and available options:
+
+```plaintext
+usage: /opt/neurogenomics_liftover.R [-h] [--file_name FILE_NAME]
+                                     [--output_name OUTPUT_NAME] [--sep SEP]
+                                     [--snp_name SNP_NAME]
+                                     [--chrom_name CHROM_NAME]
+                                     [--pos_name POS_NAME]
+                                     [--ref_genome REF_GENOME]
+                                     [--convert_ref_genome CONVERT_REF_GENOME]
+                                     [--chain_source CHAIN_SOURCE]
+
+Convert summary statistics to a different reference genome
+
+options:
+  -h, --help            show this help message and exit
+  --file_name FILE_NAME
+                        Input file name
+  --output_name OUTPUT_NAME
+                        Output file name
+  --sep SEP             Field separator: 'Tab', 'Comma', or 'Space'.
+  --snp_name SNP_NAME   Name of SNP column
+  --chrom_name CHROM_NAME
+                        Name of chromosome column
+  --pos_name POS_NAME   Name of position column
+  --ref_genome REF_GENOME
+                        Reference genome (e.g., GRCh37 or GRCh38)
+  --convert_ref_genome CONVERT_REF_GENOME
+                        Target reference genome (e.g., GRCh37 or GRCh38)
+  --chain_source CHAIN_SOURCE
+                        Source for chain files (ensembl or ucsc)
+```
+
+For more information on the liftover tool in general, refer to the [MungeSumstats liftover documentation](https://neurogenomics.github.io/MungeSumstats/reference/liftover.html).
 
 <br>
 
