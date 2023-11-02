@@ -11,7 +11,7 @@ The image includes a an additional R script called `neurogenomics_liftover.R` wh
 You can use this Docker image as a stand-alone tool by running the following command:
 
 ```bash
-docker run -i rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_ee6e848 Rscript /opt/neurogenomics_liftover.R \
+docker run -i rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_6e16c82 Rscript /opt/neurogenomics_liftover.R \
     --file_name "~{file_name}" \
     --output_name "~{output_name}" \
     --sep "~{sep}" \
@@ -31,7 +31,7 @@ docker run -i rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_ee6e848 Rscript 
 You can obtain the help message for the `neurogenomics_liftover.R` script by running the default command with your Docker image. When you run the following command:
 
 ```bash
-docker run rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_ee6e848
+docker run rtibiocloud/neurogenomicslab_mungesumstats:1.7.10_6e16c82
 ```
 
 The output will display the help message for the script, providing information on its usage and available options:
