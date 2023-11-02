@@ -23,4 +23,4 @@ COPY neurogenomics_liftover.R /opt/neurogenomics_liftover.R
 WORKDIR /data/
 
 # Define the command to run the R script
-CMD ["Rscript", "/opt/neurogenomics_liftover.R --help"]
+CMD ["Rscript", "/opt/neurogenomics_liftover.R, "--help"]
