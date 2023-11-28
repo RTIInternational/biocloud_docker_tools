@@ -296,7 +296,6 @@ for sumStats in pd.read_table(
             sumStats['OVERALL_AF']
         )
         sumStats = sumStats.drop(['OVERALL_AF'], axis=1)
-
     else:
         sumStats['MAF'] = np.select(
             [sumStats['ALT_AF'] > 0.5],
