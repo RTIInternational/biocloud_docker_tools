@@ -288,21 +288,11 @@ for sumStats in pd.read_table(
             sumStats['REF'].astype(str) + ':' + sumStats['ALT'].astype(str)
 
     # Create MAF field
-    if args.file_in_summary_stats_format == "rvtests": #rvtest AF output is in "overallAF:caseAF:controlAF"
-        sumStats['OVERALL_AF'] = pd.to_numeric(sumStats['ALT_AF'].str.split(':').str[0], errors='coerce')
-        sumStats['MAF'] = np.select(
-            [sumStats['OVERALL_AF'] > 0.5],
-            [1 - sumStats['OVERALL_AF']],
-            sumStats['OVERALL_AF']
-        )
-        sumStats = sumStats.drop(['OVERALL_AF'], axis=1)
-
-    else:
-        sumStats['MAF'] = np.select(
-            [sumStats['ALT_AF'] > 0.5],
-            [1 - sumStats['ALT_AF']],
-            sumStats['ALT_AF']
-        )
+    sumStats['MAF'] = np.select(
+        [sumStats['ALT_AF'] > 0.5],
+        [1 - sumStats['ALT_AF']],
+        sumStats['ALT_AF']
+    )
 
     # Add SE to rvtests summary stats
     if args.file_in_summary_stats_format == "rvtests":
