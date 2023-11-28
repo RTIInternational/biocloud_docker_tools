@@ -1,10 +1,7 @@
-FROM python:3.7.6-slim-stretch
+FROM python:3.7.7-slim-stretch
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
-
-# update the OS related packages
-RUN apt-get update
 
 # Add scripts to make it run
 ADD make_gwas_summary_stats.py /
