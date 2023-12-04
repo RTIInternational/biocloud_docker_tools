@@ -8,11 +8,11 @@ usage <- paste("Usage: unzip_extract_stats.R
              -- Required Parameters --
               NONE
              -- Optional Parameters -- 
-              [-i | --inputpath]          <Name of input working directory> (default = .)
-              [-o | --outfile]      <The output file name> (default = output.csv)
-              [-p | --outpath]      <Path to the directory to save the outputs> (default = input path)
+              [-i | --inputpath]    <Name of input working directory> (default = .)
+              [-o | --outfile  ]    <The output file name> (default = output.csv)
+              [-p | --outpath  ]    <Path to the directory to save the outputs> (default = input path)
              -- Help Flag --  
-              [-h | --help]             <Displays this help message>
+              [-h | --help     ]    <Displays this help message>
              Example:
              unzip_extract_stats.R -i results_2023_01_01 -o my_test_results.csv -p my_test_run
               \n",sep="")
