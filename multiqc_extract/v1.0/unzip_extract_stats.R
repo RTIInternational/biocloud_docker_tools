@@ -28,7 +28,6 @@ spec <- matrix(c(
 # Parse the command line parameters into R
 args=getopt(spec, argString)
 
-
 # If missing required fields then display usage and quit
 if ( !is.null(args$help)) {
   cat(usage)
