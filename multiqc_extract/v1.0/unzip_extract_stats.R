@@ -130,9 +130,9 @@ for (zip_file in zip_files){
   ###############################
   # WRITE/APPEND TO CSV
   ###############################
+  
   output_data <- c(max_row + 1,zip_file, sample_name, total_sequences, read_length, max_per_seq_qual, per_base_seq_qual, seq_dup_level, per_base_n_content)
   column_names <- c("row_number","zip_file","sample_name","total_sequences","read_length","max_per_sequence_quality_scores","per_base_seq","sd_per_base_seq","sequence_duplication_levels","sd_sequence_duplication_levels","average_per_base_n_content","sd_per_base_n_content")
-
   
   row <- data.frame(matrix(ncol = length(column_names), nrow=0))
   colnames(row) <- column_names
