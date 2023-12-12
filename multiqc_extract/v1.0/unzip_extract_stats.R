@@ -114,7 +114,6 @@ for (zip_file in zip_files){
     return(c(out_dat_mean,out_dat_sd))
   }
   
-  
   max_per_seq_qual <- extract_max_per_seq_quality_score(per_sequence_quality_scores_file)
   per_base_seq_qual <- extract_per_base_seq_quality(per_base_seq_quality_file)
   seq_dup_level <- extract_seq_duplication_level(sequence_duplication_levels_file)
