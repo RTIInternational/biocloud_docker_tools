@@ -64,7 +64,8 @@ if(length(zip_files) != length(fastq_files)){
 }
 
 for (zip_file in zip_files){
-  tmp_unzip_dir_name <- paste0(args$outpath, "/output_dir")
+  tmp_unzip_dir_name <- paste0(args$inputpath, "/output_dir")
+  dir.create(tmp_unzip_dir_name)
   unzip(zip_file,exdir=tmp_unzip_dir_name, overwrite=TRUE)
   
   ############################################
