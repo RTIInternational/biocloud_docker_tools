@@ -6,6 +6,11 @@
             "default": "",
             "required": true
         },
+        "monomorphic_positions": {
+            "type": "str",
+            "default": "include",
+            "required": false
+        },
         "ancestry_pop_type": {
             "type": "str",
             "default": "SUPERPOP",
@@ -78,6 +83,10 @@
                 "file_out_prefix": {
                     "type": "str",
                     "value": "<inputs.final_file_location>get_dataset_variants/dataset"
+                },
+                "monomorphic_positions": {
+                    "type": "str",
+                    "value": "<inputs.monomorphic_positions>"
                 }
             },
             "cmd": [
@@ -88,7 +97,8 @@
                 "<tasks.get_dataset_variants.inputs.file_in_pos_list>",
                 "--file_out_prefix",
                 "<tasks.get_dataset_variants.inputs.file_out_prefix>",
-                "--variants_only"
+                "--monomorphic_positions",
+                "<tasks.get_dataset_variants.inputs.monomorphic_positions>"
             ],
             "kill_wf_on_error": true,
             "outputs": {

@@ -76,7 +76,6 @@ class log_stdout():
     def write(self, text):
             self.stdout.write(text)
             self.log.write(text)
-            self.log.flush()
 
     def close(self):
             self.stdout.close()
