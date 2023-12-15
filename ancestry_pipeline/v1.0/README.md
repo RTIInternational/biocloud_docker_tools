@@ -11,11 +11,10 @@ docker run -ti -v /rti-01/ngaddis:/rti-01/ngaddis -e wf_arguments=/rti-01/ngaddi
 <summary>Build instructions</summary>
 
 ``` shell
-base_dir=/rti-01/ngaddis/git/biocloud_docker_tools/ancestry_pipeline/v1.0
-cd $base_dir
+cd biocloud_docker_tools/ancestry_pipeline/v1.0
 
 # Create Dockerfile from template
-perl make_dockerfile.php
+perl make_dockerfile.pl
 
 # Local build
 docker build . -t biocloud_docker_tools/ancestry_pipeline:v1.0
