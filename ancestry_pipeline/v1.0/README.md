@@ -2,7 +2,7 @@
 <summary>Usage</summary>
 
 ``` shell
-docker run -ti -v /rti-01/ngaddis:/rti-01/ngaddis -e wf_arguments=/rti-01/ngaddis/data/temp/t1d_test3/ancestry_pipeline_test.json --rm biocloud_docker_tools/ancestry_pipeline:v1.0
+docker run -ti -v /rti-01/ngaddis:/rti-01/ngaddis -e wf_arguments=/rti-01/ngaddis/data/temp/ancestry/ancestry_pipeline_args.json --rm biocloud_docker_tools/ancestry_pipeline:v1.0
 ```
 </details>
 
