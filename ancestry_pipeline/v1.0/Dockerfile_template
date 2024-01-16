@@ -38,7 +38,7 @@ COPY sse2neon.h /plink_tmp/1.9/sse2neon.h
 COPY SFMT.h /plink_tmp/1.9/SFMT.h
 RUN cd /plink_tmp/1.9/ \
     && ./plink_first_compile \
-    && cp /plink_tmp/1.9/plink /opt/plink \
+    && cp /plink_tmp/1.9/plink /opt/plink1.9 \
     && cd / \
     && rm -rf b15c19f.tar.gz plink_tmp
 
