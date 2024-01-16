@@ -57,7 +57,7 @@
             }
         },
         "cmd": [
-            "plink",
+            "plink2",
             "--vcf",
             "<inputs.file_in_vcf>",
             "--out",
@@ -212,7 +212,7 @@
             }
         },
         "cmd": [
-            "plink",
+            "plink1.9",
             "--bed",
             "<inputs.bed>",
             "--bim",
@@ -282,7 +282,7 @@
             }
         },
         "cmd": [
-            "plink",
+            "plink1.9",
             "--bed",
             "<inputs.bed_1>",
             "--bim",
@@ -350,7 +350,7 @@
             }
         },
         "cmd": [
-            "plink",
+            "plink1.9",
             "--bed",
             "<inputs.bed>",
             "--bim",

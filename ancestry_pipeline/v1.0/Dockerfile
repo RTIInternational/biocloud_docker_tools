@@ -25,8 +25,7 @@ RUN apt-get update \
         curl \
         awscli
 
-#### Install plink ####
-ENV DEBIAN_FRONTEND noninteractive
+#### Install plink1.9 ####
 RUN apt-get install -y \
         curl \
         fonts-texgyre \
@@ -42,6 +41,13 @@ RUN cd /plink_tmp/1.9/ \
     && cp /plink_tmp/1.9/plink /opt/plink \
     && cd / \
     && rm -rf b15c19f.tar.gz plink_tmp
+
+#### Install plink2 ####
+ENV DEBIAN_FRONTEND noninteractive
+RUN wget https://s3.amazonaws.com/plink2-assets/alpha3/plink2_linux_x86_64_20220519.zip \
+    && unzip plink2_linux_x86_64_20220519.zip -d /plink_tmp \
+    && cp /plink_tmp/plink2 /opt/ \
+    && rm -rf plink2_linux_x86_64_20220519.zip plink_tmp
 ENV PATH=pkg-config:$PATH:/opt/
 
 #### Install eigensoft ####
@@ -68,11 +74,11 @@ RUN R -e "install.packages('optparse',dependencies=TRUE, repos='http://cran.rstu
 RUN mkdir /data
 RUN mkdir /data/.ref
 WORKDIR /data/.ref
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240111T225131Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=1d25c531b1329f2884ec5f1c7356309cd336e240b68772910ea8b07ae58915f8"
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240111T225132Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=e6b7c95bd98765f4396ed1c29964478f2b21e519a123646bf32d8bf63b1c1166"
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240111T225132Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7ce160f18199982951d81178c0286486bcb1ce97d6685fa727dad8e7740b01e2"
-RUN wget -O 1000g_variants.tsv "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240111T225133Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7f90c8e6a312fb17817fb45cc0ff735538b3d57c8ea68e151461b324bd7c9405"
-RUN wget -O phase3_orig.psam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/phase3_orig.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240111%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240111T225133Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=3005326ef05dedaea32c18dec7ad5119331355dd0d8bd606556beefa12c51c73"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T194102Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=f16bb4e8ac36834a34bfcd3303e606e3bd8f381e4c87899eef168f1a09cfdb42"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T194102Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=e5a2f666195589fba2af471e111a6c8665fc04fe08ad65704424294614ba2aca"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T194103Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=9bd33823d1cb74b2bdb4910812fdd2ebb87071480a3b1c96e99ca9fa909e59e8"
+RUN wget -O 1000g_variants.tsv "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T194104Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=2cc06becf5c747d61ccc6f8e4262677b9eaa295622f6890e93e581de464a9a90"
+RUN wget -O phase3_orig.psam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/phase3_orig.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T194103Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=71215f12b7d7ad2577c91c1ea227bd8c92e139e28b5d5c77f1f1fc203215a8ec"
 
 #### Install custom scripts ####
 # Add scripts

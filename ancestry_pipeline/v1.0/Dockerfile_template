@@ -25,8 +25,7 @@ RUN apt-get update \
         curl \
         awscli
 
-#### Install plink ####
-ENV DEBIAN_FRONTEND noninteractive
+#### Install plink1.9 ####
 RUN apt-get install -y \
         curl \
         fonts-texgyre \
@@ -42,6 +41,13 @@ RUN cd /plink_tmp/1.9/ \
     && cp /plink_tmp/1.9/plink /opt/plink \
     && cd / \
     && rm -rf b15c19f.tar.gz plink_tmp
+
+#### Install plink2 ####
+ENV DEBIAN_FRONTEND noninteractive
+RUN wget https://s3.amazonaws.com/plink2-assets/alpha3/plink2_linux_x86_64_20220519.zip \
+    && unzip plink2_linux_x86_64_20220519.zip -d /plink_tmp \
+    && cp /plink_tmp/plink2 /opt/ \
+    && rm -rf plink2_linux_x86_64_20220519.zip plink_tmp
 ENV PATH=pkg-config:$PATH:/opt/
 
 #### Install eigensoft ####
