@@ -12,9 +12,9 @@
 #
 # Provides:
 # Base Image: R 4.3.2
-# Build Cmd: docker build --rm -t eagenomics/cnvradar:v1.2.1 -f cnv_radar.Dockerfile .
-# Pull Cmd: docker pull eagenomics/cnvradar:v1.2.1
-# Run Cmd: docker run --rm -v ${PWD}:/data -w /data eagenomics/cnvradar:v1.2.1 /bin/bash -c ""
+# Build Cmd: docker build --rm -t rtibiocloud/pdf_parse_r:v1.0.0 Dockerfile .
+# Pull Cmd: docker pull rtibiocloud/pdf_parse_r:v1.0.0
+# Run Cmd: docker run --rm -v ${PWD}:/data -w /data rtibiocloud/pdf_parse_r:v1.0.0 /bin/bash -c ""
 #################################################################
 
 
