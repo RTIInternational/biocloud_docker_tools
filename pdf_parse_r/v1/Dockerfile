@@ -7,7 +7,9 @@
 # Software Version: 4.3.2
 #
 #
-# Description: 
+# Description: This script loads a PDF file descibing cell viabaility
+# from a nucleo counter 2000 and parses viability metrics that are
+# exported to a tab delimited file
 #
 #
 # Provides:
