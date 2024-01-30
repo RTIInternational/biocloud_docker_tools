@@ -1,5 +1,6 @@
 library(jsonlite)
 library(getopt)
+library(knitr)
 
 argString <- commandArgs(trailingOnly = T) # Read in command line arguments
 
@@ -49,7 +50,8 @@ if(is.null(args$outfile)){args$outfile <- paste0(args$outpath,"/output.csv")}els
 
 # The output file must be saved as a .csv file.  If the value supplied doesn't end in .csv, it will be appended below
 if(!grepl("\\.csv$",args$outfile)){
-  print("File must be .csv, appending .csv to name given")
+  print(paste0("Outfile must be .csv"))
+  print(paste0("Appending '.csv' to '", args$outfile,"'"))
   args$outfile <- paste0(args$outfile,".csv")
   }
 
@@ -134,7 +136,8 @@ for (zip_file in zip_files){
     max_row = nrow(data)
     print(paste0("Found file '",args$outfile,"'; got max_row: ", max_row))
   } else{
-    print(paste0("Didn't find file '",args$outfile,"'; setting max_row = 0"))
+    print(paste0("Didn't find file '",args$outfile,"'; creating file and setting max_row = 0"))
+    file.create(args$outfile)
     max_row = 0
     }
   
@@ -148,9 +151,10 @@ for (zip_file in zip_files){
   colnames(row) <- column_names
   row[1,] <- output_data
   print("Below is row data")
-  print(row)
+  print(kable(row))
   
-  print(paste0("Writing row to '", args$outfile,"'"))
   write.table(x = row, file = args$outfile, append = TRUE, sep = ",", quote = FALSE, row.names = FALSE, col.names = !file.exists(args$outfile))
-  print(paste0("Wrote row to '",args$outfile,"'"))
+  print(paste0("Success! Wrote row to '",args$outfile,"'"))
 }
+
+print("Complete")

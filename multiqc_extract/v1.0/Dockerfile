@@ -7,7 +7,7 @@ RUN apt update
 RUN apt install -y vim
 
 # Installing R package to extract JSON info
-RUN R -e "install.packages(c('jsonlite','getopt'))"
+RUN R -e "install.packages(c('jsonlite','getopt','knitr'))"
 
 # Add scripts to make it run
 ADD unzip_extract_stats.R /
