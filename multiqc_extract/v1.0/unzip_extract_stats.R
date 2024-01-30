@@ -50,8 +50,8 @@ if(is.null(args$outfile)){args$outfile <- paste0(args$outpath,"/output.csv")}els
 
 # The output file must be saved as a .csv file.  If the value supplied doesn't end in .csv, it will be appended below
 if(!grepl("\\.csv$",args$outfile)){
-  print(paste0("Outfile must be .csv"))
-  print(paste0("Appending '.csv' to '", args$outfile,"'"))
+  print(paste0("outfile must be .csv"))
+  print(paste0("Appending '.csv' to given --outfile: '", args$outfile,"'"))
   args$outfile <- paste0(args$outfile,".csv")
   }
 
@@ -73,7 +73,12 @@ if(length(zip_files) != length(fastq_files)){
   stop("Not all FASTQ files have completed WGS workflow")
 }
 
+print("Starting loop to read from multiqc data zip files...")
+
 for (zip_file in zip_files){
+  print(paste0(replicate(nchar(zip_file)+nchar("Extracting results from '")+8,"="), collapse=""))
+  print(paste0("Extracting results from '",zip_file,"'"))
+
   ############################################
   # EXTRACTING FROM MULTIQC JSON OUTPUT FILE
   ############################################
@@ -137,7 +142,7 @@ for (zip_file in zip_files){
     print(paste0("Found file '",args$outfile,"'; got max_row: ", max_row))
   } else{
     print(paste0("Didn't find file '",args$outfile,"'; creating file and setting max_row = 0"))
-    file.create(args$outfile)
+    # file.create(args$outfile)
     max_row = 0
     }
   
@@ -156,5 +161,5 @@ for (zip_file in zip_files){
   write.table(x = row, file = args$outfile, append = TRUE, sep = ",", quote = FALSE, row.names = FALSE, col.names = !file.exists(args$outfile))
   print(paste0("Success! Wrote row to '",args$outfile,"'"))
 }
-
+print("=========================================")
 print("Complete")
