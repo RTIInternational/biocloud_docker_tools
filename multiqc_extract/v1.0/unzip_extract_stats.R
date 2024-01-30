@@ -53,8 +53,15 @@ if(!grepl("\\.csv$",args$outfile)){
   args$outfile <- paste0(args$outfile,".csv")
   }
 
+print(paste0("Here is args$inputpath: ",args$inputpath))
+print(paste0("Here is args$outpath: ",args$outpath))
+print(paste0("Here is args$outfile: ",args$outfile))
+
 zip_files <- list.files(path = args$inputpath, pattern = "multiqc_data\\.zip", full.names = TRUE)
 fastq_files <- list.files(path = args$inputpath, pattern = "\\.fastq$", , full.names = TRUE)
+
+print(paste0("Here are zip_files: ", zip_files))
+print(paste0("Here are fastq_files: ", fastq_files))
 
 if(length(zip_files)==0){
   stop("No MultiQC ZIP files found. Exiting")
@@ -65,13 +72,12 @@ if(length(zip_files) != length(fastq_files)){
 }
 
 for (zip_file in zip_files){
-  tmp_unzip_dir_name <- paste0(args$inputpath, "/output_dir")
-  
   ############################################
   # EXTRACTING FROM MULTIQC JSON OUTPUT FILE
   ############################################
 
   result <- fromJSON(unzip(zip_file,"multiqc_data.json"))
+  print("Success! Unzipped 'multiqc_data.json'")
   sample_name <- names(result$report_data_sources$FastQC$all_sections)
   total_sequences <- na.omit(result$report_general_stats_data[[sample_name]]$total_sequences)[1]
   read_length <- na.omit(result$report_general_stats_data[[sample_name]]$avg_sequence_length)[1]
@@ -79,13 +85,6 @@ for (zip_file in zip_files){
   ############################################################################
   # EXTRACTING FROM MULTIQC OUTPUT TXT FILES
   ############################################################################
-  
-  multiqc_files <- list.files(path = tmp_unzip_dir_name, recursive = TRUE, full.names = TRUE)
-
-  per_sequence_quality_scores_file <- "mqc_fastqc_per_sequence_quality_scores_plot_1.txt"
-  per_base_seq_quality_file <- "mqc_fastqc_per_base_sequence_quality_plot_1.txt"
-  sequence_duplication_levels_file <- "mqc_fastqc_sequence_duplication_levels_plot_1.txt"
-  per_base_n_content_file <- "mqc_fastqc_per_base_n_content_plot_1.txt"
 
   extract_max_per_seq_quality_score <- function(input_file){
     dat = t(read.table(unzip(zip_file,input_file),row.names = 1))
@@ -113,17 +112,29 @@ for (zip_file in zip_files){
     out_dat_sd = sd(dat[,2])
     return(c(out_dat_mean,out_dat_sd))
   }    
-    
   
+  per_sequence_quality_scores_file <- "mqc_fastqc_per_sequence_quality_scores_plot_1.txt"
   max_per_seq_qual <- extract_max_per_seq_quality_score(per_sequence_quality_scores_file)
+  print("Success! Unzipped 'mqc_fastqc_per_sequence_quality_scores_plot_1.txt'")
+  
+  per_base_seq_quality_file <- "mqc_fastqc_per_base_sequence_quality_plot_1.txt"
   per_base_seq_qual <- extract_per_base_seq_quality(per_base_seq_quality_file)
+  print("Success! Unzipped 'mqc_fastqc_per_base_sequence_quality_plot_1.txt'")
+
+  sequence_duplication_levels_file <- "mqc_fastqc_sequence_duplication_levels_plot_1.txt"
   seq_dup_level <- extract_seq_duplication_level(sequence_duplication_levels_file)
+  print("Success! Unzipped 'mqc_fastqc_sequence_duplication_levels_plot_1.txt'")
+
+  per_base_n_content_file <- "mqc_fastqc_per_base_n_content_plot_1.txt"
   per_base_n_content <- extract_per_base_n_content(per_base_n_content_file)
+  print("Success! Unzipped 'mqc_fastqc_per_base_n_content_plot_1.txt'")
   
   if(file.exists(args$outfile)){
     data <- read.csv(args$outfile)
     max_row = nrow(data)
+    print(paste0("Found file '",args$outfile,"'; got max_row: ", max_row))
   } else{
+    print(paste0("Didn't find file '",args$outfile,"'; setting max_row = 0"))
     max_row = 0
     }
   
@@ -132,17 +143,14 @@ for (zip_file in zip_files){
   ###############################
   output_data <- c(max_row + 1,zip_file, sample_name, total_sequences, read_length, max_per_seq_qual, per_base_seq_qual, seq_dup_level, per_base_n_content)
   column_names <- c("row_number","zip_file","sample_name","total_sequences","read_length","max_per_sequence_quality_scores","per_base_seq","sd_per_base_seq","sequence_duplication_levels","sd_sequence_duplication_levels","average_per_base_n_content","sd_per_base_n_content")
-
   
   row <- data.frame(matrix(ncol = length(column_names), nrow=0))
   colnames(row) <- column_names
   row[1,] <- output_data
+  print("Below is row data")
+  print(row)
   
+  print(paste0("Writing row to '", args$outfile,"'"))
   write.table(x = row, file = args$outfile, append = TRUE, sep = ",", quote = FALSE, row.names = FALSE, col.names = !file.exists(args$outfile))
-  
-  ###############################
-  # REMOVING OUTPUT DIR
-  ###############################
-  
-  unlink(tmp_unzip_dir_name, recursive=TRUE)
+  print(paste0("Wrote row to '",args$outfile,"'"))
 }
