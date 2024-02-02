@@ -20,7 +20,6 @@
 # Run Cmd: docker run --rm -v ${PWD}:/data -w /data rtibiocloud/pdf_parse_r:v1.0.0 /bin/bash -c ""
 #################################################################
 
-
 FROM r-base:4.3.2
 
 #----------------------------------------------------------------
@@ -38,6 +37,25 @@ LABEL about.tags="RMIP"
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 #----------------------------------------------------------------
+# Install required command line tools and packages
+#----------------------------------------------------------------
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get -qq update && apt-get -y upgrade && \
+	apt-get install -y --no-install-recommends \
+	libxml2-dev \
+	libcurl4-openssl-dev \
+	libssl-dev \
+	libjpeg-dev \
+	libicu-dev \
+	libpq-dev \
+	libmysqlclient-dev \
+	libpoppler-cpp-dev && \
+	apt-get clean && \
+	apt-get autoremove
+
+
+#----------------------------------------------------------------
 # Install R Packages
 #----------------------------------------------------------------
 ENV R_VERSION 4.3.2
@@ -45,8 +63,8 @@ ENV R_VERSION 4.3.2
 # Setup the CRAN to get the packages
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
 RUN Rscript -e "install.packages('getopt', dependencies = T)"
-RUN Rscript -e "install.packages('dplyr', dependencies = T)"
-RUN Rscript -e "install.packages('pdftools', dependencies = T)"
+RUN Rscript -e "install.packages(c('RMySQL', 'RPostgreSQL', 'dplyr'), dependencies = T)"
+RUN Rscript -e "install.packages(c('xml2', 'curl', 'qpdf', 'pdftools', dependencies = T))"
 RUN Rscript -e "install.packages('openxlsx', dependencies = T)"
 RUN Rscript -e "library('getopt');##### R SESSION INFORMATION #####; sessionInfo()"
 
@@ -59,6 +77,3 @@ ADD parse_viability_pdf.R /opt/parser/parse_viability_pdf.R
 # Set working dir
 #----------------------------------------------------------------
 WORKDIR /data/
-
-
-RUN cd talkingheads

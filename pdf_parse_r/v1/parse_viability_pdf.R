@@ -23,6 +23,17 @@ if(!require('getopt')){install.packages('getopt', dependencies = T); library(get
 if(!require('dplyr')){install.packages('dplyr', dependencies = T); library(dplyr)}
 if(!require('pdftools')){install.packages('pdftools', dependencies = T); library(pdftools)}
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Setup logging
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+add_to_log <- function(lvl, func, message){
+	  # <Date> <function> <level> <information>
+	  timestamp <- paste0("[",Sys.time(),"]")
+  	  entry <- paste(timestamp, func, toupper(lvl), message, sep = " - ") 
+	  cat(paste0(entry, "\n"))
+}
+
+
 #-----------------------------------------------------
 # Setup global arguments and command line use
 #-----------------------------------------------------
@@ -54,10 +65,6 @@ spec <- matrix(c(
           'help',     'h', 0, "logical"
           ), byrow=TRUE, ncol=4);
 
-if (length(argString) == 0){
-  argString <- c( "-i", "C:/Users/jstratford/Documents/github/RMIP/example_data/20230511-0006-c-RMIP007001A001.pdf", "-v" ) 
-  argString <- c( "-i", "C:/Users/jstratford/Documents/github/RMIP/example_data/20230511-0007-c-RMIP007001B001.pdf", "-v" ) 
-}
 
 args=getopt( spec, argString)
 
@@ -71,6 +78,7 @@ suffix <- '.tsv'
 if(is.null(args$excel)){
     args$excel <- F
 } else {
+  if(!require('openxlsx')){install.packages('openxlsx', dependencies = T); library(openxlsx)}
   suffix <- '.xlsx'
 }
 
@@ -81,37 +89,27 @@ if(is.null(args$verbose)){args$verbose <- F}
 #-----------------------------------------------------
 # Required Functions
 #-----------------------------------------------------
-add_to_log <- function(lvl, func, message){
-  # <Date> <function> <level> <information>
-  timestamp <- paste0("[",Sys.time(),"]")
-  entry <- paste(timestamp, func, toupper(lvl), message, sep = " - ")
-  cat(paste0(entry, "\n"))
-}
-
 load_pdf <- function(fname){
   
   tmp <- tryCatch(
     {
-      message("Reading in the PDF file")
+      add_to_log(lvl="info", func="load_pdf", message = "Reading in the PDF file")
       pdf_text(fname)
     },
     error=function(cond) {
-      message(paste("Error reading in pdf file:", basename(fname)))
-      message("Original error message:")
-      message(cond)
+      add_to_log(lvl="error", func="load_pdf", message = paste("Error reading in pdf file:", basename(fname)))
+      add_to_log(lvl="error", func="load_pdf", message = "Original error message:")
+      add_to_log(lvl="error", func="load_pdf", message = cond)
       return(NA)
     },
     warning=function(cond) {
-      message(paste("Warning while reading in pdf file:", basename(fname)))
-      message("Original warning message:")
-      message(cond)
+      add_to_log(lvl="warn", func="load_pdf", message = paste("Warning while reading in pdf file:", basename(fname)))
+      add_to_log(lvl="warn", func="load_pdf", message = "Original warning message:")
+      add_to_log(lvl="warn", func="load_pdf", message = cond)
       return(NULL)
     },
     finally={
-      # If you want more than one expression to be executed, then you 
-      # need to wrap them in curly brackets ({...}); otherwise you could
-      # just have written 'finally=<expression>' 
-      message(paste("PDF file:", fname))
+      add_to_log(lvl="info", func="load_pdf", message = paste("PDF file", fname, "processing complete"))
     }
   )    
   
@@ -149,13 +147,13 @@ extract_value <- function(findme, lns = txt){
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Logging information
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-add_to_log(lvl = "info", func="main", message=paste0("User: ", Sys.info()[['effective_user']]) )
-add_to_log(lvl = "info", func="main", message=paste0("Running from: ", Sys.info()[['nodename']]) )
-add_to_log(lvl = "info", func="main", message=paste0("Platform: ", sessionInfo()) )
+add_to_log(lvl = "info", func="main", message=paste0("User: ", Sys.info()[['effective_user']]))
+add_to_log(lvl = "info", func="main", message=paste0("Running from: ", Sys.info()[['nodename']]))
+add_to_log(lvl = "info", func="main", message=paste0("Platform: ", sessionInfo()["platform"]))
 add_to_log(lvl = "info", func="main", message=paste0("R version: ", R.version.string ))
-add_to_log(lvl = "info", func="main", message=paste0("R packages loaded: ",  paste(names(sessionInfo()), collapse=", ") ) )
+add_to_log(lvl = "info", func="main", message=paste0("R packages loaded: ",  paste(names(sessionInfo()$otherPkgs), collapse=", ")))
 add_to_log(lvl = "info", func="main", message=paste0("Rscript: ", gsub("--file=", "", grep(pattern = "^--file", commandArgs(trailingOnly = F), value = T))))
-add_to_log(lvl = "info", func="getopt", message=paste0("CommandLine: ", paste(commandArgs(trailingOnly = T), collapse=" ")) )
+add_to_log(lvl = "info", func="getopt", message=paste0("CommandLine: ", paste(commandArgs(trailingOnly = T), collapse=" ")))
 add_to_log(lvl = "info", func="getopt", message=paste0("Arguments: ", paste(names(args), args, sep=" = ")))
 
 txt <- load_pdf(fname = args$pdf)
@@ -191,7 +189,6 @@ final <- data.frame("Consortium" = prefix %>% substr(.,1,4),
                     stringsAsFactors = F)
 
 if (args$excel){
-  if(!require('openxlsx')){install.packages('openxlsx', dependencies = T); library(openxlsx)}
   write.xlsx(x = final, file = file.path(args$outpath, args$outfile))
 } else {
   write.table(x = final, file = file.path(args$outpath, args$outfile), row.names = F, col.names = T, sep = '\t', quote = F)  
@@ -200,5 +197,5 @@ if (args$excel){
 #-----------------------------------------------------
 # Close out the script
 #-----------------------------------------------------
-message(paste0("Process began at ", init, " and finished at ", Sys.time(), "\n"))
-message("Finished\n")
+add_to_log(lvl="info", func="main", message = paste0("Process began at ", init, " and finished at ", Sys.time(), "\n"))
+add_to_log(lvl="info", func="main", message = "Finished\n")
