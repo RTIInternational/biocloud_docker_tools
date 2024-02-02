@@ -1,25 +1,6 @@
-#################################################################
-# Dockerfile
-#
-# This can be used to run the Cell Viability PDF Parser tool
-#
-# Software: R
-# Software Version: 4.3.2 Eye Holes
-#
-# R packages: pdftools, dplyr, openxlsx, getopt
-#
-# Description: This script loads a PDF file descibing cell viabaility
-# from a nucleo counter 2000 and parses viability metrics that are
-# exported to a tab delimited file
-#
-#
-# Provides:
-# Base Image: R 4.3.2
-# Build Cmd: docker build --rm -t rtibiocloud/pdf_parse_r:v1.0.0 -f Dockerfile .
-# Pull Cmd: docker pull rtibiocloud/pdf_parse_r:v1.0.0
-# Run Cmd: docker run --rm -v ${PWD}:/data -w /data rtibiocloud/pdf_parse_r:v1.0.0 /bin/bash -c ""
-#################################################################
-
+#----------------------------------------------------------------
+# Use the official R image as a base
+#----------------------------------------------------------------
 FROM r-base:4.3.2
 
 #----------------------------------------------------------------
@@ -54,7 +35,6 @@ RUN apt-get -qq update && apt-get -y upgrade && \
 	apt-get clean && \
 	apt-get autoremove
 
-
 #----------------------------------------------------------------
 # Install R Packages
 #----------------------------------------------------------------
@@ -77,3 +57,8 @@ ADD parse_viability_pdf.R /opt/parser/parse_viability_pdf.R
 # Set working dir
 #----------------------------------------------------------------
 WORKDIR /data/
+
+#----------------------------------------------------------------
+# Set default command or entrypoint if needed
+#----------------------------------------------------------------
+CMD ["Rscript", "/opt/parser/parse_viability_pdf.R"]
