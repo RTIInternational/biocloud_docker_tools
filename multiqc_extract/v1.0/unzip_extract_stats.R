@@ -41,7 +41,8 @@ if(is.null(args$inputpath)){args$inputpath <- "."}
 if(!file.exists(args$inputpath)){
   stop(paste0("Input path '",args$inputpath,"' not found"))
 }
-if(is.null(args$outpath)){args$outpath <- args$inputpath}
+# if(is.null(args$outpath)){args$outpath <- args$inputpath}
+if(is.null(args$outpath)){args$outpath <- "."}
 if(!file.exists(args$outpath)){
   print(paste0("Output directory '",args$outpath, "' not found, creating..."))
   dir.create(args$outpath)
