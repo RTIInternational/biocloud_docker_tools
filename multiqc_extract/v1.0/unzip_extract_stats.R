@@ -11,18 +11,16 @@ usage <- paste("Usage: unzip_extract_stats.R
              -- Optional Parameters -- 
               [-i | --inputpath]    <Name of input working directory> (default = .)
               [-o | --outfile  ]    <The output file name> (default = output.csv)
-              [-p | --outpath  ]    <Path to the directory to save the outputs> (default = input path)
              -- Help Flag --  
               [-h | --help     ]    <Displays this help message>
              Example:
-             unzip_extract_stats.R -i results_2023_01_01 -o my_test_results.csv -p my_test_run
+             unzip_extract_stats.R -i results_2023_01_01 -o my_test_results.csv
               \n",sep="")
 
 # Setup the matrix which consists of long flag (should be all lower case), short flag (case sensitive), parameter class (0=no-arg, 1=required-arg, 2=optional-arg) and parameter type (logical, character, numeric)
 spec <- matrix(c(
           'inputpath','i', 2, "character",
           'outfile',  'o', 2, "character",
-          'outpath',  'p', 2, "character",
           'help',     'h', 0, "logical"
           ), byrow=TRUE, ncol=4);
 
@@ -41,13 +39,9 @@ if(is.null(args$inputpath)){args$inputpath <- "."}
 if(!file.exists(args$inputpath)){
   stop(paste0("Input path '",args$inputpath,"' not found"))
 }
-# if(is.null(args$outpath)){args$outpath <- args$inputpath}
-if(is.null(args$outpath)){args$outpath <- "."}
-if(!file.exists(args$outpath)){
-  print(paste0("Output directory '",args$outpath, "' not found, creating..."))
-  dir.create(args$outpath)
-}
-if(is.null(args$outfile)){args$outfile <- paste0(args$outpath,"/output.csv")}else{args$outfile <- paste0(args$outpath,"/",args$outfile)}
+
+outpath <- "."
+if(is.null(args$outfile)){args$outfile <- paste0(outpath,"/output.csv")}else{args$outfile <- paste0(outpath,"/",args$outfile)}
 
 # The output file must be saved as a .csv file.  If the value supplied doesn't end in .csv, it will be appended below
 if(!grepl("\\.csv$",args$outfile)){
@@ -57,7 +51,7 @@ if(!grepl("\\.csv$",args$outfile)){
   }
 
 print(paste0("Here is args$inputpath: ",args$inputpath))
-print(paste0("Here is args$outpath: ",args$outpath))
+print(paste0("Here is outpath: ",outpath))
 print(paste0("Here is args$outfile: ",args$outfile))
 
 zip_files <- list.files(path = args$inputpath, pattern = "multiqc_data\\.zip", full.names = TRUE)
@@ -143,7 +137,6 @@ for (zip_file in zip_files){
     print(paste0("Found file '",args$outfile,"'; got max_row: ", max_row))
   } else{
     print(paste0("Didn't find file '",args$outfile,"'; creating file and setting max_row = 0"))
-    # file.create(args$outfile)
     max_row = 0
     }
   
