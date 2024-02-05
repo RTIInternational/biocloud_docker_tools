@@ -40,7 +40,7 @@ RUN apt-get -qq update && apt-get -y upgrade && \
 #----------------------------------------------------------------
 ENV R_VERSION 4.3.2
 
-# Setup the CRAN to get the packages
+# Configure CRAN for package retrieval
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
 RUN Rscript -e "install.packages('getopt', dependencies = T)"
 RUN Rscript -e "install.packages(c('RMySQL', 'RPostgreSQL', 'dplyr'), dependencies = T)"
