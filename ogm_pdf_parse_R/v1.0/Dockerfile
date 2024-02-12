@@ -8,7 +8,7 @@ FROM r-base:4.3.2
 #----------------------------------------------------------------
 LABEL base.image="r-base:v4.3.2"
 LABEL maintainer="Mike Enger <menger@rti.org>"
-LABEL description="PDF parser for cell viability outputs"
+LABEL description="PDF parser for optical genome mapping outputs"
 LABEL software="R, pdftools, dplyr, openxlsx, getopt"
 LABEL software-website="https://www.r-project.org/ https://dplyr.tidyverse.org/ https://cran.r-project.org/web/packages/openxlsx/index.html https://cran.r-project.org/web/packages/pdftools/pdftools.pdf https://cran.r-project.org/web/packages/getopt/index.html"
 LABEL software.version="1.0.0"
@@ -51,7 +51,7 @@ RUN Rscript -e "library('getopt');##### R SESSION INFORMATION #####; sessionInfo
 #----------------------------------------------------------------
 # Copy over analysis scripts
 #----------------------------------------------------------------
-ADD parse_viability_pdf.R /opt/parser/parse_viability_pdf.R
+ADD parse_viability_pdf.R /opt/parser/ogm_pdf_parse.R
 
 #----------------------------------------------------------------
 # Set working dir
@@ -61,4 +61,4 @@ WORKDIR /data/
 #----------------------------------------------------------------
 # Set default command or entrypoint if needed
 #----------------------------------------------------------------
-CMD ["Rscript", "/opt/parser/parse_viability_pdf.R"]
+CMD ["Rscript", "/opt/parser/ogm_pdf_parse.R"]
