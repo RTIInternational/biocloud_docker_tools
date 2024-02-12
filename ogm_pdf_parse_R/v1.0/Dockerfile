@@ -51,7 +51,7 @@ RUN Rscript -e "library('getopt');##### R SESSION INFORMATION #####; sessionInfo
 #----------------------------------------------------------------
 # Copy over analysis scripts
 #----------------------------------------------------------------
-ADD parse_viability_pdf.R /opt/parser/ogm_pdf_parse.R
+ADD ogm_pdf_parse.R /opt/parser/ogm_pdf_parse.R
 
 #----------------------------------------------------------------
 # Set working dir
