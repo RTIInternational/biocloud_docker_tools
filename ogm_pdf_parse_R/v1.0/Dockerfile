@@ -6,7 +6,6 @@ FROM r-base:4.3.2
 #----------------------------------------------------------------
 # Container Metadata
 #----------------------------------------------------------------
-LABEL base.image="r-base:v4.3.2"
 LABEL maintainer="Mike Enger <menger@rti.org>"
 LABEL description="PDF parser for optical genome mapping outputs"
 LABEL software="R, pdftools, dplyr, openxlsx, getopt"
