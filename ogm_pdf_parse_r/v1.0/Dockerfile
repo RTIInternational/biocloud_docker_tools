@@ -8,7 +8,7 @@ FROM r-base:4.3.2
 #----------------------------------------------------------------
 LABEL maintainer="Mike Enger <menger@rti.org>"
 LABEL description="PDF parser for optical genome mapping outputs"
-LABEL base.image: "r-base:v4.3.2"
+LABEL base.image="r-base:v4.3.2"
 LABEL software="R, pdftools, dplyr, openxlsx, getopt"
 LABEL software-website="https://www.r-project.org/ https://dplyr.tidyverse.org/ https://cran.r-project.org/web/packages/openxlsx/index.html https://cran.r-project.org/web/packages/pdftools/pdftools.pdf https://cran.r-project.org/web/packages/getopt/index.html"
 LABEL software.version="1.0.0"
