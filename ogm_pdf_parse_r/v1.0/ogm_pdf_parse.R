@@ -34,7 +34,7 @@ add_to_log <- function(lvl, func, message){
 	  # <Date> <function> <level> <information>
 	  timestamp <- paste0("[",Sys.time(),"]")
           entry <- paste(timestamp, func, toupper(lvl), message, sep = " - ") 
-	  cat(paste0(entry, "\n"))
+	  message(paste0(entry, "\n"))
 }
 
 #-----------------------------------------------------
@@ -49,7 +49,7 @@ usage <- paste("Usage: ogm_pdf_parser.R
               [-i | --pdf]          <Path to the PDF> (Required)
              -- Optional Parameters -- 
               [-o | --outfile]      <The output file name> (default = pdf_extract.tsv)
-              [-p | --outpath]      <Path to the directory to save the outputs> (default = path of the input file)
+              [-p | --outpath]      <Path to the directory to save the outputs> (default = path of working directory)
              -- Optional Flags --   
               [-E | --excel]        <Export results as a MS Excel Workbook>(default=FALSE)
               [-v | --verbose]      <Display verbose logging>(default=FALSE)
@@ -86,7 +86,7 @@ if(is.null(args$excel)){
 }
 
 if(is.null(args$outfile)){args$outfile <- paste0("pdf_extract", suffix)}
-if(is.null(args$outpath)){args$outpath <- dirname(args$pdf)}
+if(is.null(args$outpath)){args$outpath <- getwd()}
 if(is.null(args$verbose)){args$verbose <- F}
 
 #-----------------------------------------------------
@@ -235,7 +235,8 @@ add_to_log(lvl = "info", func="main", message=paste0("R packages loaded: ",  pas
 add_to_log(lvl = "info", func="main", message=paste0("Rscript: ", gsub("--file=", "", grep(pattern = "^--file", commandArgs(trailingOnly = F), value = T))))
 add_to_log(lvl = "info", func="getopt", message=paste0("CommandLine: ", paste(commandArgs(trailingOnly = T), collapse=" ")))
 add_to_log(lvl = "info", func="getopt", message=paste0("Arguments: ", paste(names(args), args, sep=" = ")))
-
+add_to_log(lvl = "info", func="main", message=paste0("Current Working Directory: ", getwd()))
+						
 #-----------------------------------------------------
 # Get the metadata about the PDF and read in PDF
 #-----------------------------------------------------
