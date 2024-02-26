@@ -29,7 +29,7 @@ jobs:
     - name: get changed files
       id: getfile
       run: |
-        echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs)"
+        echo "files=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs)" >> "$GITHUB_ENV"
     - name: Build, Tag, Publish Docker
       uses: ./.github/actions/build-image
       with:

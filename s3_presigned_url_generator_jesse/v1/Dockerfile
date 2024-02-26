@@ -1,10 +1,10 @@
 # Use an official Python runtime as the base image
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 # Add Container Labels
 LABEL maintainer="Jesse Marks <jmarks@rti.org>"
 LABEL description="A script to generate presigned URLs to upload to S3."
-LABEL base-image="python:3.12-slim"
+LABEL base-image="python:3.11-slim"
 
 # Install System Dependencies
 RUN apt-get update && apt-get install -y \
