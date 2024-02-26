@@ -33,7 +33,7 @@ jobs:
     - name: Build, Tag, Publish Docker
       uses: ./.github/actions/build-image
       with:
-        organization: rtibiocloud
+        organization: jessemarks
         changed_files: ${{ steps.getfile.outputs.files }}
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
