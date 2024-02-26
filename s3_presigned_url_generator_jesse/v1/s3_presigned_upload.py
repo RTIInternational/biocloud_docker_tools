@@ -1,7 +1,6 @@
 import argparse
 import boto3
 
-
 def generate_presigned_urls(infile, outfile, bucket, key_prefix, expiration_days, access_key, secret_access_key):
     """
     Generate a bash script containing curl commands with presigned URLs for uploading files to S3.
@@ -88,6 +87,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # comment for testing
     generate_presigned_urls(
         args.infile,
         args.outfile,
