@@ -87,7 +87,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # comment for testing
     generate_presigned_urls(
         args.infile,
         args.outfile,
