@@ -8,10 +8,10 @@ function main() {
     sanitize "${INPUT_USERNAME}" "username"
     sanitize "${INPUT_PASSWORD}" "password"
     sanitize "${INPUT_ORGANIZATION}" "organization"
-    sanitize "${INPUT_CHANGED_FILES}" "changed_files"
+    sanitize "${files}" "changed_files"
 
     # CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${GITHUB_SHA}) # dfe37af2c9a8c753fcd6392ea2f5e711a04b38e1
-    CHANGED_FILES="${INPUT_CHANGED_FILES}"
+    CHANGED_FILES="${files}"
 
     # Can only build 1 Docker image in 1 actions run/commit
     if [[ $(echo $CHANGED_FILES | tr " " "\n" | grep -c "Dockerfile") -gt 1 ]]; then

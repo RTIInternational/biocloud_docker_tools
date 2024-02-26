@@ -34,6 +34,5 @@ jobs:
       uses: ./.github/actions/build-image
       with:
         organization: jessemarks
-        changed_files: ${{ env.files }}
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
