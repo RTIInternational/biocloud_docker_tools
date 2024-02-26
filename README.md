@@ -54,7 +54,7 @@ If all three of these review stages are satisfactory then the approval will be g
 
 # Docker Hub
 
-All Docker images are published on Docker Hub under the RTI BioCloud organization. You can find the repository at https://hub.docker.com/u/rtibiocloud. Each image is tagged using the following format: `<tool-version>_<first-6-characters-of-git-hash>`.
+All Docker images are published on Docker Hub under the RTI BioCloud organization. You can find the repository at https://hub.docker.com/u/rtibiocloud. Each image is tagged using the following format: `<tool-version>_<first-7-characters-of-commit-hash>`.
 
 When adding new Dockerfiles, the GitHub action will automatically build and push the Docker images to Docker Hub. If the corresponding repository does not exist, the push command will create it.
 
