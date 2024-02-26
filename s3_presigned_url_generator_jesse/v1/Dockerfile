@@ -1,5 +1,5 @@
 # Use an official Python runtime as the base image
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Add Container Labels
 LABEL maintainer="Jesse Marks <jmarks@rti.org>"
@@ -8,8 +8,6 @@ LABEL description="A script to generate presigned URLs to upload to S3."
 # Install System Dependencies
 RUN apt-get update && apt-get install -y \
     vim \
-    less \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
