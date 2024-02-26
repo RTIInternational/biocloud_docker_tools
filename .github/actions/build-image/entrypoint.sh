@@ -92,9 +92,10 @@ function main() {
 
     push
 
-    echo "::set-output name=tag::${FIRST_TAG}"
+    # Write the outputs to environment variables
+    echo "tag=${FIRST_TAG}" >> "$GITHUB_ENV"
     DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERNAME})
-    echo "::set-output name=digest::${DIGEST}"
+    echo "digest=${DIGEST}" >> "$GITHUB_ENV"
 
     docker logout
 }
