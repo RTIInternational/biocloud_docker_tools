@@ -16,7 +16,7 @@ RUN mv rename_files.sh /opt/
 # Change permissions to make things exectuable
 RUN chmod u+x /opt/rename_files.sh
 
-# Set wrkdir
+# Set workdir
 RUN mkdir /data
 COPY ./*.zip /data
 WORKDIR /data
