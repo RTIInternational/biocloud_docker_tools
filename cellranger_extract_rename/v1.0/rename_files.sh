@@ -174,7 +174,8 @@ if [[ $j -gt ${#linker_array[@]} || $j -lt 5 ]]; then
     exit 1
 fi
 
-file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
+file_list=(outs/web_summary.html outs/metrics_summary.csv outs/raw_feature_bc_matrix.h5 outs/possorted_genome_bam.bam outs/possorted_genome_bam.bam.bai outs/filtered_feature_bc_matrix.h5)
+# file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
 # file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai raw_feature_bc_matrix/matrix.mtx.gz raw_feature_bc_matrix/features.tsv.gz raw_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/matrix.mtx.gz filtered_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/features.tsv.gz)
 
 # Extracting and renaming files
