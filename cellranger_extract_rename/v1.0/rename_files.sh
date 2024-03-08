@@ -180,21 +180,30 @@ file_list=(outs/web_summary.html outs/metrics_summary.csv outs/raw_feature_bc_ma
 
 # Extracting and renaming files
 for file in ${file_list[@]}; do
-  unzip -j $zip_file $file -d $output_dir;
   echo_verbose $file;
+
+  # Extracting basename from ZIP file name
+  file_name=$(basename -- "$file")
+  file_name="${file_name%.*}"
+  file_name_extension="${file##*.}"
+  echo_verbose "File name extracted: $file_name"
+  echo_verbose "File name extension extracted: $file_name_extension"
+  file_name_comb=$file_name\.$file_name_extension
+
+  unzip -j $zip_file $file -d $output_dir/$file_name_comb;
   
   # Removing "_bam" from filename
-  if [[ $file == *"_bam"* ]]; then
-    echo_verbose "Found '_bam' in $file"
-    new_file=${file//"_bam"/}
+  if [[ $file_name_comb == *"_bam"* ]]; then
+    echo_verbose "Found '_bam' in $file_name_comb"
+    new_file=${file_name_comb//"_bam"/}
     echo_verbose "Removed '_bam': $new_file"
-    echo_verbose "Moving '$output_dir/${file}' to '$output_dir/${linker}_${new_file}'";
+    echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${new_file}'";
     echo_verbose ""
-    mv $output_dir/${file} $output_dir/${linker}_${new_file};
+    mv $output_dir/${file_name_comb} $output_dir/${linker}_${new_file};
   else
-    echo_verbose "Moving '$output_dir/${file}' to '$output_dir/${linker}_${file}'";
+    echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${file_name_comb}'";
     echo_verbose ""
-    mv $output_dir/${file} $output_dir/${linker}_${file};
+    mv $output_dir/${file_name_comb} $output_dir/${linker}_${file_name_comb};
   fi
   
 done
