@@ -15,6 +15,7 @@ _Provide an overview..._
 ### Metadata
 Include the following LABELs:
 - [ ] `LABEL maintainer="Your Name <your.email@rti.org>"`
+- [ ] `LABEL base-image="ubuntu:22.04"
 - [ ] `LABEL description="Short description of the purpose of this image"`
 - [ ] `LABEL software-website="https://example.com"`
 - [ ] `LABEL software-version="1.0.0"`
