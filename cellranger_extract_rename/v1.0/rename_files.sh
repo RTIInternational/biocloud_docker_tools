@@ -13,9 +13,9 @@ usage() {
  echo " -o, --output_dir   STRING/PATH Specify directory where to put extracted files.  Default = '.'"
  echo ""
  echo "Example usage"
- echo " Required flags:               ./rename_files.sh -z input_zip.zip -l RMIP_001_001_A_001_A"
- echo " Verbose mode:                 ./rename_files.sh -v -z input_zip.zip -l RMIP_001_001_A_246"
- echo " Writing to output directory:  ./rename_files.sh -z input_zip.zip -l RMIP_001_001_A_246 -o test_output"
+ echo " Required flags:               ./rename_files.sh -z outs.zip -l RMIP_001_001_A_001_A"
+ echo " Verbose mode:                 ./rename_files.sh -v -z outs.zip -l RMIP_001_001_A_246"
+ echo " Writing to output directory:  ./rename_files.sh -z outs.zip -l RMIP_001_001_A_246 -o test_output"
 }
 
 # Defining tool functions
@@ -190,7 +190,8 @@ for file in ${file_list[@]}; do
   echo_verbose "File name extension extracted: $file_name_extension"
   file_name_comb=$file_name\.$file_name_extension
 
-  unzip -j $zip_file $file -d $output_dir/$file_name_comb;
+  #unzip -j $zip_file $file -d $output_dir/$file_name_comb;
+  unzip -p $zip_file $file >$output_dir/$file_name_comb;
   
   # Removing "_bam" from filename
   if [[ $file_name_comb == *"_bam"* ]]; then
