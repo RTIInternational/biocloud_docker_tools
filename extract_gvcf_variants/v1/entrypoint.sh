@@ -6,5 +6,5 @@ if [ -z "$wf_arguments" ]; then
     exit 
 else
     /opt/extract_gvcf_variants.pl \
-        --wf_arguments $wf_arguments
+        --args $wf_arguments
 fi
