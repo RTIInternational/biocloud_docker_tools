@@ -48,30 +48,32 @@ my $args_text = do {
 my $json = JSON->new;
 my $args = $json->decode($args_text);
 
+my %variantIds = ();
 my %refAlleles = ();
 my %altAlleles = ();
 my @F = ();
 
 # Read extract file
-if ($args->{file_in_extract} =~ /gz$/) {
-    open(EXTRACT, "gunzip -c $args->{file_in_extract} |") or die "gunzip $args->{file_in_extract}: $!";
+if ($args->{variant_list} =~ /gz$/) {
+    open(EXTRACT, "gunzip -c $args->{variant_list} |") or die "gunzip $args->{variant_list}: $!";
 } else {
-    open(EXTRACT, $args->{file_in_extract});
+    open(EXTRACT, $args->{variant_list});
 }
 while (<EXTRACT>) {
     chomp;
     @F = split();
-    $refAlleles{$F[0]} = $F[1];
-    $altAlleles{$F[0]} = $F[2];
+    $variantIds{$F[0]} = $F[1] ? $F[1] : (join(":", $F[0], $F[2], $F[3]);
+    $refAlleles{$F[0]} = $F[2];
+    $altAlleles{$F[0]} = $F[3];
 }
 close EXTRACT;
 
 # Get dataset variants by position
-open(OUT_VCF, "> ".$args->{file_out_prefix}.".vcf");
-if ($args->{file_in_gvcf} =~ /gz$/) {
-    open(GVCF, "gunzip -c $args->{file_in_gvcf} |") or die "gunzip $args->{file_in_gvcf}: $!";
+open(OUT_VCF, "> ".$args->{out_prefix}.".vcf");
+if ($args->{gvcf} =~ /gz$/) {
+    open(GVCF, "gunzip -c $args->{gvcf} |") or die "gunzip $args->{gvcf}: $!";
 } else {
-    open(GVCF, $args->{file_in_gvcf});
+    open(GVCF, $args->{gvcf});
 }
 print "Extracting variants...\n";
 while(<GVCF>){
@@ -112,8 +114,7 @@ while(<GVCF>){
                         for (my $i=$F[1]; $i<=$end; $i++) {
                             my $chrPos = $chr.":".$i;
                             if (exists($refAlleles{$chrPos})) {
-                                my $id = join(":", $chrPos, $refAlleles{$chrPos}, $altAlleles{$chrPos});
-                                print OUT_VCF join("\t", $chr, $i, $id, $refAlleles{$chrPos}, $altAlleles{$chrPos}, @F[5..6], ".", $F[8], $F[9])."\n";
+                                print OUT_VCF join("\t", $chr, $i, $variantIds{$chrPos}, $refAlleles{$chrPos}, $altAlleles{$chrPos}, @F[5..6], ".", $F[8], $F[9])."\n";
                                 delete($refAlleles{$chrPos});
                             }
                         }
@@ -137,8 +138,7 @@ while(<GVCF>){
                                     }
                                 }
                                 if ($F[4] eq $altAlleles{$chrPos}) {
-                                    my $id = join(":", $chrPos, $F[3], $F[4]);
-                                    print OUT_VCF join("\t", $chr, $F[1], $id, @F[3..9])."\n";
+                                    print OUT_VCF join("\t", $chr, $F[1], $variantIds{$chrPos}, @F[3..9])."\n";
                                     delete($refAlleles{$chrPos});
                                 }
                             }
@@ -155,7 +155,7 @@ close OUT_VCF;
 
 # Write list of missing positions
 my @missing = sort(keys(%refAlleles));
-open(OUT_MISSING, "> ".$args->{file_out_prefix}.".missing");
+open(OUT_MISSING, "> ".$args->{out_prefix}.".missing");
 foreach my $position (@missing) {
     print OUT_MISSING $position."\n";
 }
@@ -166,10 +166,10 @@ print "Converting to plink bfile format\n";
 my @commandArgs = (
     "plink2",
     "--vcf",
-    $args->{file_out_prefix}.".vcf",
+    $args->{out_prefix}.".vcf",
     "--make-bed",
     "--out",
-    $args->{file_out_prefix}
+    $args->{out_prefix}
 );
 system(@commandArgs) == 0
     or die "Plink conversion failed\n";

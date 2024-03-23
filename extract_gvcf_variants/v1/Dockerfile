@@ -33,6 +33,10 @@ ADD entrypoint.sh /opt/
 RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/entrypoint.sh
 
+# Add built-in variant lists
+RUN mkdir /data
+ADD t1dgrs2_hg19_variants.tsv /data/
+
 WORKDIR /data
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
