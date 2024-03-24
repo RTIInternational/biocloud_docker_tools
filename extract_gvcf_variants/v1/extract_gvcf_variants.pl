@@ -62,7 +62,7 @@ if ($args->{variant_list} =~ /gz$/) {
 while (<EXTRACT>) {
     chomp;
     @F = split();
-    $variantIds{$F[0]} = $F[1] ? $F[1] : (join(":", $F[0], $F[2], $F[3]);
+    $variantIds{$F[0]} = $F[1] ? $F[1] : (join(":", $F[0], $F[2], $F[3]));
     $refAlleles{$F[0]} = $F[2];
     $altAlleles{$F[0]} = $F[3];
 }
