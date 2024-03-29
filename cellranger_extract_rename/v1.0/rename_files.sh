@@ -13,9 +13,9 @@ usage() {
  echo " -o, --output_dir   STRING/PATH Specify directory where to put extracted files.  Default = '.'"
  echo ""
  echo "Example usage"
- echo " Required flags:               ./rename_files.sh -z input_zip.zip -l RMIP_001_001_A_001_A"
- echo " Verbose mode:                 ./rename_files.sh -v -z input_zip.zip -l RMIP_001_001_A_246"
- echo " Writing to output directory:  ./rename_files.sh -z input_zip.zip -l RMIP_001_001_A_246 -o test_output"
+ echo " Required flags:               ./rename_files.sh -z outs.zip -l RMIP_001_001_A_001_A"
+ echo " Verbose mode:                 ./rename_files.sh -v -z outs.zip -l RMIP_001_001_A_246"
+ echo " Writing to output directory:  ./rename_files.sh -z outs.zip -l RMIP_001_001_A_246 -o test_output"
 }
 
 # Defining tool functions
@@ -174,26 +174,37 @@ if [[ $j -gt ${#linker_array[@]} || $j -lt 5 ]]; then
     exit 1
 fi
 
-file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
+file_list=(outs/web_summary.html outs/metrics_summary.csv outs/raw_feature_bc_matrix.h5 outs/possorted_genome_bam.bam outs/possorted_genome_bam.bam.bai outs/filtered_feature_bc_matrix.h5)
+# file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
 # file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai raw_feature_bc_matrix/matrix.mtx.gz raw_feature_bc_matrix/features.tsv.gz raw_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/matrix.mtx.gz filtered_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/features.tsv.gz)
 
 # Extracting and renaming files
 for file in ${file_list[@]}; do
-  unzip -j $zip_file $file -d $output_dir;
   echo_verbose $file;
+
+  # Extracting basename from ZIP file name
+  file_name=$(basename -- "$file")
+  file_name="${file_name%.*}"
+  file_name_extension="${file##*.}"
+  echo_verbose "File name extracted: $file_name"
+  echo_verbose "File name extension extracted: $file_name_extension"
+  file_name_comb=$file_name\.$file_name_extension
+
+  #unzip -j $zip_file $file -d $output_dir/$file_name_comb;
+  unzip -p $zip_file $file >$output_dir/$file_name_comb;
   
   # Removing "_bam" from filename
-  if [[ $file == *"_bam"* ]]; then
-    echo_verbose "Found '_bam' in $file"
-    new_file=${file//"_bam"/}
+  if [[ $file_name_comb == *"_bam"* ]]; then
+    echo_verbose "Found '_bam' in $file_name_comb"
+    new_file=${file_name_comb//"_bam"/}
     echo_verbose "Removed '_bam': $new_file"
-    echo_verbose "Moving '$output_dir/${file}' to '$output_dir/${linker}_${new_file}'";
+    echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${new_file}'";
     echo_verbose ""
-    mv $output_dir/${file} $output_dir/${linker}_${new_file};
+    mv $output_dir/${file_name_comb} $output_dir/${linker}_${new_file};
   else
-    echo_verbose "Moving '$output_dir/${file}' to '$output_dir/${linker}_${file}'";
+    echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${file_name_comb}'";
     echo_verbose ""
-    mv $output_dir/${file} $output_dir/${linker}_${file};
+    mv $output_dir/${file_name_comb} $output_dir/${linker}_${file_name_comb};
   fi
   
 done
