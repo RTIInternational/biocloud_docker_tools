@@ -2,6 +2,8 @@ FROM bioconductor/bioconductor_docker:3.17
 
 LABEL maintainer="David Williams <dnwilliams@rti.org>"
 LABEL description="This Docker image contains an in-house script written to convert ab1 files to FASTA files using the sangeranalyseR package from Bioconductor."
+LABEL base-image="bioconductor/bioconductor_docker:3.17"
+LABEL software-version="1.0"
 
 RUN apt update
 RUN apt install -y vim
