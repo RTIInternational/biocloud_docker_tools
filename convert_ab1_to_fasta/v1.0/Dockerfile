@@ -5,8 +5,7 @@ LABEL description="This Docker image contains an in-house script written to conv
 LABEL base-image="bioconductor/bioconductor_docker:3.17"
 LABEL software-version="1.0"
 
-RUN apt update
-RUN apt install -y vim
+RUN apt update && apt install -y vim
 
 # Install libraries
 RUN Rscript -e 'BiocManager::install(c("sangeranalyseR"), ask = FALSE)'
