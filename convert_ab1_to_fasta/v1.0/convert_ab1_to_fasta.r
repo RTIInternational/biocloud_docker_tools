@@ -120,6 +120,9 @@ if (exitFlag){
     q(save="no",status=1,runLast=FALSE)
 }
 
+print_verbose(paste0("Found files in input_dir '",input_dir,"':"))
+print_verbose(list.files(input_dir, pattern="*.ab1"))
+
 ACHLO_contigs <- SangerAlignment(ABIF_Directory     = input_dir,
                                  REGEX_SuffixForward = "_[0-9]*_F.ab1$",
                                  REGEX_SuffixReverse = "_[0-9]*_R.ab1$")
