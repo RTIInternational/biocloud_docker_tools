@@ -10,21 +10,23 @@ argString <- commandArgs(trailingOnly = T) # Read in command line arguments
 usage <- paste("Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
               [-i | --input_filename]    <Path to input ab1 file> (REQUIRED)
-              [-l | --linker   ]    <String identifier for sample> (REQUIRED, e.g. RMIP_001_001_A_001_A)
+              [-l | --linker        ]    <String identifier for sample> (REQUIRED, e.g. RMIP_001_001_A_001_A)
+              [-r | --read_mode_in  ]    <Single character identifier telling whether to do Forward or Reverse read, i.e. F or R> (REQUIRED)
              -- Optional Parameters -- 
               [-v | --verbose]    <Activates verbose mode>
              -- Help Flag --  
-              [-h | --help     ]    <Displays this help message>
+              [-h | --help   ]    <Displays this help message>
              Example:
              convert_ab1_to_fasta.r -v -i ./my_data/Achl_ACHLO006-09_1_F.ab1 -l RMIP_001_001_A_001_A
               \n",sep="")
 
 # Setup the matrix which consists of long flag (should be all lower case), short flag (case sensitive), parameter class (0=no-arg, 1=required-arg, 2=optional-arg) and parameter type (logical, character, numeric)
 spec <- matrix(c(
-          'input_filename','i', 2, "character",
-          'linker',   'l', 2, "character",
-          'verbose',  'v', 2, "integer",
-          'help',     'h', 0, "logical"
+          'input_filename',   'i', 2, "character",
+          'linker',           'l', 2, "character",
+          'read_mode_in',     'r', 2, "character",
+          'verbose',          'v', 2, "integer",
+          'help',             'h', 0, "logical"
           ), byrow=TRUE, ncol=4);
 
 # Parse the command line parameters into R
@@ -60,6 +62,11 @@ if (is.null(args$linker)){
     exitFlag <- 1
 }
 
+if (is.null(args$read_mode_in)){
+  print("MISSING READ_MODE_IN - specify read mode using either F (forward) or R (reverse)")
+  exitFlag <- 1
+}
+
 if (exitFlag) {
     cat(usage)
     q(save="no",status=1,runLast=FALSE)
@@ -77,6 +84,13 @@ if (args$verbose){
 print_verbose <- function(x) {if (args$verbose) {print(x)}}
 input_filename <- args$input_filename
 linker <- args$linker
+read_mode_in <- args$read_mode_in
+
+if (toupper(read_mode_in) == "F") {
+  read_mode <- "Forward Read"
+} else if (toupper(read_mode_in == "R")) {
+  read_mode <- "Reverse Read"
+}
 
 ####################################
 ###    IDENTIFIER QC       #########
@@ -128,8 +142,8 @@ if (exitFlag){
 
 print_verbose(paste0("Here is input_filename: '",input_filename,"'"))
 
-sangerReadF <- SangerRead(readFileName = input_filenamme,
-                            readFeature = "Forward Read")
+sangerReadF <- SangerRead(readFileName = input_filename,
+                            readFeature = read_mode)
 
 output_dir <- "./temp_output"
 print_verbose("Here is writeFasta:")
@@ -147,13 +161,5 @@ if(file.copy(paste0(output_dir,"/",raw_file_name),out_file_name)) {
 } else {
   print_verbose(paste0("Failed to create: ",out_file_name," - possible file already exists"))
 }
-
-# for (i in 1:length(raw_file_name)){
-#   if(file.copy(paste0(output_dir,"/",raw_file_name[i]),out_file_name[i])) {
-#     print_verbose(paste0("Success! Created: ",out_file_name[i]))
-#   } else {
-#     print_verbose(paste0("Failed to create: ",out_file_name[i]," - possible file already exists"))
-#   }
-# }
 
 unlink("./temp_output", recursive = TRUE)

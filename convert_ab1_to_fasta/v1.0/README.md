@@ -38,7 +38,7 @@ Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Help Flag --  
               [-h | --help     ]    <Displays this help message>
              Example:
-             convert_ab1_to_fasta.r -v -i ./my_data/Achl_ACHLO006-09_1_F.ab1 -l RMIP_001_001_A_001_A
+             convert_ab1_to_fasta.r -v -i ./my_data/006C003_matK-M13-FP.ab1 -l RMIP_001_001_A_001_A
 ```
 
 ## Files included
