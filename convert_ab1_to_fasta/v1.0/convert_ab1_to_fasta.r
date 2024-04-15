@@ -9,19 +9,19 @@ argString <- commandArgs(trailingOnly = T) # Read in command line arguments
 # This is for setting up a human readable set of documentation to display if something is amiss.
 usage <- paste("Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
-              [-i | --input_dir]    <Path to input ab1 file(s)> (REQUIRED)
+              [-i | --input_filename]    <Path to input ab1 file> (REQUIRED)
               [-l | --linker   ]    <String identifier for sample> (REQUIRED, e.g. RMIP_001_001_A_001_A)
              -- Optional Parameters -- 
               [-v | --verbose]    <Activates verbose mode>
              -- Help Flag --  
               [-h | --help     ]    <Displays this help message>
              Example:
-             convert_ab1_to_fasta.r -v -i ./ACHLO -l RMIP_001_001_A_001_A
+             convert_ab1_to_fasta.r -v -i ./my_data/Achl_ACHLO006-09_1_F.ab1 -l RMIP_001_001_A_001_A
               \n",sep="")
 
 # Setup the matrix which consists of long flag (should be all lower case), short flag (case sensitive), parameter class (0=no-arg, 1=required-arg, 2=optional-arg) and parameter type (logical, character, numeric)
 spec <- matrix(c(
-          'input_dir','i', 2, "character",
+          'input_filename','i', 2, "character",
           'linker',   'l', 2, "character",
           'verbose',  'v', 2, "integer",
           'help',     'h', 0, "logical"
@@ -38,15 +38,21 @@ if ( !is.null(args$help)) {
   q(save="no",status=1,runLast=FALSE)
 }
 
-if (is.null(args$input_dir)){
-    print("MISSING INPUT DIRECTORY - input directory required")
+if (is.null(args$input_filename)){
+    print("MISSING INPUT FILE - input ab1 file required")
     exitFlag <- 1
 }
 
-if (!dir.exists(args$input_dir)) {
-    print("INPUT DIRECTORY NOT FOUND")
-    print(paste0("Got input path: ",args$input_dir))
+if (!file.exists(args$input_filename)) {
+    print("INPUT FILE NOT FOUND")
+    print(paste0("Got input path: ",args$input_filename))
     exitFlag <- 1
+}
+
+if (!grepl(pattern="\\.ab1$",args$input_filename, ignore.case = TRUE)){
+  print("INPUT FILE NOT .ab1")
+  print(paste0("Got file: ", args$input_filename))
+  exitFlag <- 1
 }
 
 if (is.null(args$linker)){
@@ -69,7 +75,7 @@ if (args$verbose){
 
 # Extracting input arguments
 print_verbose <- function(x) {if (args$verbose) {print(x)}}
-input_dir <- args$input_dir
+input_filename <- args$input_filename
 linker <- args$linker
 
 ####################################
@@ -120,15 +126,14 @@ if (exitFlag){
     q(save="no",status=1,runLast=FALSE)
 }
 
-print_verbose(paste0("Found files in input_dir '",input_dir,"':"))
-print_verbose(list.files(input_dir, pattern="*.ab1"))
+print_verbose(paste0("Here is input_filename: '",input_filename,"'"))
 
-ACHLO_contigs <- SangerAlignment(ABIF_Directory     = input_dir,
-                                 REGEX_SuffixForward = "_[0-9]*_F.ab1$",
-                                 REGEX_SuffixReverse = "_[0-9]*_R.ab1$")
+sangerReadF <- SangerRead(readFileName = input_filenamme,
+                            readFeature = "Forward Read")
 
 output_dir <- "./temp_output"
-writeFasta(ACHLO_contigs, outputDir = output_dir)
+print_verbose("Here is writeFasta:")
+writeFasta(sangerReadF, outputDir = output_dir, compress = FALSE, compression_level = NA)
 
 raw_file_name <- list.files(path = output_dir, pattern = "*.fa", full.names = F)
 print_verbose(paste0("Found written SangerAlignment file(s): ", raw_file_name))
@@ -137,12 +142,18 @@ out_file_name <- paste0(linker,"_",raw_file_name)
 print_verbose(paste0("Renaming SangerAlignment file(s): ", linker,"_",raw_file_name))
 print_verbose(paste0("Here is out_file_name: ", out_file_name))
 
-for (i in 1:length(raw_file_name)){
-  if(file.copy(paste0(output_dir,"/",raw_file_name[i]),out_file_name[i])) {
-    print_verbose(paste0("Success! Created: ",out_file_name[i]))
-  } else {
-    print_verbose(paste0("Failed to create: ",out_file_name[i]," - possible file already exists"))
-  }
+if(file.copy(paste0(output_dir,"/",raw_file_name),out_file_name)) {
+  print_verbose(paste0("Success! Created: ",out_file_name))
+} else {
+  print_verbose(paste0("Failed to create: ",out_file_name," - possible file already exists"))
 }
+
+# for (i in 1:length(raw_file_name)){
+#   if(file.copy(paste0(output_dir,"/",raw_file_name[i]),out_file_name[i])) {
+#     print_verbose(paste0("Success! Created: ",out_file_name[i]))
+#   } else {
+#     print_verbose(paste0("Failed to create: ",out_file_name[i]," - possible file already exists"))
+#   }
+# }
 
 unlink("./temp_output", recursive = TRUE)

@@ -31,20 +31,20 @@ Usage info:
 ```
 Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
-              [-i | --input_dir]    <Path to input ab1 file(s)> (REQUIRED)
+              [-i | --input_filename]    <Path to input ab1 file> (REQUIRED)
               [-l | --linker   ]    <String identifier for sample> (REQUIRED, e.g. RMIP_001_001_A_001_A)
              -- Optional Parameters -- 
               [-v | --verbose  ]    <Activates verbose mode>
              -- Help Flag --  
               [-h | --help     ]    <Displays this help message>
              Example:
-             convert_ab1_to_fasta.r -v -i ./my_data -l RMIP_001_001_A_001_A
+             convert_ab1_to_fasta.r -v -i ./my_data/Achl_ACHLO006-09_1_F.ab1 -l RMIP_001_001_A_001_A
 ```
 
 ## Files included
 
 - `Dockerfile`: the Docker file used to build this image
-- `convert_ab1_to_fasta.r`: R script that serves as the main executable when the Docker container is run.  Expected behavior is to take all input AB1 files from the specified directory, copy those to a temporary directory, and rename those files to include a prefix signifying a sample name.  This writes those specific files to the current working directory.
+- `convert_ab1_to_fasta.r`: R script that serves as the main executable when the Docker container is run.  Expected behavior is to take a specified .ab1 file, copy that to a temporary directory, and rename it to include a prefix signifying a sample name.  This renamed file is written to the current working directory.
 
 ## Contact
 
