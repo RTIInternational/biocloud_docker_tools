@@ -1,0 +1,12 @@
+---
+input: # mandatory, all files in here are tab-delimited tabular data
+  hla_map: "/t1dgrs2/T1D67_mapping.tsv"
+  dq_rank: "/t1dgrs2/HLADQ_USAEuropean_Klitz.tsv"
+  max_dq_calls: 2 # not implemented yet
+scores: # mandatory
+  interaction: "/t1dgrs2/T1D67_interaction_scores.tsv"
+  all_variants: "/t1dgrs2/T1D67_plink_all_scores.tsv"
+  hla_variants: "/t1dgrs2/T1D67_plink_hla_scores.tsv" # optional, will automatically exclude HLA BETAs from final calculation if this key-value pair is removed
+metrics: # optional, will not compute centiles, PPV or case probability if this key (and child key-value pairs) is removed
+  centiles_file: "/t1dgrs2/UKBB_T1D67_ROC.tsv"
+  params_file: "/t1dgrs2/UKBB_T1D67_Fit.tsv"
