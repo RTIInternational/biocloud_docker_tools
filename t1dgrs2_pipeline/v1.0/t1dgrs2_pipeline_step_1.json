@@ -27,7 +27,7 @@
             "required": true
         },
         "downloaded_files": {
-            "type": "str",
+            "type": "file",
             "default": "",
             "required": true
         },

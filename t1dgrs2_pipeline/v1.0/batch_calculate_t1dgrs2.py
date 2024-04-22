@@ -41,8 +41,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 gvcf_dir = args.gvcf_dir if (args.gvcf_dir[-1] == "/") else (args.gvcf_dir + "/")
+os.system("mkdir -p {}".format(gvcf_dir))
 out_dir = args.out_dir if (args.out_dir[-1] == "/") else (args.out_dir + "/")
+os.system("mkdir -p {}".format(out_dir))
 working_dir = args.working_dir if (args.working_dir[-1] == "/") else (args.working_dir + "/")
+os.system("mkdir -p {}".format(working_dir))
 
 # Get a list of all files in the directory
 files = os.listdir(gvcf_dir)

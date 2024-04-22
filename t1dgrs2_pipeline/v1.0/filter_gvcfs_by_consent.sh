@@ -33,9 +33,13 @@ do
 done
 
 imported_gvcfs_dir=$(echo imported_gvcfs_dir | perl -ne 'chomp; if (substr($_, -1) eq "/") { print $_; } else { print $_."/"; }')
+mkdir -p $imported_gvcfs_dir
 working_dir=$(echo working_dir | perl -ne 'chomp; if (substr($_, -1) eq "/") { print $_; } else { print $_."/"; }')
+mkdir -p $working_dir
 consented_gvcfs_dir=$(echo consented_gvcfs_dir | perl -ne 'chomp; if (substr($_, -1) eq "/") { print $_; } else { print $_."/"; }')
+mkdir -p $consented_gvcfs_dir
 nonconsented_gvcfs_dir=$(echo nonconsented_gvcfs_dir | perl -ne 'chomp; if (substr($_, -1) eq "/") { print $_; } else { print $_."/"; }')
+mkdir -p $nonconsented_gvcfs_dir
 
 #change to working dir
 cd $working_dir

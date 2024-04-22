@@ -39,6 +39,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 target_dir = args.target_dir if (args.target_dir[-1] == "/") else (args.target_dir + "/")
+os.system("mkdir -p {}".format(target_dir))
 
 #Connecting to S3
 session = boto3.Session(aws_access_key_id=args.access_key, aws_secret_access_key=args.secret_access_key)
