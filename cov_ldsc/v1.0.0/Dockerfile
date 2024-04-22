@@ -3,16 +3,6 @@ FROM python:2
 # Maintainer and author
 LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
 
-# update the OD related packages
-#RUN apt-get update
-
-#WORKDIR /usr/src/app
-
-#COPY requirements.txt ./
-#RUN pip install --no-cache-dir -r requirements.txt
-
-#COPY . .
-
 # clone cov-ldsc repo
 ADD ldsc.py /opt/
 RUN mkdir /opt/ldscore
@@ -22,14 +12,10 @@ ADD ldscore/ /opt/ldscore
 RUN chmod 755 /opt/ldsc.py
 
 # Install python modules
-RUN pip install numpy
-RUN pip install pandas
-RUN pip install bitarray
-RUN pip install scipy
+RUN pip install numpy pandas bitarray scipy
 
-
-# Set wrkdir
+# Set working directory
 RUN mkdir /data
 WORKDIR /data
 
-CMD [ "python", "/opt/ldsc.py" \
+CMD [ "python", "/opt/ldsc.py"
