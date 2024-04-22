@@ -74,11 +74,11 @@ RUN R -e "install.packages('optparse',dependencies=TRUE, repos='http://cran.rstu
 RUN mkdir /data
 RUN mkdir /data/.ref
 WORKDIR /data/.ref
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205025Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=ab18959fa733ea19d4f070210608cba911b86ee86edddb8eba375a6018359591"
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205025Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=73330af7f76ff0ebb23ef035116c11f852387e50c7f3527b64a909005fb40881"
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205026Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=db5d9a862e4236dca9c00ab233f6659a32c6900f9c72617a9b25389548d8b380"
-RUN wget -O 1000g_variants.tsv "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205027Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=32caebc3015389b710e7b890d2a299f00b72a21ba60f42c34bd97ce25b4aa4b3"
-RUN wget -O phase3_orig.psam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/phase3_orig.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205026Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=0ab2e87ece3a84a0c0c2e555aaa577b60b8b9c7b9dded020f7489728f13aa0ea"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed "__BED__"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim "__BIM__"
+RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam "__FAM__"
+RUN wget -O 1000g_variants.tsv "__VARIANT_LIST__"
+RUN wget -O phase3_orig.psam "__PSAM__"
 
 #### Install custom scripts ####
 # Add scripts

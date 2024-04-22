@@ -1,0 +1,346 @@
+{
+    "download_gvcfs_from_s3": {
+        "inputs": {
+            "source_s3_bucket": {
+                "type": "str"
+            },
+            "s3_access_key": {
+                "type": "str"
+            },
+            "s3_secret_access_key": {
+                "type": "str"
+            },
+            "target_dir": {
+                "type": "str"
+            },
+            "downloaded_files": {
+                "type": "file"
+            },
+            "download_limit": {
+                "type": "int"
+            }
+        },
+        "cmd": [
+            "download_gvcfs_from_s3.py",
+            "--source_s3_bucket",
+            "<inputs.source_s3_bucket>",
+            "--access_key",
+            "<inputs.access_key>",
+            "--secret_access_key",
+            "<inputs.secret_access_key>",
+            "--target_dir",
+            "<inputs.target_dir>",
+            "--downloaded_files",
+            "<inputs.downloaded_files>",
+            "--download_limit",
+            "<inputs.download_limit>"
+        ],
+        "outputs": {
+            "downloaded_files": {
+                "type": "file",
+                "value": "<inputs.downloaded_files>"
+            },
+            "log": {
+                "type": "file",
+                "value": "s3_download.log"
+            }
+        }
+    },
+    "filter_gvcfs_by_consent": {
+        "inputs": {
+            "imported_gvcfs_dir": {
+                "type": "str"
+            },
+            "working_dir": {
+                "type": "str"
+            },
+            "consented_gvcfs_dir": {
+                "type": "str"
+            },
+            "nonconsented_gvcfs_dir": {
+                "type": "str"
+            },
+            "master_manifest": {
+                "type": "file"
+            },
+            "new_manifest": {
+                "type": "file"
+            }
+        },
+        "cmd": [
+            "/opt/filter_gvcfs_by_consent.sh",
+            "--imported_gvcfs_dir",
+            "<inputs.imported_gvcfs_dir>",
+            "--working_dir",
+            "<inputs.working_dir>",
+            "--consented_gvcfs_dir",
+            "<inputs.consented_gvcfs_dir>",
+            "--nonconsented_gvcfs_dir",
+            "<inputs.nonconsented_gvcfs_dir>",
+            "--master_manifest",
+            "<inputs.master_manifest>",
+            "--new_manifest",
+            "<inputs.new_manifest>"
+        ],
+        "outputs": {
+            "log": {
+                "type": "file",
+                "value": "filter_gvcfs_by_consent.log"
+            }
+        }
+    },
+    "batch_calculate_t1dgrs2": {
+        "inputs": {
+            "gvcf_dir": {
+                "type": "str"
+            },
+            "variant_list": {
+                "type": "file"
+            },
+            "out_dir": {
+                "type": "str"
+            },
+            "working_dir": {
+                "type": "str"
+            },
+            "argo_api_url": {
+                "type": "str",
+                "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1"
+            },
+            "simultaneous_jobs": {
+                "type": "int",
+                "default": 50
+            }
+        },
+        "cmd": [
+            "/opt/batch_calculate_t1dgrs2.py",
+            "--gvcf_dir",
+            "<inputs.gvcf_dir>",
+            "--variant_list",
+            "<inputs.variant_list>",
+            "--out_dir",
+            "<inputs.out_dir>",
+            "--working_dir",
+            "<inputs.working_dir>",
+            "--argo_api_url",
+            "<inputs.argo_api_url>",
+            "--simultaneous_jobs",
+            "<inputs.simultaneous_jobs>"
+        ],
+        "outputs": {
+            "log": {
+                "type": "file",
+                "value": "batch_calculate_t1dgrs2.log"
+            }
+        }
+    },
+    "extract_gvcf_variants": {
+        "inputs": {
+            "gvcf": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            },
+            "variant_list": {
+                "type": "file",
+                "default": "/t1dgrs2/t1dgrs2_hg19_variants.tsv"
+            },
+            "pass_only": {
+                "type": "int",
+                "default": 0
+            },
+            "filter_by_gq": {
+                "type": "int",
+                "default": 0
+            },
+            "hom_gq_threshold": {
+                "type": "int",
+                "default": 99
+            },
+            "het_gq_threshold": {
+                "type": "int",
+                "default": 48
+            }
+        },
+        "cmd": [
+            "/opt/extract_gvcf_variants.pl",
+            "--gvcf",
+            "<inputs.gvcf>",
+            "--out_prefix",
+            "<inputs.out_prefix>",
+            "--variant_list",
+            "<inputs.variant_list>",
+            "--pass_only",
+            "<inputs.pass_only>",
+            "--filter_by_gq",
+            "<inputs.filter_by_gq>",
+            "--hom_gq_threshold",
+            "<inputs.hom_gq_threshold>",
+            "--het_gq_threshold",
+            "<inputs.het_gq_threshold>"
+        ],
+        "outputs": {
+            "t1dgrs2_variants_vcf": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.vcf"
+            },
+            "log": {
+                "type": "file",
+                "value": "extract_gvcf_variants.log"
+            }
+        }
+    },
+    "convert_vcf_to_bfile": {
+        "inputs": {
+            "vcf": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            },
+            "threads": {
+                "type": "int",
+                "default": 1
+            }
+        },
+        "cmd": [
+            "plink2",
+            "--vcf",
+            "<inputs.vcf>",
+            "--out",
+            "<inputs.out_prefix>",
+            "--make-bed",
+            "--threads",
+            "<inputs.threads>"
+        ],
+        "outputs": {
+            "bed": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "convert_vcf_to_bfile.log"
+            }
+        }
+    },
+    "merge_bfile_with_reference": {
+        "inputs": {
+            "ref_bfile": {
+                "type": "str"
+            },
+            "sample_bed": {
+                "type": "str"
+            },
+            "sample_bim": {
+                "type": "str"
+            },
+            "sample_fam": {
+                "type": "str"
+            },
+            "out_prefix": {
+                "type": "str"
+            },
+            "threads": {
+                "type": "int",
+                "default": 1
+            }
+        },
+        "cmd": [
+            "plink2",
+            "--bfile",
+            "<inputs.ref_bfile>",
+            "--pmerge",
+            "<inputs.sample_bed>",
+            "<inputs.sample_bim>",
+            "<inputs.sample_fam>",
+            "--out",
+            "<inputs.out_prefix>",
+            "--make-bed",
+            "--threads",
+            "<inputs.threads>"
+        ],
+        "outputs": {
+            "bfile": {
+                "type": "str",
+                "value": "<inputs.file_out_prefix>"
+            },
+            "bed": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "merge_bfile_with_reference.log"
+            }
+        }
+    },
+    "calculate_t1dgrs2": {
+        "inputs": {
+            "bfile": {
+                "type": "str"
+            },
+            "config": {
+                "type": "file",
+                "default": "/t1dgrs2/t1dgrs2_settings.yml"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "python",
+            "-m",
+            "t1dgrs2 ",
+            "-b",
+            "<inputs.bfile>",
+            "-c",
+            "<inputs.config>",
+            "-o",
+            "<inputs.out_prefix>"
+        ],
+        "outputs": {
+            "dosage": {
+                "type": "file",
+                "value": "<inputs.out_prefix>_dosage.tsv"
+            },
+            "dq_calls": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_DQ_calls.tsv"
+            },
+            "results": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_RESULTS.tsv"
+            },
+            "log": {
+                "type": "file",
+                "value": "calculate_t1dgrs2.log"
+            }
+        }
+    }
+}

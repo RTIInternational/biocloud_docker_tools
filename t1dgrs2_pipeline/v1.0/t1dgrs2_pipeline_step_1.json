@@ -1,0 +1,130 @@
+{
+    "name": "t1dgrs2_pipeline_step_1",
+    "inputs": {
+        "working_dir": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "output_dir": {
+            "type": "str",
+            "default": "/home/merge-shared-folder/",
+            "required": false
+        },
+        "source_s3_bucket": {
+            "type": "str",
+            "default": "gdx-rti-earlycheck",
+            "required": false
+        },
+        "access_key": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "secret_access_key": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "downloaded_files": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "download_limit": {
+            "type": "int",
+            "default": 1000,
+            "required": false
+        },
+        "master_manifest": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "new_manifest": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "variant_list": {
+            "type": "file",
+            "default": "/data/t1dgrs2_hg19_variants.tsv",
+            "required": false
+        },
+        "argo_api_url": {
+            "type": "str",
+            "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+            "required": false
+        },
+        "simultaneous_jobs": {
+            "type": "int",
+            "default": 50,
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.working_dir>t1dgrs2_pipeline_step_1.log"
+        }
+    },
+    "entry_point": "download_gvcfs_from_s3",
+    "entry_point_inputs": {
+        "source_s3_bucket": "<inputs.source_s3_bucket>",
+        "access_key": "<inputs.access_key>",
+        "secret_access_key": "<inputs.secret_access_key",
+        "target_dir": "<inputs.output_dir>gvcfs_imported/",
+        "downloaded_files": "<inputs.downloaded_files>",
+        "download_limit": "<inputs.download_limit>"
+    },
+    "pipeline": {
+        "download_gvcfs_from_s3": {
+            "task": "download_gvcfs_from_s3",
+            "check_output": {
+                "returncode_0": {
+                    "step": "filter_gvcfs_by_consent",
+                    "inputs": {
+                        "imported_gvcfs_dir": "<inputs.output_dir>gvcfs_imported/",
+                        "working_dir": "<inputs.working_dir>/filter_gvcfs_by_consent/",
+                        "consented_gvcfs_dir": "<inputs.output_dir>gvcfs_consented/",
+                        "nonconsented_gvcfs_dir": "<inputs.output_dir>gvcfs_nonconsented/",
+                        "master_manifest": "<inputs.master_manifest>",
+                        "new_manifest": "<inputs.new_manifest>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "filter_gvcfs_by_consent": {
+            "task": "filter_gvcfs_by_consent",
+            "check_output": {
+                "returncode_0": {
+                    "step": "batch_calculate_t1dgrs2",
+                    "inputs": {
+                        "gvcf_dir": "<inputs.output_dir>gvcfs_consented/",
+                        "variant_list": "<inputs.variant_list>",
+                        "out_dir": "<inputs.output_dir>/t1dgrs/",
+                        "argo_api_url": "<inputs.argo_api_url>",
+                        "simultaneous_jobs": "<inputs.simultaneous_jobs>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "batch_calculate_t1dgrs2": {
+            "task": "batch_calculate_t1dgrs2",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

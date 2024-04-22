@@ -2,7 +2,7 @@
 <summary>Usage</summary>
 
 ``` shell
-docker run 
+docker run -ti -v /rti-01/ngaddis:/rti-01/ngaddis -e wf_arguments=/rti-01/ngaddis/data/temp/ancestry_weiss/ancestry_pipeline_args.json --rm biocloud_docker_tools/ancestry_pipeline:v1.0
 ```
 </details>
 
@@ -10,12 +10,14 @@ docker run
 <details>
 <summary>Build instructions</summary>
 
-# Prior to build, generate new presigned URLs for reference files in S3 using following code:
 ``` shell
-aws s3 presign s3://rti-common/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed --expires-in 172800
-aws s3 presign s3://rti-common/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim --expires-in 172800
-aws s3 presign s3://rti-common/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam --expires-in 172800
-aws s3 presign s3://rti-common/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv --expires-in 172800
-aws s3 presign s3://rti-common/ancestry/smartpca_mahal_pipeline/phase3_orig.psam --expires-in 172800
+cd biocloud_docker_tools/ancestry_pipeline/v1.0
+
+# Create Dockerfile from template
+perl make_dockerfile.pl
+
+# Local build
+docker build . -t ancestry_pipeline/ancestry_pipeline:v1.0
+
 ```
 </details>

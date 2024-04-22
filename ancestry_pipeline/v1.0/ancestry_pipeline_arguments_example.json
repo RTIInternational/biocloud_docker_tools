@@ -1,0 +1,9 @@
+{
+    "gvcf": "/rti-01/ngaddis/data/temp/t1d_test3/PFNA12878.hard-filtered.gvcf.gz",
+    "ancestry_pop_type": "SUPERPOP",
+    "ancestries_to_include": "AFR,AMR,EAS,EUR,SAS",
+    "dataset_name": "PFNA12878",
+    "final_file_location": "/rti-01/ngaddis/data/temp/t1d_test3",
+    "monomorphic_positions": "include",
+    "threads": 4
+}

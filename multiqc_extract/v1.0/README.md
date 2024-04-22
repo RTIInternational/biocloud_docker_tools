@@ -12,6 +12,8 @@ This Docker image contains an in-house script written to extract several key sta
 
 ## Sample usage
 
+This script is intended to be run after all FASTQ files have gone through MultiQC analysis.  A quality check was implemented to see if all FASTQ files have been processed or not.
+
 Build
 ```
 docker build -t multiqc_extract:v1 .
@@ -20,6 +22,21 @@ docker build -t multiqc_extract:v1 .
 Run
 ```
 docker run -it -v $PWD:/data multiqc_extract:v1 Rscript unzip_extract_stats.R
+```
+
+Usage info:
+```
+Usage: unzip_extract_stats.R
+             -- Required Parameters --
+              NONE
+             -- Optional Parameters -- 
+              [-i | --inputpath]    <Name of input working directory> (default = .)
+              [-o | --outfile  ]    <The output file name> (default = output.csv)
+              [-p | --outpath  ]    <Path to the directory to save the outputs> (default = input path)
+             -- Help Flag --  
+              [-h | --help     ]    <Displays this help message>
+             Example:
+             unzip_extract_stats.R -i results_2023_01_01 -o my_test_results.csv -p my_test_run
 ```
 
 ## Files included

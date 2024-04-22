@@ -5,7 +5,7 @@ Welcome to the RTI BioCloud Docker Library! This repository serves as a central 
 ## Repository Structure
 
 The Dockerfiles are organized in the following structure: `<tool_name>/<tool_version>/Dockerfile`. Each tool has its own directory containing the Dockerfile and related files.
-If a software tool does not have a version (e.g., a custom script), use `v1` for the tool-version folder (e.g., rti_tool/v1/Dockerfile). Tool names should contain only lowercase characters and underscores (not hyphens) should be used to separate words. 
+If a software tool does not have a version (e.g., a custom script), use `v1.0` for the tool-version folder (e.g., rti_tool/v1.0/Dockerfile). Folder names and tool names should contain only lowercase characters and underscores (not hyphens) should be used to separate words. 
 
 <br><br>
 
@@ -33,7 +33,7 @@ Once a pull request has been received, the repository administrators will review
   - [ ] `LABEL maintainer="Your Name <your.email@rti.org>"`
   - [ ] `LABEL description="Short description of the purpose of this image"`
   - [ ] `LABEL software-website="https://example.com"`
-  - [ ] `LABEL software-version="1.0.0"`
+  - [ ] `LABEL software-version="1.0"`
   - [ ] `LABEL license="https://www.example.com/legal/end-user-software-license-agreement"`
 
 **Committing**
@@ -54,7 +54,7 @@ If all three of these review stages are satisfactory then the approval will be g
 
 # Docker Hub
 
-All Docker images are published on Docker Hub under the RTI BioCloud organization. You can find the repository at https://hub.docker.com/u/rtibiocloud. Each image is tagged using the following format: `<tool-version>_<first-6-characters-of-git-hash>`.
+All Docker images are published on Docker Hub under the RTI BioCloud organization. You can find the repository at https://hub.docker.com/u/rtibiocloud. Each image is tagged using the following format: `<tool-version>_<first-7-characters-of-commit-hash>`.
 
 When adding new Dockerfiles, the GitHub action will automatically build and push the Docker images to Docker Hub. If the corresponding repository does not exist, the push command will create it.
 
