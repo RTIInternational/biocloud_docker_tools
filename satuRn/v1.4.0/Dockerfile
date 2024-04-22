@@ -2,6 +2,11 @@ FROM bioconductor/bioconductor_docker:RELEASE_3_15
 
 # author
 LABEL maintainer="Eric Earley <eearley@rti.org>"
+LABEL description="This image contains all the packages needed to run satuRn differential transcript usage analysis"
+LABEL software-website="https://github.com/statOmics/satuRn"
+LABEL software-version="1.4.0"
+LABEL license="https://github.com/statOmics/satuRn?tab=coc-ov-file"
+
 
 # Install libraries
 RUN Rscript -e 'BiocManager::install(c("R.utils"), ask = FALSE)'
