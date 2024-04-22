@@ -17,7 +17,7 @@ RUN Rscript -e 'BiocManager::install(c("stageR"), ask = FALSE)'
 
 
 
-:
+
 # Set wrkdir
 RUN mkdir /data
 WORKDIR /data
