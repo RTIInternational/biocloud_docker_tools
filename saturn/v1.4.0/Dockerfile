@@ -7,15 +7,17 @@ LABEL software-website="https://github.com/statOmics/satuRn"
 LABEL software-version="1.4.0"
 
 # Install libraries
-RUN Rscript -e 'BiocManager::install(c("R.utils"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("satuRn"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("AnnotationHub"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("ensembldb"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("edgeR"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("SummarizedExperiment"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("ggplot2"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("DEXSeq"), ask = FALSE)'
-RUN Rscript -e 'BiocManager::install(c("stageR"), ask = FALSE)'
+RUN Rscript -e 'BiocManager::install(c(
+  "R.utils",
+  "satuRn",
+  "AnnotationHub",
+  "ensembldb",
+  "edgeR",
+  "SummarizedExperiment",
+  "ggplot2",
+  "DEXSeq",
+  "stageR"
+ ), ask = FALSE)'
 
 # Set wrkdir
 RUN mkdir /data
