@@ -15,7 +15,8 @@ RUN apt-get update \
         curl \
         wget \
         unzip \
-        cpanminus
+        cpanminus \
+        git
 
 # Install miniconda to /miniconda
 ENV PATH="/root/miniconda3/bin:${PATH}"
@@ -35,9 +36,15 @@ RUN conda install -y conda-forge::xlsx2csv
 # Install t1dgrs2 and dependencies
 RUN conda install -c conda-forge -y setuptools=67.6.1
 RUN conda install -c bioconda -y t1dgrs2
+
+# Add supporting files for t1dgrs2
 RUN mkdir /t1dgrs2
+RUN mkdir /temp
+RUN cd /temp
+RUN git clone https://github.com/t2diabetesgenes/t1dgrs2.git \
+    && cp /t1dgrs2/data/input/* /t1dgrs2/
+RUN rm -rf /temp
 ADD t1dgrs2_settings.yml /t1dgrs2/
-ADD t1dgrs2/data/input/* /t1dgrs2/
 ADD t1dgrs2_hg19_variants.tsv /t1dgrs2/
 
 #### Install PERL modules ####
