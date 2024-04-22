@@ -32,6 +32,7 @@ RUN conda install -c anaconda -y python=3.11
 # Install python packages
 RUN conda install -y conda-forge::boto3
 RUN conda install -y conda-forge::xlsx2csv
+RUN conda install -c conda-forge -y cryptography=42.0.4
 
 # Install t1dgrs2 and dependencies
 RUN conda install -c conda-forge -y setuptools=67.6.1
@@ -46,6 +47,8 @@ RUN git clone https://github.com/t2diabetesgenes/t1dgrs2.git \
 RUN rm -rf /temp
 ADD t1dgrs2_settings.yml /t1dgrs2/
 ADD t1dgrs2_hg19_variants.tsv /t1dgrs2/
+ADD hla_variants.txt /t1dgrs2/
+ADD non_hla_variants.txt /t1dgrs2/
 
 #### Install PERL modules ####
 RUN cpanm install JSON
@@ -71,6 +74,7 @@ ADD download_gvcfs_from_s3.py /opt/
 ADD filter_gvcfs_by_consent.sh /opt/
 ADD batch_calculate_t1dgrs2.py /opt/
 ADD extract_gvcf_variants.pl /opt/
+ADD generate_file_for_export.pl /opt/
 # Change permissions
 RUN chmod 755 /opt/entrypoint.sh
 RUN chmod 755 /opt/run_pipeline.py
@@ -78,6 +82,7 @@ RUN chmod 755 /opt/download_gvcfs_from_s3.py
 RUN chmod 755 /opt/filter_gvcfs_by_consent.sh
 RUN chmod 755 /opt/batch_calculate_t1dgrs2.py
 RUN chmod 755 /opt/extract_gvcf_variants.pl
+RUN chmod 755 /opt/generate_file_for_export.pl
 
 WORKDIR /data
 
