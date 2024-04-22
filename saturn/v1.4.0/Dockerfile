@@ -2,7 +2,7 @@ FROM bioconductor/bioconductor_docker:RELEASE_3_15
 
 # author
 LABEL maintainer="Eric Earley <eearley@rti.org>"
-LABEL description="This image contains all the packages needed to run satuRn differential transcript usage analysis"
+LABEL description="This image contains all the packages necessary to perform differential transcript usage analysis using satuRn."
 LABEL software-website="https://github.com/statOmics/satuRn"
 LABEL software-version="1.4.0"
 
