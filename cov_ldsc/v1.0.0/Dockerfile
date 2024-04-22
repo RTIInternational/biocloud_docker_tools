@@ -2,6 +2,7 @@ FROM python:2
 
 # Maintainer and author
 LABEL maintainer="Ravi Mathur <rmathur@rti.org>"
+LABEL python-version="2"
 
 # clone cov-ldsc repo
 ADD ldsc.py /opt/
