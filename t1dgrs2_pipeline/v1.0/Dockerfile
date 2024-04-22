@@ -75,3 +75,4 @@ RUN chmod 755 /opt/extract_gvcf_variants.pl
 WORKDIR /data
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
