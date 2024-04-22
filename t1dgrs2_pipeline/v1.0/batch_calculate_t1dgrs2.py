@@ -38,6 +38,12 @@ parser.add_argument(
     default = 25,
     type = int
 )
+parser.add_argument(
+    '--ref_bfile',
+    help = 'Reference samples to merge with test sample',
+    type = str,
+    default = '/home/merge-shared-folder/t1dgrs2/pipeline_files/t1dgrs2_ref'
+)
 args = parser.parse_args()
 
 gvcf_dir = args.gvcf_dir if (args.gvcf_dir[-1] == "/") else (args.gvcf_dir + "/")
@@ -72,20 +78,27 @@ for file in files:
     while get_running_workflows() >= args.simultaneous_jobs:
         time.sleep(30)
 
-    # Create directory for sample
-    sample_dir = "{}/{}".format(out_dir, file_id)
-    if not os.path.exists(sample_dir):
-        os.makedirs(sample_dir)
+    # Create output dir for sample
+    sample_out_dir = "{}/{}".format(out_dir, file_id)
+    if not os.path.exists(sample_out_dir):
+        os.makedirs(sample_out_dir)
+    
+    # Create working dir for sample
+    sample_working_dir = "{}/{}".format(working_dir, file_id)
+    if not os.path.exists(sample_working_dir):
+        os.makedirs(sample_working_dir)
     
     # Create workflow args for gvcf file
     wf_arguments = {
+        "working_dir": sample_working_dir,
+        "out_prefix": "{}/{}".format(sample_out_dir, file_id),
         "gvcf": gvcf_dir + file,
         "variant_list": args.variant_list,
-        "out_prefix": "{}/{}".format(sample_dir, file_id),
         "pass_only": 0,
         "filter_by_gq": 0,
         "hom_gq_threshold": 99,
-        "het_gq_threshold": 48
+        "het_gq_threshold": 48,
+        "ref_bfile": args.ref_bfile
     }
     file_wf_arguments = working_dir + file_id + '.json'
     with open(file_wf_arguments, 'w', encoding='utf-8') as f:

@@ -44,11 +44,11 @@
         "new_manifest": {
             "type": "str",
             "default": "",
-            "required": true
+            "required": false
         },
         "variant_list": {
             "type": "file",
-            "default": "/data/t1dgrs2_hg19_variants.tsv",
+            "default": "/t1dgrs2/t1dgrs2_hg19_variants.tsv",
             "required": false
         },
         "argo_api_url": {
@@ -59,6 +59,11 @@
         "simultaneous_jobs": {
             "type": "int",
             "default": 50,
+            "required": false
+        },
+        "ref_bfile": {
+            "type": "file",
+            "default": "/home/merge-shared-folder/t1dgrs2/pipeline_files/t1dgrs2_ref",
             "required": false
         }
     },
@@ -106,8 +111,10 @@
                         "gvcf_dir": "<inputs.output_dir>gvcfs_consented/",
                         "variant_list": "<inputs.variant_list>",
                         "out_dir": "<inputs.output_dir>/t1dgrs/",
+                        "working_dir": "<inputs.working_dir>/batch_calculate_t1dgrs2/",
                         "argo_api_url": "<inputs.argo_api_url>",
-                        "simultaneous_jobs": "<inputs.simultaneous_jobs>"
+                        "simultaneous_jobs": "<inputs.simultaneous_jobs>",
+                        "ref_bfile": "<inputs.ref_bfile>"
                     }
                 },
                 "returncode_1": { 
