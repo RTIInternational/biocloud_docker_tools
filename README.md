@@ -4,8 +4,11 @@ Welcome to the RTI BioCloud Docker Library! This repository serves as a central 
 
 ## Repository Structure
 
-The Dockerfiles are organized in the following structure: `<tool_name>/<tool_version>/Dockerfile`. Each tool has its own directory containing the Dockerfile and related files.
-If a software tool does not have a version (e.g., a custom script), use `v1.0` for the tool-version folder (e.g., rti_tool/v1.0/Dockerfile). Folder names and tool names should contain only lowercase characters and underscores (not hyphens) should be used to separate words. 
+1. **Folder Structure:** The Dockerfiles are organized in the following structure: `<tool_name>/<tool_version>/Dockerfile`.
+1. **Versioning:** Follow [Semantic Versioning](https://semver.org/) for all tools. Assign v1.0.0 to custom scripts or tools without existing versions (e.g., `rti_tool/v1.0.0/Dockerfile`).
+1. **README File:** A detailed README.md should accompany each tool. Reference [THIS README](https://github.com/RTIInternational/biocloud_docker_tools/blob/master/cellranger/v7.2.0/README.md) for an example.
+1. **Naming Convention:** Use lowercase characters and underscores for folder and tool names to maintain consistency and readability across the repository. **Avoid hyphens** for separation.
+
 
 <br><br>
 
