@@ -28,6 +28,7 @@ RUN conda update -y conda
 
 # Install python
 RUN conda install -c anaconda -y python=3.11
+RUN chmod 755 /root/miniconda3/bin/python
 
 # Install python packages
 RUN conda install -y conda-forge::boto3
