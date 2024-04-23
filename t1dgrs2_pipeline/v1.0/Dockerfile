@@ -5,8 +5,12 @@ FROM ubuntu:22.04
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
 
-# Arguments
-ARG PATH="/root/miniconda3/bin:${PATH}"
+# Set a default user. Available via runtime flag `--user docker` 
+# Add user to 'staff' group and make home directory 
+RUN useradd docker \
+    && mkdir /home/docker \
+    && chown docker:docker /home/docker \
+    && addgroup docker staff
 
 #### Install general packages
 RUN rm -Rf /var/lib/apt/lists/*
@@ -84,6 +88,7 @@ RUN chmod 755 /opt/filter_gvcfs_by_consent.sh
 RUN chmod 755 /opt/batch_calculate_t1dgrs2.py
 RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/generate_file_for_export.pl
+RUN chmod 755 /root/miniconda3/bin
 
 WORKDIR /data
 
