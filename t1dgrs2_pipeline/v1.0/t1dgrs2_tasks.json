@@ -21,7 +21,7 @@
             }
         },
         "cmd": [
-            "/root/miniconda3/bin/python",
+            "python",
             "download_gvcfs_from_s3.py",
             "--source_s3_bucket",
             "<inputs.source_s3_bucket>",
@@ -114,7 +114,7 @@
             }
         },
         "cmd": [
-            "/root/miniconda3/bin/python",
+            "python",
             "/opt/batch_calculate_t1dgrs2.py",
             "--gvcf_dir",
             "<inputs.gvcf_dir>",
@@ -316,7 +316,7 @@
             }
         },
         "cmd": [
-            "/root/miniconda3/bin/python",
+            "python",
             "-m",
             "t1dgrs2 ",
             "-b",

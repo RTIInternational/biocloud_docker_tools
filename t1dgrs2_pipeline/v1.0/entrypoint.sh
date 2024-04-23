@@ -10,9 +10,9 @@ if [ -z "$wf_arguments" ]; then
     exit 
 fi
 
-whoami
+echo "$USER"
 
-/root/miniconda3/bin/python /opt/run_pipeline.py \
+python /opt/run_pipeline.py \
     --wf_definition /opt/$wf_definition.json \
     --wf_tasks /opt/t1dgrs2_tasks.json \
     --wf_arguments $wf_arguments
