@@ -1,6 +1,6 @@
 
 # Base image
-FROM ubuntu:22.04
+FROM continuumio/miniconda3
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
@@ -22,17 +22,18 @@ RUN apt-get update \
         cpanminus \
         git
 
-# Install miniconda to /miniconda
-ENV PATH="/root/miniconda3/bin:${PATH}"
-RUN curl -LO http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-RUN mkdir /root/.conda
-RUN bash Miniconda3-latest-Linux-x86_64.sh -b
-RUN rm -f Miniconda3-latest-Linux-x86_64.sh
-RUN conda update -y conda
+# # Install miniconda to /miniconda
+# ARG PATH="/root/miniconda3/bin:${PATH}"
+# ENV PATH="/root/miniconda3/bin:${PATH}"
+# RUN curl -LO http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# RUN mkdir /root/.conda
+# RUN bash Miniconda3-latest-Linux-x86_64.sh -b
+# RUN rm -f Miniconda3-latest-Linux-x86_64.sh
+# RUN conda update -y conda
 
 # Install python
 RUN conda install -c anaconda -y python=3.11
-RUN chmod 755 /root/miniconda3/bin/python
+RUN ln -s /root/miniconda3/bin/python3.11 /usr/bin/python
 
 # Install python packages
 RUN conda install -y conda-forge::boto3
@@ -88,8 +89,8 @@ RUN chmod 755 /opt/filter_gvcfs_by_consent.sh
 RUN chmod 755 /opt/batch_calculate_t1dgrs2.py
 RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/generate_file_for_export.pl
-RUN chmod 755 /root/miniconda3/bin
 
 WORKDIR /data
+RUN chown -R docker:staff /data
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
