@@ -166,8 +166,8 @@ while next_step['step'] != 'exit':
     # Open log file
     step_log = "{}/{}.log".format(step_dir, next_step['step'])
     step_logger = setup_logger('step_logger', step_log)
-    sys.stdout = logger_writer(step_log.info)
-    sys.stderr = logger_writer(step_log.error)
+    sys.stdout = logger_writer(step_logger.info)
+    sys.stderr = logger_writer(step_logger.error)
     step_logger.info("Running task {}".format(task))
     wf_logger.info("Running task {}".format(task))
     # Prepare task command
