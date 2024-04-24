@@ -1,6 +1,6 @@
 
 # Base image
-FROM continuumio/miniconda3
+FROM ubuntu:22.04
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
@@ -22,14 +22,22 @@ RUN apt-get update \
         cpanminus \
         git
 
-# # Install miniconda to /miniconda
-# ARG PATH="/root/miniconda3/bin:${PATH}"
-# ENV PATH="/root/miniconda3/bin:${PATH}"
-# RUN curl -LO http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-# RUN mkdir /root/.conda
-# RUN bash Miniconda3-latest-Linux-x86_64.sh -b
-# RUN rm -f Miniconda3-latest-Linux-x86_64.sh
-# RUN conda update -y conda
+ENV PATH /opt/conda/bin:$PATH
+
+# Install miniconda3
+RUN set -x && \
+    wget "https://repo.anaconda.com/miniconda/Miniconda3-py312_24.3.0-0-Linux-x86_64.sh" -O miniconda.sh -q && \
+    echo "96a44849ff17e960eeb8877ecd9055246381c4d4f2d031263b63fa7e2e930af1 miniconda.sh" > shasum && \
+    sha256sum --check --status shasum && \
+    mkdir -p /opt && \
+    bash miniconda.sh -b -p /opt/conda && \
+    rm miniconda.sh shasum && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc && \
+    find /opt/conda/ -follow -type f -name '*.a' -delete && \
+    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
+    /opt/conda/bin/conda clean -afy
 
 # Install python
 RUN conda install -c anaconda -y python=3.11
