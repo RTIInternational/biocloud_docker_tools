@@ -16,12 +16,12 @@
             "default": "gdx-rti-earlycheck",
             "required": false
         },
-        "access_key": {
+        "s3_access_key": {
             "type": "str",
             "default": "",
             "required": true
         },
-        "secret_access_key": {
+        "s3_secret_access_key": {
             "type": "str",
             "default": "",
             "required": true
@@ -70,15 +70,15 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>t1dgrs2_pipeline_step_1.log"
+            "value": "<inputs.working_dir>/t1dgrs2_pipeline_step_1.log"
         }
     },
     "entry_point": "download_gvcfs_from_s3",
     "entry_point_inputs": {
         "source_s3_bucket": "<inputs.source_s3_bucket>",
-        "s3_access_key": "<inputs.access_key>",
-        "s3_secret_access_key": "<inputs.secret_access_key",
-        "target_dir": "<inputs.output_dir>gvcfs_imported/",
+        "s3_access_key": "<inputs.s3_access_key>",
+        "s3_secret_access_key": "<inputs.s3_secret_access_key>",
+        "target_dir": "<inputs.output_dir>/gvcfs_imported/",
         "downloaded_files": "<inputs.downloaded_files>",
         "download_limit": "<inputs.download_limit>"
     },
@@ -89,10 +89,10 @@
                 "returncode_0": {
                     "step": "filter_gvcfs_by_consent",
                     "inputs": {
-                        "imported_gvcfs_dir": "<inputs.output_dir>gvcfs_imported/",
+                        "imported_gvcfs_dir": "<inputs.output_dir>/gvcfs_imported/",
                         "working_dir": "<inputs.working_dir>/filter_gvcfs_by_consent/",
-                        "consented_gvcfs_dir": "<inputs.output_dir>gvcfs_consented/",
-                        "nonconsented_gvcfs_dir": "<inputs.output_dir>gvcfs_nonconsented/",
+                        "consented_gvcfs_dir": "<inputs.output_dir>/gvcfs_consented/",
+                        "nonconsented_gvcfs_dir": "<inputs.output_dir>/gvcfs_nonconsented/",
                         "master_manifest": "<inputs.master_manifest>",
                         "new_manifest": "<inputs.new_manifest>"
                     }
@@ -108,7 +108,7 @@
                 "returncode_0": {
                     "step": "batch_calculate_t1dgrs2",
                     "inputs": {
-                        "gvcf_dir": "<inputs.output_dir>gvcfs_consented/",
+                        "gvcf_dir": "<inputs.output_dir>/gvcfs_consented/",
                         "variant_list": "<inputs.variant_list>",
                         "out_dir": "<inputs.output_dir>/t1dgrs/",
                         "working_dir": "<inputs.working_dir>/batch_calculate_t1dgrs2/",
