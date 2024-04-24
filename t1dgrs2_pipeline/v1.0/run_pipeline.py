@@ -190,6 +190,3 @@ while next_step['step'] != 'exit':
     else:
         step_logger.info(result.stdout)
         step_logger.info("Task {} complete".format(task))
-    step_log.close()
-
-wf_log.close()
