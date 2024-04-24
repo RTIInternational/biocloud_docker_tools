@@ -11,12 +11,12 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
-    '--access_key',
+    '--s3_access_key',
     help='Access key for S3 bucket',
     type = str
 )
 parser.add_argument(
-    '--secret_access_key',
+    '--s3_secret_access_key',
     help='Secret access key for S3 bucket',
     type = str
 )
@@ -42,7 +42,7 @@ target_dir = args.target_dir if (args.target_dir[-1] == "/") else (args.target_d
 os.system("mkdir -p {}".format(target_dir))
 
 #Connecting to S3
-session = boto3.Session(aws_access_key_id=args.access_key, aws_secret_access_key=args.secret_access_key)
+session = boto3.Session(aws_access_key_id=args.s3_access_key, aws_secret_access_key=args.s3_secret_access_key)
 s3 = session.resource('s3')
 my_bucket = s3.Bucket(args.source_s3_bucket)
 
