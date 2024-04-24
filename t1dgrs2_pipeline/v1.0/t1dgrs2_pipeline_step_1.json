@@ -76,8 +76,8 @@
     "entry_point": "download_gvcfs_from_s3",
     "entry_point_inputs": {
         "source_s3_bucket": "<inputs.source_s3_bucket>",
-        "access_key": "<inputs.access_key>",
-        "secret_access_key": "<inputs.secret_access_key",
+        "s3_access_key": "<inputs.access_key>",
+        "s3_secret_access_key": "<inputs.secret_access_key",
         "target_dir": "<inputs.output_dir>gvcfs_imported/",
         "downloaded_files": "<inputs.downloaded_files>",
         "download_limit": "<inputs.download_limit>"
