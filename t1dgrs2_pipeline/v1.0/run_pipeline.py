@@ -166,17 +166,22 @@ while next_step['step'] != 'exit':
     # Open log file
     step_log = "{}/{}.log".format(step_dir, next_step['step'])
     step_logger = setup_logger('step_logger', step_log)
-    sys.stdout = logger_writer(step_logger.info)
-    sys.stderr = logger_writer(step_logger.error)
     step_logger.info("Running task {}".format(task))
     wf_logger.info("Running task {}".format(task))
     # Prepare task command
     cmd = prepare_task_cmd(wf_tasks[task]['cmd'], wf_vars, base_key)
     print("\n".join(str(item) for item in cmd) + "\n")
     # Set task outputs
+    step_logger.info(wf_vars)
+    step_logger.info(wf_tasks[task])
+    step_logger.info(base_key)
     set_task_outputs(wf_vars, wf_tasks[task], base_key)
     # Run task command
+    sys.stdout = logger_writer(step_logger.info)
+    sys.stderr = logger_writer(step_logger.error)
     result = run_task_command(cmd)
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
     # Check result
     next_step = check_cmd_result(wf_def, next_step['step'], result)
     if next_step['step'] == 'error':
