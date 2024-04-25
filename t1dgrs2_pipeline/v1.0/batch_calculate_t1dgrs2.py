@@ -73,25 +73,28 @@ def get_running_workflows():
 for file in files:
     if "gvcf.gz" not in file:
         continue
+    if "md5" in file or "tbi" in file:
+        continue
+
     file_id = file.split(".")[0]
     # Wait until the number of running workflows is less than max simultaneous jobs
     while get_running_workflows() >= args.simultaneous_jobs:
         time.sleep(30)
 
     # Create output dir for sample
-    sample_out_dir = "{}/{}".format(out_dir, file_id)
+    sample_out_dir = "{}{}".format(out_dir, file_id)
     if not os.path.exists(sample_out_dir):
         os.makedirs(sample_out_dir)
     
     # Create working dir for sample
-    sample_working_dir = "{}/{}".format(working_dir, file_id)
+    sample_working_dir = "{}{}".format(working_dir, file_id)
     if not os.path.exists(sample_working_dir):
         os.makedirs(sample_working_dir)
     
     # Create workflow args for gvcf file
     wf_arguments = {
         "working_dir": sample_working_dir,
-        "out_prefix": "{}{}".format(sample_out_dir, file_id),
+        "out_prefix": "{}/{}".format(sample_out_dir, file_id),
         "gvcf": gvcf_dir + file,
         "variant_list": args.variant_list,
         "pass_only": 0,

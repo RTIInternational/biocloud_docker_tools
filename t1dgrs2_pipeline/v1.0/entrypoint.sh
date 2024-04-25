@@ -10,11 +10,6 @@ if [ -z "$wf_arguments" ]; then
     exit 
 fi
 
-echo $PATH
-PATH="/root/miniconda3/bin:${PATH}"
-echo $PATH
-whoami
-
 python /opt/run_pipeline.py \
     --wf_definition /opt/$wf_definition.json \
     --wf_tasks /opt/t1dgrs2_tasks.json \
