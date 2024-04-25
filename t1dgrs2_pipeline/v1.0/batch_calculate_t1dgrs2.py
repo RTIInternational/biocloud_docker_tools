@@ -91,7 +91,7 @@ for file in files:
     # Create workflow args for gvcf file
     wf_arguments = {
         "working_dir": sample_working_dir,
-        "out_prefix": "{}/{}".format(sample_out_dir, file_id),
+        "out_prefix": "{}{}".format(sample_out_dir, file_id),
         "gvcf": gvcf_dir + file,
         "variant_list": args.variant_list,
         "pass_only": 0,
