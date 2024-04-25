@@ -78,8 +78,8 @@ RUN rm -Rf /var/lib/apt/lists/*
 
 #### Install custom scripts ####
 # Add config files
-ADD t1dgrs2_pipeline_step_1.json /opt/
-ADD t1dgrs2_pipeline_step_2.json /opt/
+ADD t1dgrs2_pipeline.json /opt/
+ADD t1dgrs2_pipeline_sample.json /opt/
 ADD t1dgrs2_tasks.json /opt/
 # Add scripts
 ADD entrypoint.sh /opt/
