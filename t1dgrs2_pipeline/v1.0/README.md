@@ -11,11 +11,12 @@ docker run -ti \
 
 # Interactive
 docker run -ti \
+    -u docker \
     -v /rti-01/ngaddis:/rti-01/ngaddis \
     --entrypoint /bin/bash \
     -e wf_arguments=blah \
     -e wf_definition=blah \
-    --rm rtibiocloud/t1dgrs2_pipeline:v1.0_58cbe71
+    --rm docker.io/t1dgrs2_pipeline/t1dgrs2_pipeline:v1.0
 ```
 </details>
 
@@ -31,3 +32,7 @@ docker build . -t t1dgrs2_pipeline/t1dgrs2_pipeline:v1.0
 
 ```
 </details>
+
+
+Add:
+checksum

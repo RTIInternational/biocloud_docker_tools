@@ -118,13 +118,17 @@ for file in files:
                 "arguments": {
                     "parameters": [
                         {
+                            "name": "wf_definition",
+                            "value": "t1dgrs2_pipeline_sample"
+                        },
+                        {
                             "name": "wf_arguments",
                             "value": file_wf_arguments
                         }
                     ]
                 },
                 "workflowTemplateRef": {
-                    "name": "extract-gvcf-variants"
+                    "name": "t1dgrs2-pipeline"
                 }
             }
         }

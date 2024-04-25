@@ -344,5 +344,69 @@
                 "value": "calculate_t1dgrs2.log"
             }
         }
+    },
+    "generate_file_for_export": {
+        "inputs": {
+            "t1dgrs2_results_file": {
+                "type": "file"
+            },
+            "missing_file": {
+                "type": "file"
+            },
+            "sample_id": {
+                "type": "str"
+            },
+            "genedx_manifest_file": {
+                "type": "file"
+            },
+            "output_file": {
+                "type": "str"
+            },
+            "hla_variants_file": {
+                "type": "file",
+                "default": "/t1dgrs2/hla_variants.txt"
+            },
+            "missing_hla_threshold": {
+                "type": "int",
+                "default": 1
+            },
+            "non_hla_variants_file": {
+                "type": "file",
+                "default": "/t1dgrs2/non_hla_variants.txt"
+            },
+            "missing_non_hla_threshold": {
+                "type": "int",
+                "default": 3
+            }
+        },
+        "cmd": [
+            "python",
+            "-m",
+            "t1dgrs2 ",
+            "-b",
+            "<inputs.bfile>",
+            "-c",
+            "<inputs.config>",
+            "-o",
+            "<inputs.out_prefix>"
+        ],
+        "outputs": {
+            "dosage": {
+                "type": "file",
+                "value": "<inputs.out_prefix>_dosage.tsv"
+            },
+            "dq_calls": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_DQ_calls.tsv"
+            },
+            "results": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_RESULTS.tsv"
+            },
+            "log": {
+                "type": "file",
+                "value": "calculate_t1dgrs2.log"
+            }
+        }
     }
 }

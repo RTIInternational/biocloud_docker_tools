@@ -112,6 +112,21 @@
                     "step": "error"
                 }
             }
+        },
+        "calculate_t1dgrs2": {
+            "task": "calculate_t1dgrs2",
+            "check_output": {
+                "returncode_0": {
+                    "step": "calculate_t1dgrs2",
+                    "inputs": {
+                        "bfile": "<steps.merge_bfile_with_reference.outputs.bfile>",
+                        "out_prefix": "<inputs.out_prefix>_with_ref"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
         }
     }
 }
