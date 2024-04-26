@@ -111,6 +111,10 @@
             "simultaneous_jobs": {
                 "type": "int",
                 "default": 50
+            },
+            "control_dir": {
+                "type": "str",
+                "default": ""
             }
         },
         "cmd": [
@@ -127,7 +131,9 @@
             "--argo_api_url",
             "<inputs.argo_api_url>",
             "--simultaneous_jobs",
-            "<inputs.simultaneous_jobs>"
+            "<inputs.simultaneous_jobs>",
+            "--control_dir",
+            "<inputs.control_dir>"
         ],
         "outputs": {
             "log": {

@@ -58,6 +58,8 @@ out_dir = args.out_dir if (args.out_dir[-1] == "/") else (args.out_dir + "/")
 os.system("mkdir -p {}".format(out_dir))
 working_dir = args.working_dir if (args.working_dir[-1] == "/") else (args.working_dir + "/")
 os.system("mkdir -p {}".format(working_dir))
+control_dir = args.control_dir if (args.control_dir[-1] == "/") else (args.control_dir + "/")
+os.system("mkdir -p {}".format(control_dir))
 
 # Get a list of all files in the directory
 files = os.listdir(gvcf_dir) + os.listdir(control_dir)

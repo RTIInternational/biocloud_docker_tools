@@ -65,6 +65,11 @@
             "type": "file",
             "default": "/home/merge-shared-folder/t1dgrs2/pipeline_files/t1dgrs2_ref",
             "required": false
+        },
+        "control_dir": {
+            "type": "file",
+            "default": "/home/merge-shared-folder/t1dgrs2/pipeline_files/control_dir",
+            "required": false
         }
     },
     "outputs": {
@@ -114,7 +119,8 @@
                         "working_dir": "<inputs.working_dir>/batch_calculate_t1dgrs2/",
                         "argo_api_url": "<inputs.argo_api_url>",
                         "simultaneous_jobs": "<inputs.simultaneous_jobs>",
-                        "ref_bfile": "<inputs.ref_bfile>"
+                        "ref_bfile": "<inputs.ref_bfile>",
+                        "control_dir": "<inputs.control_dir>"
                     }
                 },
                 "returncode_1": { 
