@@ -13,7 +13,7 @@
             "target_dir": {
                 "type": "str"
             },
-            "downloaded_files": {
+            "downloaded_samples": {
                 "type": "file"
             },
             "download_limit": {
@@ -31,15 +31,15 @@
             "<inputs.s3_secret_access_key>",
             "--target_dir",
             "<inputs.target_dir>",
-            "--downloaded_files",
-            "<inputs.downloaded_files>",
+            "--downloaded_samples",
+            "<inputs.downloaded_samples>",
             "--download_limit",
             "<inputs.download_limit>"
         ],
         "outputs": {
-            "downloaded_files": {
+            "downloaded_samples": {
                 "type": "file",
-                "value": "<inputs.downloaded_files>"
+                "value": "<inputs.downloaded_samples>"
             },
             "log": {
                 "type": "file",
@@ -163,6 +163,9 @@
             "het_gq_threshold": {
                 "type": "int",
                 "default": 48
+            },
+            "control_dir": {
+                "type": "str"
             }
         },
         "cmd": [

@@ -26,7 +26,7 @@
             "default": "",
             "required": true
         },
-        "downloaded_files": {
+        "downloaded_samples": {
             "type": "file",
             "default": "",
             "required": true
@@ -79,7 +79,7 @@
         "s3_access_key": "<inputs.s3_access_key>",
         "s3_secret_access_key": "<inputs.s3_secret_access_key>",
         "target_dir": "<inputs.output_dir>/gvcfs_imported/",
-        "downloaded_files": "<inputs.downloaded_files>",
+        "downloaded_samples": "<inputs.downloaded_samples>",
         "download_limit": "<inputs.download_limit>"
     },
     "pipeline": {

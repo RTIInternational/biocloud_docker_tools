@@ -42,7 +42,13 @@ parser.add_argument(
     '--ref_bfile',
     help = 'Reference samples to merge with test sample',
     type = str,
-    default = '/home/merge-shared-folder/t1dgrs2/pipeline_files/t1dgrs2_ref'
+    default = '/home/merge-shared-folder/t1dgrs2/pipeline_files/ref_bfile/t1dgrs2_ref'
+)
+parser.add_argument(
+    '--control_dir',
+    help = 'Directory containing the gvcfs for control samples',
+    type = str,
+    default = '/home/merge-shared-folder/t1dgrs2/pipeline_files/control_gvcfs/'
 )
 args = parser.parse_args()
 
@@ -54,7 +60,7 @@ working_dir = args.working_dir if (args.working_dir[-1] == "/") else (args.worki
 os.system("mkdir -p {}".format(working_dir))
 
 # Get a list of all files in the directory
-files = os.listdir(gvcf_dir)
+files = os.listdir(gvcf_dir) + os.listdir(control_dir)
 
 # Function to get the number of running workflows
 def get_running_workflows():
