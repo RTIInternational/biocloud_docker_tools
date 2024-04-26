@@ -58,7 +58,7 @@ See [Finding the ARN](#finding-the-arn) below.
 
 <br>
 
-**Example:**
+**example**<br>
 For the example above, create two JSON files:
 * `spot/0217734.001.001_dana_hancock_addiction_gnetii.json`: This file would contain the ARN for the default queue (spot instances).
 * `on-demand/0217734.001.001_dana_hancock_addiction_gnetii.json`: This file would contain the ARN for the priority queue (on-demand instances).
@@ -67,8 +67,7 @@ For the example above, create two JSON files:
 <br>
 
 
-### Finding the ARN:
-
+### Finding the ARN
 The ARN (Amazon Resource Name) for each queue can be found by navigating to the AWS Batch console, selecting the job queue, and locating the "ARN" field within the details.
 Using the sample above, the ARN for the default job queue above would be:
 
