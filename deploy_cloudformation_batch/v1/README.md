@@ -23,7 +23,7 @@ This script was created to be used in an interactive Docker container.
 2. Configure your AWS environment
 3. Then deploy the batch environment using the `deploy_cloudformation_batch.sh` script.
  
-<br><br>
+<br>
 
 **example**
 ```bash
@@ -54,7 +54,9 @@ The script will create two job queues by default:
 
 To utilize these queues in your workflows, update the workflow_options folder within the [biocloud_gwas_workflows](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master) repository.
 Add separate JSON files with descriptive names, each containing the corresponding job queue ARN.
-See [Finding the ARN](/#finding-the-arn) below.
+See [Finding the ARN](#finding-the-arn) below.
+
+<br>
 
 **Example:**
 For the example above, create two JSON files:
