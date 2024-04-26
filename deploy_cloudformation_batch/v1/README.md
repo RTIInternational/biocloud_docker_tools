@@ -49,31 +49,34 @@ $ bash /opt/deploy-cloudformation-batch.sh \
 
 # Updating Workflow Options
 The script will create two job queues by default:
-- A default queue using spot EC2 instances for cost-effective compute when it's not super time sensitive.
-- A priority queue using on-demand EC2 instances for urgent jobs.
+- **Default Queue (Spot Instances):** Uses cost-effective spot instances when the tasks is not super time-sensitive.
+- **Priority Queue (On-Demand Instances)**: Uses more reliable on-demand instances for faster execution, though at a premium.
 
-To utilize these queues in your workflows, update the workflow_options folder within the [biocloud_gwas_workflows](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master) repository.
-Add separate JSON files with descriptive names, each containing the corresponding job queue ARN.
-See [Finding the ARN](#finding-the-arn) below.
-
-<br>
-
-**example**<br>
-For the example above, create two JSON files:
-* `spot/0217734.001.001_dana_hancock_addiction_gnetii.json`: This file would contain the ARN for the default queue (spot instances).
-* `on-demand/0217734.001.001_dana_hancock_addiction_gnetii.json`: This file would contain the ARN for the priority queue (on-demand instances).
-
+To utilize these queues in your workflows, update the `workflow_options` folder within the [biocloud_gwas_workflows](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master) repository.<br>
+In particular, you need to include add a separate JSON file for each corresponding job queue you created so you and others can utilize these job queues for your WDL workflows.
 
 <br>
 
+**example**
+1. Create `spot/0217734.001.001_dana_hancock_addiction_gnetii.json` that contains the ARN for the default job queue:
+```json
+{
+    "default_runtime_attributes": {
+      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/default-Addiction-GNetii-R01-0217734-001-001"
+    }
+}
+```
+2. Create `on_demand/0217734.001.001_dana_hancock_addiction_gnetii.json` that contains the ARN for the priority job queue:
+```json
+{
+    "default_runtime_attributes": {
+      "queueArn": "arn:aws:batch:us-east-1:404545384114:job-queue/priority-Addiction-GNetii-R01-0217734-001-001"
+    }
+}
+```
 
 ### Finding the ARN
 The ARN (Amazon Resource Name) for each queue can be found by navigating to the AWS Batch console, selecting the job queue, and locating the "ARN" field within the details.
-Using the sample above, the ARN for the default job queue above would be:
-
-```
-arn:aws:batch:us-east-1:404545384114:job-queue/default-Addiction-GNetii-R01-0217734-001-001
-```
 
 <br>
 
