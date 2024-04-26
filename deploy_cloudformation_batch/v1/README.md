@@ -29,8 +29,7 @@ This docker image was created to be used interactively. Login, configure your AW
 **example**
 ```
 # start interactive mode
-docker run -it rtibiocloud/deploy_cloudformation_batch:v1_e7476c4
-  bash
+docker run -it rtibiocloud/deploy_cloudformation_batch:v1_e7476c4 bash
 
 # configure credentials by running "aws configure". Be sure to use json for output format.
 aws configure
