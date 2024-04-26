@@ -1,71 +1,80 @@
-# New job queue for WDL workflows
-## Create new `Launch Template Stack` and `Batch Stack`
+# AWS Batch Environment Setup for WDL workflows
+This script simplifies the creation of a new job queue and compute environment within AWS Batch for executing WDL workflows.
+It leverages Launch Templates and Batch Compute Stacks to automate the deployment process based on existing infrastructure as a template.
 
-We use AWS Batch to facilitate the execution of our WDL workflows. Each project/analysis requires that compute time is charged to the appropriate project.
-Thus, for each analysis using WDL we have to create an appropriate job-queue, so that charge codes are prolifereted to the EC2 instances running the jobs.
+We use AWS Batch to facilitate the execution of our WDL workflows.
+Each project/analysis requires that compute time is charged to the appropriate project.
+Thus, for each analysis using WDL we have to create an appropriate job queue (if it doesn't already exist).
 
-This script simplifies the process of creating a new job-queue and compute environment within AWS Batch.
-In particular, this Bash script creates a Launch Template and a Batch Compute Stack for a given project based on existing infrastructure as a template.
+This Docker was inspired by the wiki [Cromwell Cloud Deployment](https://github.com/RTIInternational/bioinformatics/wiki/Cromwell-Cloud-Deployment).
 
-The script requires the following parameters:
-* `projectNumber`: The project number (charge code).
-* `projectShortName`: A short descriptive name of the project.
 
-The user can optionally supply these additional parameters:
-* `cpuMax`: The maximum number of vCPUs for each EC2 instance. 
-* `stackName`: The name of the master stack to be used as a template.
-* `profile`: The AWS profile to use.
+## Prerequisites
+- An AWS account with proper permissions to create CloudFormation stacks and Batch resources.
+- The [Access Keys](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html) for programmatic access to the AWS account (used to configure the AWS CLI).
+- Docker (obviously)
 
 <br>
 
 
-## Usage
-
-This docker image was created to be used interactively. Login, configure your AWS environment, then deploy the batch environment using the wiki guidance provided at
- https://github.com/RTIInternational/bioinformatics/wiki/Cromwell-Cloud-Deployment#aws-cli---create-new-batch-queue
-
+# Usage
+This script was created to be used in an interactive Docker container.
+1. Login to the Docker container
+2. Configure your AWS environment
+3. Then deploy the batch environment using the `deploy_cloudformation_batch.sh` script.
+ 
 <br><br>
 
 **example**
-```
+```bash
 # start interactive mode
-docker run -it rtibiocloud/deploy_cloudformation_batch:v1_e7476c4 bash
+$ docker run -it rtibiocloud/deploy_cloudformation_batch:v1_e7476c4 bash
 
-# configure credentials by running "aws configure". Be sure to use json for output format.
-aws configure
-  #AWS Access Key ID [None]: <enter-your-secret-access-key>
-  #AWS Secret Access Key [None]: <enter-your-secret-access-key>
-  #Default region name [None]: us-east-1
-  #Default output format [None]: json
-  
+# Enter your AWS Access Key ID and Secret Access Key when prompted.
+# Be sure to specify JSON!
+$ aws configure
+
 # verify configuration by listing S3 buckets  
-aws s3 ls
-  #2021-08-10 21:02:09 agc-404545384114-us-east-1
-  #2020-02-26 15:05:01 rti-alcohol
-  #2020-11-20 17:36:18 rti-cannabis
-  #2017-10-13 13:23:33 rti-common
-  #...
+$ aws s3 ls
   
-# create environment
-bash /opt/deploy-cloudformation-batch.sh \
-  --projectNumber 0217653.001.001 \
-  --projectShortName "hiv-gnetii"
-  
-Launch Template ARN: {
-    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hiv-gnetii-0217653-001-001-LaunchTplStack/adaafc20-27d7-11ee-83b6-0add2cf4754b"
-}
-{
-    "StackId": "arn:aws:cloudformation:us-east-1:404545384114:stack/hiv-gnetii-0217653-001-001-BatchStack/ba699e80-27d7-11ee-9636-0ec67d5da3f3"
-}
-  ```
+# create Batch job queues
+$ bash /opt/deploy-cloudformation-batch.sh \
+  --projectNumber <project_number> \
+  --projectShortName <project_short_name>
+```
+- Replace <project_number> with your project's charge code (e.g., 0217653.001.001).
+- Replace <project_short_name> with a descriptive name for your project (e.g., "Addiction GNetii R01").
 
-Once you create the environment, be sure to create a new config file to https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master/workflow_options
-This config file should contain the job queue ARN. Example 
+<br>
+
+# Updating Workflow Options
+The script will create two job queues by default:
+- A default queue using spot EC2 instances for cost-effective compute when it's not super time sensitive.
+- A priority queue using on-demand EC2 instances for urgent jobs.
+
+To utilize these queues in your workflows, update the workflow_options folder within the [biocloud_gwas_workflows](https://github.com/RTIInternational/biocloud_gwas_workflows/tree/master) repository.
+Add separate JSON files with descriptive names, each containing the corresponding job queue ARN.
+See [Finding the ARN](/#finding-the-arn) below.
+
+**Example:**
+For the example above, create two JSON files:
+* `spot/0217734.001.001_dana_hancock_addiction_gnetii.json`: This file would contain the ARN for the default queue (spot instances).
+* `on-demand/0217734.001.001_dana_hancock_addiction_gnetii.json`: This file would contain the ARN for the priority queue (on-demand instances).
+
+
+<br>
+
+
+### Finding the ARN:
+
+The ARN (Amazon Resource Name) for each queue can be found by navigating to the AWS Batch console, selecting the job queue, and locating the "ARN" field within the details.
+Using the sample above, the ARN for the default job queue above would be:
 
 ```
-Amazon Resource Name (ARN)
-arn:aws:batch:us-east-1:404545384114:job-queue/default-hiv-gnetii-0217653-001-001
+arn:aws:batch:us-east-1:404545384114:job-queue/default-Addiction-GNetii-R01-0217734-001-001
 ```
 
-## Contact
+<br>
+
+# Contact
 Reach out to Jesse Marks (jmarks@rti.org) for assistance.
