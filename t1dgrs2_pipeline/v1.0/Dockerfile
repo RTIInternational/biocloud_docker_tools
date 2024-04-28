@@ -99,7 +99,7 @@ RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/generate_file_for_export.pl
 
 # Add example config
-ADD config_examples/t1dgrs2_pipeline_sample_config.json /opt/
+# ADD config_examples/t1dgrs2_pipeline_sample_config.json /opt/
 
 WORKDIR /data
 RUN chown -R docker:staff /data
