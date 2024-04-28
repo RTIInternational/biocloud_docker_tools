@@ -41,9 +41,9 @@
                 "type": "file",
                 "value": "<inputs.downloaded_samples>"
             },
-            "gene_dx_manifest_path": {
+            "genedx_manifest_path": {
                 "type": "file",
-                "value": "<inputs.target_dir>/gene_dx_manifest_path.txt"
+                "value": "<inputs.target_dir>/genedx_manifest_path.txt"
             },
             "log": {
                 "type": "file",
@@ -71,7 +71,7 @@
             "new_rti_manifest": {
                 "type": "file"
             },
-            "gene_dx_manifest_path": {
+            "genedx_manifest_path": {
                 "type": "file"
             }
         },
@@ -89,8 +89,8 @@
             "<inputs.master_rti_manifest>",
             "--new_rti_manifest",
             "<inputs.new_rti_manifest>",
-            "--gene_dx_manifest_path",
-            "<inputs.gene_dx_manifest_path>"
+            "--genedx_manifest_path",
+            "<inputs.genedx_manifest_path>"
         ],
         "outputs": {
             "genedx_manifest": {
@@ -111,7 +111,7 @@
             "variant_list": {
                 "type": "file"
             },
-            "gene_dx_manifest_path": {
+            "genedx_manifest": {
                 "type": "file"
             },
             "out_dir": {
@@ -140,8 +140,8 @@
             "<inputs.gvcf_dir>",
             "--variant_list",
             "<inputs.variant_list>",
-            "--gene_dx_manifest_path",
-            "<inputs.gene_dx_manifest_path>",
+            "--genedx_manifest",
+            "<inputs.genedx_manifest>",
             "--out_dir",
             "<inputs.out_dir>",
             "--working_dir",

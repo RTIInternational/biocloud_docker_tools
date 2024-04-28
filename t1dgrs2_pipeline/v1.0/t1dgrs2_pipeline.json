@@ -99,7 +99,8 @@
                         "consented_gvcfs_dir": "<inputs.output_dir>/gvcfs_consented/",
                         "nonconsented_gvcfs_dir": "<inputs.output_dir>/gvcfs_nonconsented/",
                         "master_rti_manifest": "<inputs.master_rti_manifest>",
-                        "new_rti_manifest": "<inputs.new_rti_manifest>"
+                        "new_rti_manifest": "<inputs.new_rti_manifest>",
+                        "genedx_manifest_path": "<steps.download_gvcfs_from_s3.outputs.genedx_manifest_path>"
                     }
                 },
                 "returncode_1": { 
@@ -115,6 +116,7 @@
                     "inputs": {
                         "gvcf_dir": "<inputs.output_dir>/gvcfs_consented/",
                         "variant_list": "<inputs.variant_list>",
+                        "genedx_manifest": "<steps.filter_gvcfs_by_consent.outputs.genedx_manifest>",
                         "out_dir": "<inputs.output_dir>/t1dgrs/",
                         "working_dir": "<inputs.working_dir>/batch_calculate_t1dgrs2/",
                         "argo_api_url": "<inputs.argo_api_url>",
