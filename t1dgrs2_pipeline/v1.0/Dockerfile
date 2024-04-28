@@ -77,7 +77,7 @@ ENV PATH=pkg-config:$PATH:/opt/
 RUN rm -Rf /var/lib/apt/lists/*
 
 #### Install custom scripts ####
-# Add config files
+# Add pipelien config files
 ADD t1dgrs2_pipeline.json /opt/
 ADD t1dgrs2_pipeline_sample.json /opt/
 ADD t1dgrs2_tasks.json /opt/
@@ -97,6 +97,9 @@ RUN chmod 755 /opt/filter_gvcfs_by_consent.sh
 RUN chmod 755 /opt/batch_calculate_t1dgrs2.py
 RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/generate_file_for_export.pl
+
+# Add example config
+ADD config_examples/t1dgrs2_pipeline_sample_config.json /opt/
 
 WORKDIR /data
 RUN chown -R docker:staff /data

@@ -11,7 +11,7 @@ my $hla_variants_file = '';
 my $missing_hla_threshold = 1;
 my $non_hla_variants_file = '';
 my $missing_non_hla_threshold = 3;
-my $genedx_manifest_file = '';
+my $gene_dx_manifest = '';
 my $output_file = '';
 
 GetOptions (
@@ -22,7 +22,7 @@ GetOptions (
     'missing_hla_threshold:i' => \$missing_hla_threshold,
     'non_hla_variants_file=s' => \$non_hla_variants_file,
     'missing_non_hla_threshold:i' => \$missing_non_hla_threshold,
-    'genedx_manifest_file=s' => \$genedx_manifest_file,
+    'gene_dx_manifest=s' => \$gene_dx_manifest,
     'output_file=s' => \$output_file
 ) or die("Invalid options");
 
@@ -75,7 +75,7 @@ if (
 
 # Read ID xref from manifest file
 my %id_xref = ();
-open(MANIFEST, $genedx_manifest_file);
+open(MANIFEST, $gene_dx_manifest);
 while (<MANIFEST>) {
     chomp;
     @F = split(",");

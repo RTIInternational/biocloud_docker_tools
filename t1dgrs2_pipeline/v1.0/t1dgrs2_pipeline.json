@@ -36,12 +36,12 @@
             "default": 1000,
             "required": false
         },
-        "master_manifest": {
+        "master_rti_manifest": {
             "type": "str",
             "default": "",
             "required": true
         },
-        "new_manifest": {
+        "new_rti_manifest": {
             "type": "str",
             "default": "",
             "required": false
@@ -83,7 +83,7 @@
         "source_s3_bucket": "<inputs.source_s3_bucket>",
         "s3_access_key": "<inputs.s3_access_key>",
         "s3_secret_access_key": "<inputs.s3_secret_access_key>",
-        "target_dir": "<inputs.output_dir>/gvcfs_imported/",
+        "target_dir": "<inputs.output_dir>/gvcfs_imported",
         "downloaded_samples": "<inputs.downloaded_samples>",
         "download_limit": "<inputs.download_limit>"
     },
@@ -98,8 +98,8 @@
                         "working_dir": "<inputs.working_dir>/filter_gvcfs_by_consent/",
                         "consented_gvcfs_dir": "<inputs.output_dir>/gvcfs_consented/",
                         "nonconsented_gvcfs_dir": "<inputs.output_dir>/gvcfs_nonconsented/",
-                        "master_manifest": "<inputs.master_manifest>",
-                        "new_manifest": "<inputs.new_manifest>"
+                        "master_rti_manifest": "<inputs.master_rti_manifest>",
+                        "new_rti_manifest": "<inputs.new_rti_manifest>"
                     }
                 },
                 "returncode_1": { 

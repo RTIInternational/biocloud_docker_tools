@@ -16,9 +16,17 @@
             "default": "",
             "required": true
         },
+        "sample_id": {
+            "type": "str",
+            "required": true
+        },
         "variant_list": {
             "type": "file",
             "default": "/t1dgrs2/t1dgrs2_hg19_variants.tsv",
+            "required": false
+        },
+        "genedx_manifest": {
+            "type": "file",
             "required": true
         },
         "pass_only": {
@@ -117,11 +125,25 @@
             "task": "calculate_t1dgrs2",
             "check_output": {
                 "returncode_0": {
-                    "step": "calculate_t1dgrs2",
+                    "step": "generate_file_for_export",
                     "inputs": {
-                        "bfile": "<steps.merge_bfile_with_reference.outputs.bfile>",
-                        "out_prefix": "<inputs.out_prefix>_with_ref"
+                        "t1dgrs2_results_file": "<steps.calculate_t1dgrs2.outputs.results>",
+                        "missing_file": "<steps.extract_gvcf_variants.outputs.missing>",
+                        "sample_id": "<inputs.sample_id>",
+                        "genedx_manifest": "<inputs.genedx_manifest>",
+                        "output_file": "<inputs.out_prefix>_for_export.tsv"
                     }
+                },
+                "returncode_1": {
+                    "step": "error"
+                }
+            }
+        },
+        "generate_file_for_export": {
+            "task": "generate_file_for_export",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
                 },
                 "returncode_1": { 
                     "step": "error"

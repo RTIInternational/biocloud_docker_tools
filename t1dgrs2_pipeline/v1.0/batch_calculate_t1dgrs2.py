@@ -17,6 +17,12 @@ parser.add_argument(
     default = '/data/t1dgrs2_hg19_variants.tsv'
 )
 parser.add_argument(
+    '--genedx_manifest',
+    help = 'GeneDx manifest file',
+    type = str,
+    default = '/data/t1dgrs2_hg19_variants.tsv'
+)
+parser.add_argument(
     '--out_dir',
     help = 'Output directory',
     type = str
@@ -76,7 +82,6 @@ def get_running_workflows():
     running_workflows = [wf for wf in workflows if 'phase' not in wf['status'] or wf['status']['phase'] == 'Running']
     return len(running_workflows)
 
-
 # Loop over all files
 for file in files:
     if "gvcf.gz" not in file:
@@ -104,7 +109,9 @@ for file in files:
         "working_dir": sample_working_dir,
         "out_prefix": "{}/{}".format(sample_out_dir, file_id),
         "gvcf": gvcf_dir + file,
+        "sample_id": file_id,
         "variant_list": args.variant_list,
+        "gene_dx_manifest": args.genedx_manifest,
         "pass_only": 0,
         "filter_by_gq": 0,
         "hom_gq_threshold": 99,

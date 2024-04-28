@@ -4,8 +4,9 @@ imported_gvcfs_dir=""
 working_dir=""
 consented_gvcfs_dir=""
 nonconsented_gvcfs_dir=""
-master_manifest=""
-new_manifest=""
+master_rti_manifest=""
+new_rti_manifest=""
+genedx_manifest_path=""
 
 while [ "$1" != "" ]; 
 do
@@ -22,11 +23,14 @@ do
 		--nonconsented_gvcfs_dir )	shift
 									nonconsented_gvcfs_dir=$1
 									;;
-		--master_manifest )			shift
-									master_manifest=$1
+		--master_rti_manifest )		shift
+									master_rti_manifest=$1
 									;;
-		--new_manifest )			shift
-									new_manifest=$1
+		--new_rti_manifest )		shift
+									new_rti_manifest=$1
+									;;
+		--genedx_manifest_path )	shift
+									genedx_manifest_path=$1
 									;;
 	esac
 	shift
@@ -59,18 +63,18 @@ echo "$GZcount gvcf file are present in imported-gvcfs folder in Merge"
 #It is written this way so that later we can make it easier to call specific manifests without having to move or erase previous files. We should be able to go into node-RED and type in the ID of the manifest we want to run and it pulls the correct one.
 
 # Making sure the manifest list file exists and isn't empty
-if [[ -s $new_manifest ]]; then
+if [[ -s $new_rti_manifest ]]; then
     echo "----------------------------"
     echo "Detected a RTI manifest list"
     echo "Will now append working RTI master manifest list"
     
     #This removes the first line in the CSV file (the header), so it is merged properly with the existing complete RTI manifest list. 
-    cat $master_manifest $new_manifest > ${working_dir}temp2_manifest_file.csv
-    echo "Completed appending $new_manifest to $master_manifest"
+    cat $master_rti_manifest $new_rti_manifest > ${working_dir}temp2_manifest_file.csv
+    echo "Completed appending $new_rti_manifest to $master_rti_manifest"
     
     #This sorts and removes any duplicated data based on the accession numbers in column 2 of the csv. This helped with testing and prevents accidental duplicates when adding data.
-    mv $master_manifest $master_manifest.bak
-    sort -t ',' -u -k2,2 "${working_dir}temp2_manifest_file.csv" | awk -F, '{print $0}' > $master_manifest
+    mv $master_rti_manifest $master_rti_manifest.bak
+    sort -t ',' -u -k2,2 "${working_dir}temp2_manifest_file.csv" | awk -F, '{print $0}' > $master_rti_manifest
     echo "Completed sorting and filtering for duplicates in the RTI master list" 
 else
     echo "--------------------------------------------------------------------"
@@ -80,10 +84,10 @@ fi
 echo " Successfully passed new RTI manifest append loop"
 
 #Quantify the number of total consents currently in the master file. All of the RTI consented individuals. 
-RTI_total_ind=$(wc -l $master_manifest | cut -d ' ' -f1 )
+RTI_total_ind=$(wc -l $master_rti_manifest | cut -d ' ' -f1 )
 
 #filter for T1D consent
-grep 'T1D' $master_manifest| cut -d "," -f 2 > ${working_dir}temp_RTI_accessions_consented_T1D.txt
+grep 'T1D' $master_rti_manifest| cut -d "," -f 2 > ${working_dir}temp_RTI_accessions_consented_T1D.txt
 grep -v 'AccessionNumber' ${working_dir}temp_RTI_accessions_consented_T1D.txt > ${working_dir}temp2_RTI_accessions_consented_T1D.txt
 
 #Quantify the number of consented individuals
@@ -95,17 +99,17 @@ echo "$RTIconsents consented individuals out of $RTI_total_ind."
 #GeneDx manifest
 #Because all of the GeneDx manifest will have the name and come in the Excel file, we have to convert it to a csv using the [xlsx2csv] command
 #pip install xlsx2csv #if you are running this on a new machine
-
-cp ${imported_gvcfs_dir}RTI_Copy_Results_File.xlsx ${working_dir}RTI_Copy_Results_File_current.xlsx
-GeneDx_manifest=${working_dir}GeneDx_manifest.csv
-xlsx2csv ${imported_gvcfs_dir}RTI_Copy_Results_File.xlsx $GeneDx_manifest
+genedx_manifest_xlsx=$(perl -ne 'chomp; print:' $genedx_manifest_path)
+cp $genedx_manifest_path ${working_dir}genedx_manifest.xlsx
+genedx_manifest=${working_dir}genedx_manifest.csv
+xlsx2csv ${working_dir}genedx_manifest.xlsx $genedx_manifest
 
 #Quantify the number of individual samples in this file.
-GeneDx_total_ind=$(wc -l $GeneDx_manifest | cut -d ' ' -f1 )
+GeneDx_total_ind=$(wc -l $genedx_manifest | cut -d ' ' -f1 )
 
 #################################
 #Match IDs from the RTI accession consents to the GeneDx manifest
-grep -F -f ${working_dir}temp2_RTI_accessions_consented_T1D.txt $GeneDx_manifest | cut -d "," -f 1 > ${working_dir}temp_Matched_GeneDx_accessions.txt
+grep -F -f ${working_dir}temp2_RTI_accessions_consented_T1D.txt $genedx_manifest | cut -d "," -f 1 > ${working_dir}temp_Matched_GeneDx_accessions.txt
 
 #Quantify the number of matches 
 Match1=$(wc -l "${working_dir}temp_Matched_GeneDx_accessions.txt" | cut -d ' ' -f1 )
@@ -142,15 +146,15 @@ echo "Successfully moved nonconsented gvcfs to nonconsent-gvcfs folder"
 #Archiving the GeneDx manifest.
 
 # #This is needed for the PRS merge script at the end of the pipeline
-# cp $GeneDx_manifest "/home/merge-shared-folder/imported-gvcfs/filtering/Gene_manifest_current.csv"
+# cp $genedx_manifest "/home/merge-shared-folder/imported-gvcfs/filtering/Gene_manifest_current.csv"
 # # Get the current Julian date
 # julian_date=$(date '+%j')
 
 # # Create the new file name with the Julian date
-# new_file_name="GeneDx_manifest_${julian_date}.csv"
+# new_file_name="genedx_manifest_${julian_date}.csv"
 
 # # Rename the file
-# mv "$GeneDx_manifest" "/home/merge-shared-folder/imported-gvcfs/filtering/$new_file_name"
+# mv "$genedx_manifest" "/home/merge-shared-folder/imported-gvcfs/filtering/$new_file_name"
 
 # echo "File renamed to: $new_file_name"
 

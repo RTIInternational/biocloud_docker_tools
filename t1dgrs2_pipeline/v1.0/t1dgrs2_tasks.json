@@ -41,6 +41,10 @@
                 "type": "file",
                 "value": "<inputs.downloaded_samples>"
             },
+            "gene_dx_manifest_path": {
+                "type": "file",
+                "value": "<inputs.target_dir>/gene_dx_manifest_path.txt"
+            },
             "log": {
                 "type": "file",
                 "value": "s3_download.log"
@@ -61,10 +65,13 @@
             "nonconsented_gvcfs_dir": {
                 "type": "str"
             },
-            "master_manifest": {
+            "master_rti_manifest": {
                 "type": "file"
             },
-            "new_manifest": {
+            "new_rti_manifest": {
+                "type": "file"
+            },
+            "gene_dx_manifest_path": {
                 "type": "file"
             }
         },
@@ -78,12 +85,18 @@
             "<inputs.consented_gvcfs_dir>",
             "--nonconsented_gvcfs_dir",
             "<inputs.nonconsented_gvcfs_dir>",
-            "--master_manifest",
-            "<inputs.master_manifest>",
-            "--new_manifest",
-            "<inputs.new_manifest>"
+            "--master_rti_manifest",
+            "<inputs.master_rti_manifest>",
+            "--new_rti_manifest",
+            "<inputs.new_rti_manifest>",
+            "--gene_dx_manifest_path",
+            "<inputs.gene_dx_manifest_path>"
         ],
         "outputs": {
+            "genedx_manifest": {
+                "type": "file",
+                "value": "genedx_manifest.csv"
+            },
             "log": {
                 "type": "file",
                 "value": "filter_gvcfs_by_consent.log"
@@ -96,6 +109,9 @@
                 "type": "str"
             },
             "variant_list": {
+                "type": "file"
+            },
+            "gene_dx_manifest_path": {
                 "type": "file"
             },
             "out_dir": {
@@ -124,6 +140,8 @@
             "<inputs.gvcf_dir>",
             "--variant_list",
             "<inputs.variant_list>",
+            "--gene_dx_manifest_path",
+            "<inputs.gene_dx_manifest_path>",
             "--out_dir",
             "<inputs.out_dir>",
             "--working_dir",
@@ -169,9 +187,6 @@
             "het_gq_threshold": {
                 "type": "int",
                 "default": 48
-            },
-            "control_dir": {
-                "type": "str"
             }
         },
         "cmd": [
@@ -195,6 +210,10 @@
             "t1dgrs2_variants_vcf": {
                 "type": "file",
                 "value": "<inputs.out_prefix>.vcf"
+            },
+            "missing": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.missing"
             },
             "log": {
                 "type": "file",
@@ -228,19 +247,19 @@
         "outputs": {
             "bed": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.bed"
+                "value": "<inputs.out_prefix>.bed"
             },
             "bim": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.bim"
+                "value": "<inputs.out_prefix>.bim"
             },
             "fam": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.fam"
+                "value": "<inputs.out_prefix>.fam"
             },
             "plink_log": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.log"
+                "value": "<inputs.out_prefix>.log"
             },
             "log": {
                 "type": "file",
@@ -287,23 +306,23 @@
         "outputs": {
             "bfile": {
                 "type": "str",
-                "value": "<inputs.file_out_prefix>"
+                "value": "<inputs.out_prefix>"
             },
             "bed": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.bed"
+                "value": "<inputs.out_prefix>.bed"
             },
             "bim": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.bim"
+                "value": "<inputs.out_prefix>.bim"
             },
             "fam": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.fam"
+                "value": "<inputs.out_prefix>.fam"
             },
             "plink_log": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>.log"
+                "value": "<inputs.out_prefix>.log"
             },
             "log": {
                 "type": "file",
@@ -342,11 +361,11 @@
             },
             "dq_calls": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>_DQ_calls.tsv"
+                "value": "<inputs.out_prefix>_DQ_calls.tsv"
             },
             "results": {
                 "type": "file",
-                "value": "<inputs.file_out_prefix>_RESULTS.tsv"
+                "value": "<inputs.out_prefix>_RESULTS.tsv"
             },
             "log": {
                 "type": "file",
@@ -365,7 +384,7 @@
             "sample_id": {
                 "type": "str"
             },
-            "genedx_manifest_file": {
+            "genedx_manifest": {
                 "type": "file"
             },
             "output_file": {
@@ -389,32 +408,34 @@
             }
         },
         "cmd": [
-            "python",
-            "-m",
-            "t1dgrs2 ",
-            "-b",
-            "<inputs.bfile>",
-            "-c",
-            "<inputs.config>",
-            "-o",
-            "<inputs.out_prefix>"
+            "/opt/generate_file_for_export.pl",
+            "--t1dgrs2_results_file",
+            "<inputs.t1dgrs2_results_file>",
+            "--missing_file",
+            "<inputs.missing_file>",
+            "--sample_id",
+            "<inputs.sample_id>",
+            "--genedx_manifest",
+            "<inputs.genedx_manifest>",
+            "--output_file",
+            "<inputs.output_file>",
+            "--hla_variants_file",
+            "<inputs.hla_variants_file>",
+            "--missing_hla_threshold",
+            "<inputs.missing_hla_threshold>",
+            "--non_hla_variants_file",
+            "<inputs.non_hla_variants_file>",
+            "--missing_non_hla_threshold",
+            "<inputs.missing_non_hla_threshold>"
         ],
         "outputs": {
-            "dosage": {
+            "file_for_export": {
                 "type": "file",
-                "value": "<inputs.out_prefix>_dosage.tsv"
-            },
-            "dq_calls": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>_DQ_calls.tsv"
-            },
-            "results": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>_RESULTS.tsv"
+                "value": "<inputs.output_file>"
             },
             "log": {
                 "type": "file",
-                "value": "calculate_t1dgrs2.log"
+                "value": "generate_file_for_export.log"
             }
         }
     }
