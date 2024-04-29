@@ -42,7 +42,7 @@ $ bash /opt/deploy-cloudformation-batch.sh \
   --projectNumber <project_number> \
   --projectShortName <project_short_name>
 ```
-- Replace <project_number> with your project's charge code (e.g., 0217653.001.001).
+- Replace `<project_number>` with your project's charge code using periods as delimiters (e.g., 0217653.001.001).
 - Replace <project_short_name> with a descriptive name for your project (e.g., "Addiction GNetii R01").
 
 <br>
