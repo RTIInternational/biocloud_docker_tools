@@ -7,54 +7,61 @@ import requests
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--gvcf_dir',
+    required = True,
     help = 'Dir containing gvcf files fromw which to extract variants',
     type = str
 )
 parser.add_argument(
     '--variant_list',
+    required = True,
     help = 'List of variants to extract',
     type = str,
     default = '/data/t1dgrs2_hg19_variants.tsv'
 )
 parser.add_argument(
     '--genedx_manifest',
+    required = True,
     help = 'GeneDx manifest file',
-    type = str,
-    default = '/data/t1dgrs2_hg19_variants.tsv'
+    type = str
 )
 parser.add_argument(
     '--out_dir',
+    required = True,
     help = 'Output directory',
     type = str
 )
 parser.add_argument(
     '--working_dir',
+    required = True,
     help = 'Working directory',
     type = str
 )
 parser.add_argument(
+    '--ref_bfile',
+    required = True,
+    help = 'Reference samples to merge with test sample',
+    type = str
+)
+parser.add_argument(
     '--argo_api_url',
+    required = False,
     help = 'URL for ARGO API',
     default = 'http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1',
     type = str
 )
 parser.add_argument(
     '--simultaneous_jobs',
+    required = False,
     help = '# of simultaneous jobs',
     default = 25,
     type = int
 )
 parser.add_argument(
-    '--ref_bfile',
-    help = 'Reference samples to merge with test sample',
-    type = str,
-    default = '/home/merge-shared-folder/t1dgrs2/pipeline_files/ref_bfile/t1dgrs2_ref'
-)
-parser.add_argument(
     '--control_dir',
+    required = False,
     help = 'Directory containing the gvcfs for control samples',
     type = str,
-    default = '/home/merge-shared-folder/t1dgrs2/pipeline_files/control_gvcfs/'
+    default = ''
 )
 args = parser.parse_args()
 
@@ -64,11 +71,19 @@ out_dir = args.out_dir if (args.out_dir[-1] == "/") else (args.out_dir + "/")
 os.system("mkdir -p {}".format(out_dir))
 working_dir = args.working_dir if (args.working_dir[-1] == "/") else (args.working_dir + "/")
 os.system("mkdir -p {}".format(working_dir))
-control_dir = args.control_dir if (args.control_dir[-1] == "/") else (args.control_dir + "/")
-os.system("mkdir -p {}".format(control_dir))
+if args.control_dir:
+    control_dir = args.control_dir if (args.control_dir[-1] == "/") else (args.control_dir + "/")
+    os.system("mkdir -p {}".format(control_dir))
 
-# Get a list of all files in the directory
-files = os.listdir(gvcf_dir) + os.listdir(control_dir)
+# Get a list of all gvcf files to process
+files = os.listdir(gvcf_dir)
+files_with_paths = [gvcf_dir + file for file in files]
+files_to_process = dict(zip(files, files_with_paths))
+if args.control_dir:
+    control_files = os.listdir(control_dir)
+    control_files_with_paths = [control_dir + file for file in control_files]
+    control_files_to_process = dict(zip(control_files, control_files_with_paths))
+    files_to_process = files_to_process.update(control_files_to_process)
 
 # Function to get the number of running workflows
 def get_running_workflows():
@@ -83,7 +98,7 @@ def get_running_workflows():
     return len(running_workflows)
 
 # Loop over all files
-for file in files:
+for file, path in files_to_process.items():
     if "gvcf.gz" not in file:
         continue
     if "md5" in file or "tbi" in file:
@@ -108,7 +123,7 @@ for file in files:
     wf_arguments = {
         "working_dir": sample_working_dir,
         "out_prefix": "{}{}".format(sample_out_dir, file_id),
-        "gvcf": gvcf_dir + file,
+        "gvcf": path,
         "sample_id": file_id,
         "variant_list": args.variant_list,
         "gene_dx_manifest": args.genedx_manifest,

@@ -32,11 +32,6 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
-    '--control_samples',
-    help='JSON containing S3 objects for control samples',
-    type = str
-)
-parser.add_argument(
     '--download_limit',
     help='Max number of samples to download',
     type = int,
