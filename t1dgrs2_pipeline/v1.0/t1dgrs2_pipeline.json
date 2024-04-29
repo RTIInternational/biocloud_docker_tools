@@ -1,13 +1,13 @@
 {
-    "name": "t1dgrs2_pipeline_step_1",
+    "name": "t1dgrs2_pipeline",
     "inputs": {
         "working_dir": {
-            "type": "str",
+            "type": "dir",
             "default": "",
             "required": true
         },
         "output_dir": {
-            "type": "str",
+            "type": "dir",
             "default": "/home/merge-shared-folder/",
             "required": false
         },
@@ -67,7 +67,7 @@
             "required": false
         },
         "control_dir": {
-            "type": "file",
+            "type": "dir",
             "default": "/home/merge-shared-folder/t1dgrs2/pipeline_files/control_dir",
             "required": false
         }
@@ -75,7 +75,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>/t1dgrs2_pipeline_step_1.log"
+            "value": "<inputs.working_dir>/t1dgrs2_pipeline.log"
         }
     },
     "entry_point": "download_gvcfs_from_s3",
@@ -83,7 +83,7 @@
         "source_s3_bucket": "<inputs.source_s3_bucket>",
         "s3_access_key": "<inputs.s3_access_key>",
         "s3_secret_access_key": "<inputs.s3_secret_access_key>",
-        "target_dir": "<inputs.output_dir>/gvcfs_imported",
+        "target_dir": "<inputs.output_dir>gvcfs_imported",
         "downloaded_samples": "<inputs.downloaded_samples>",
         "download_limit": "<inputs.download_limit>"
     },
@@ -94,10 +94,10 @@
                 "returncode_0": {
                     "step": "filter_gvcfs_by_consent",
                     "inputs": {
-                        "imported_gvcfs_dir": "<inputs.output_dir>/gvcfs_imported/",
-                        "working_dir": "<inputs.working_dir>/filter_gvcfs_by_consent/",
-                        "consented_gvcfs_dir": "<inputs.output_dir>/gvcfs_consented/",
-                        "nonconsented_gvcfs_dir": "<inputs.output_dir>/gvcfs_nonconsented/",
+                        "imported_gvcfs_dir": "<inputs.output_dir>gvcfs_imported",
+                        "working_dir": "<inputs.working_dir>filter_gvcfs_by_consent",
+                        "consented_gvcfs_dir": "<inputs.output_dir>gvcfs_consented",
+                        "nonconsented_gvcfs_dir": "<inputs.output_dir>gvcfs_nonconsented",
                         "master_rti_manifest": "<inputs.master_rti_manifest>",
                         "new_rti_manifest": "<inputs.new_rti_manifest>",
                         "genedx_manifest_path": "<steps.download_gvcfs_from_s3.outputs.genedx_manifest_path>"
@@ -114,15 +114,15 @@
                 "returncode_0": {
                     "step": "batch_calculate_t1dgrs2",
                     "inputs": {
-                        "gvcf_dir": "<inputs.output_dir>/gvcfs_consented/",
+                        "gvcf_dir": "<inputs.output_dir>gvcfs_consented",
                         "variant_list": "<inputs.variant_list>",
                         "genedx_manifest": "<steps.filter_gvcfs_by_consent.outputs.genedx_manifest>",
-                        "out_dir": "<inputs.output_dir>/t1dgrs/",
-                        "working_dir": "<inputs.working_dir>/batch_calculate_t1dgrs2/",
+                        "out_dir": "<inputs.output_dir>t1dgrs",
+                        "working_dir": "<inputs.working_dir>batch_calculate_t1dgrs2",
                         "argo_api_url": "<inputs.argo_api_url>",
                         "simultaneous_jobs": "<inputs.simultaneous_jobs>",
-                        "ref_bfile": "<inputs.ref_bfile>",
-                        "control_dir": "<inputs.control_dir>"
+                        "control_dir": "<inputs.control_dir>",
+                        "ref_bfile": "<inputs.ref_bfile>"
                     }
                 },
                 "returncode_1": { 

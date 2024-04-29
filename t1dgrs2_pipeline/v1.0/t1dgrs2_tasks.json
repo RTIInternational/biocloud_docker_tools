@@ -11,7 +11,7 @@
                 "type": "str"
             },
             "target_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "downloaded_samples": {
                 "type": "file"
@@ -43,7 +43,7 @@
             },
             "genedx_manifest_path": {
                 "type": "file",
-                "value": "<inputs.target_dir>/genedx_manifest_path.txt"
+                "value": "<inputs.target_dir>genedx_manifest_path.txt"
             },
             "log": {
                 "type": "file",
@@ -54,16 +54,16 @@
     "filter_gvcfs_by_consent": {
         "inputs": {
             "imported_gvcfs_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "working_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "consented_gvcfs_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "nonconsented_gvcfs_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "master_rti_manifest": {
                 "type": "file"
@@ -106,7 +106,7 @@
     "batch_calculate_t1dgrs2": {
         "inputs": {
             "gvcf_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "variant_list": {
                 "type": "file"
@@ -115,10 +115,10 @@
                 "type": "file"
             },
             "out_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "working_dir": {
-                "type": "str"
+                "type": "dir"
             },
             "argo_api_url": {
                 "type": "str",
@@ -129,6 +129,10 @@
                 "default": 50
             },
             "control_dir": {
+                "type": "dir",
+                "default": ""
+            },
+            "ref_bfile": {
                 "type": "str",
                 "default": ""
             }
@@ -151,7 +155,9 @@
             "--simultaneous_jobs",
             "<inputs.simultaneous_jobs>",
             "--control_dir",
-            "<inputs.control_dir>"
+            "<inputs.control_dir>",
+            "--ref_bfile",
+            "<inputs.ref_bfile>"
         ],
         "outputs": {
             "log": {

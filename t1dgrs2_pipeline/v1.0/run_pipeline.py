@@ -32,6 +32,13 @@ parser.add_argument(
 args = parser.parse_args()
 
 
+def initialize_dir (dir):
+    dir = dir if (dir[-1] == "/") else (dir + "/")
+    os.system("mkdir -p {}".format(dir))
+
+    return dir
+
+
 def set_wf_inputs (wf_def, wf_args):
     wf_vars = {}
     for input in wf_def['inputs']:
@@ -43,6 +50,10 @@ def set_wf_inputs (wf_def, wf_args):
             wf_vars[key] = wf_args[parameter]
         else:
             sys.exit("Workflow parameter does not exist: {}".format(parameter))
+    
+    for parameter in wf_args:
+        if wf_def['inputs'][parameter]['type'] == 'dir':
+            wf_vars[key] = initialize_dir(wf_vars[key])
 
     return wf_vars
 
@@ -65,6 +76,11 @@ def set_task_inputs (wf_vars, task_def, step_inputs, base_key):
     for parameter in step_inputs:
         key = "{}.inputs.{}".format(base_key, parameter)
         wf_vars[key] = process_wf_vars(step_inputs[parameter], wf_vars, '')
+    
+    for parameter in step_inputs:
+        key = "{}.inputs.{}".format(base_key, parameter)
+        if task_def['inputs'][parameter]['type'] == 'dir':
+            wf_vars[key] = initialize_dir(wf_vars[key])
 
 
 def prepare_task_cmd (cmd_template, wf_vars, base_key):
@@ -173,8 +189,6 @@ while next_step['step'] != 'exit':
     print("\n".join(str(item) for item in cmd) + "\n")
     # Set task outputs
     step_logger.info(wf_vars)
-    step_logger.info(wf_tasks[task])
-    step_logger.info(base_key)
     set_task_outputs(wf_vars, wf_tasks[task], base_key)
     # Run task command
     sys.stdout = logger_writer(step_logger.info)

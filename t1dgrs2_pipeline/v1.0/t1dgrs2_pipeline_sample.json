@@ -66,7 +66,7 @@
         "gvcf": "<inputs.gvcf>",
         "out_prefix": "<inputs.out_prefix>",
         "variant_list": "<inputs.variant_list>",
-        "working_dir": "<inputs.working_dir>extract_gvcf_variants/",
+        "working_dir": "<inputs.working_dir>extract_gvcf_variants",
         "pass_only": "<inputs.pass_only>",
         "filter_by_gq": "<inputs.filter_by_gq>",
         "hom_gq_threshold": "<inputs.hom_gq_threshold>",

@@ -95,19 +95,19 @@ for file in files:
         time.sleep(30)
 
     # Create output dir for sample
-    sample_out_dir = "{}{}".format(out_dir, file_id)
+    sample_out_dir = "{}{}/".format(out_dir, file_id)
     if not os.path.exists(sample_out_dir):
         os.makedirs(sample_out_dir)
     
     # Create working dir for sample
-    sample_working_dir = "{}{}".format(working_dir, file_id)
+    sample_working_dir = "{}{}/".format(working_dir, file_id)
     if not os.path.exists(sample_working_dir):
         os.makedirs(sample_working_dir)
     
     # Create workflow args for gvcf file
     wf_arguments = {
         "working_dir": sample_working_dir,
-        "out_prefix": "{}/{}".format(sample_out_dir, file_id),
+        "out_prefix": "{}{}".format(sample_out_dir, file_id),
         "gvcf": gvcf_dir + file,
         "sample_id": file_id,
         "variant_list": args.variant_list,
