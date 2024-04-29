@@ -99,10 +99,9 @@ echo "$RTIconsents consented individuals out of $RTI_total_ind."
 #GeneDx manifest
 #Because all of the GeneDx manifest will have the name and come in the Excel file, we have to convert it to a csv using the [xlsx2csv] command
 #pip install xlsx2csv #if you are running this on a new machine
-genedx_manifest_xlsx=$(perl -ne 'chomp; print:' $genedx_manifest_path)
-cp $genedx_manifest_path ${working_dir}genedx_manifest.xlsx
+genedx_manifest_xlsx=$(perl -ne 'chomp; print;' $genedx_manifest_path)
 genedx_manifest=${working_dir}genedx_manifest.csv
-xlsx2csv ${working_dir}genedx_manifest.xlsx $genedx_manifest
+xlsx2csv $genedx_manifest_xlsx $genedx_manifest
 
 #Quantify the number of individual samples in this file.
 GeneDx_total_ind=$(wc -l $genedx_manifest | cut -d ' ' -f1 )

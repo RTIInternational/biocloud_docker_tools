@@ -113,7 +113,7 @@ if source_manifest_file:
     target_manifest_file = target_dir + re.sub(r'.+/', '', source_manifest_file)
     print("Downloading {} to {}".format(source_manifest_file, target_manifest_file))
     my_bucket.download_file(source_manifest_file, target_manifest_file)
-    with open("{}gene_dx_manifest_path.txt".format(target_dir), 'w') as f:
+    with open("{}genedx_manifest_path.txt".format(target_dir), 'w') as f:
         f.write(target_manifest_file)
         
 # Save the list of downloaded samples
