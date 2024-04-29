@@ -18,6 +18,7 @@
         },
         "sample_id": {
             "type": "str",
+            "default": "",
             "required": true
         },
         "variant_list": {
@@ -27,6 +28,7 @@
         },
         "genedx_manifest": {
             "type": "file",
+            "default": "",
             "required": true
         },
         "pass_only": {
