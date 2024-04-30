@@ -11,7 +11,7 @@ my $hla_variants_file = '';
 my $missing_hla_threshold = 1;
 my $non_hla_variants_file = '';
 my $missing_non_hla_threshold = 3;
-my $gene_dx_manifest = '';
+my $genedx_manifest = '';
 my $output_file = '';
 
 GetOptions (
@@ -22,7 +22,7 @@ GetOptions (
     'missing_hla_threshold:i' => \$missing_hla_threshold,
     'non_hla_variants_file=s' => \$non_hla_variants_file,
     'missing_non_hla_threshold:i' => \$missing_non_hla_threshold,
-    'gene_dx_manifest=s' => \$gene_dx_manifest,
+    'genedx_manifest=s' => \$genedx_manifest,
     'output_file=s' => \$output_file
 ) or die("Invalid options");
 
@@ -75,7 +75,7 @@ if (
 
 # Read ID xref from manifest file
 my %id_xref = ();
-open(MANIFEST, $gene_dx_manifest);
+open(MANIFEST, $genedx_manifest);
 while (<MANIFEST>) {
     chomp;
     @F = split(",");
@@ -85,7 +85,7 @@ close MANIFEST;
 
 # Open output file for writing
 open(OUTPUT_FILE, ">".$output_file);
-print OUTPUT_FILE join(",", "GeneDx_Accession","RTI_Accession","GRS2","Missing_HLA","Missing_Non_HLA","Missingness_Filter")."\n";
+print OUTPUT_FILE join(",", "GeneDx_Accession","RTI_Accession","GRS2","Missingness_Filter")."\n";
 
 # Process t1dgrs2 results file
 open(T1DGRS2_RESULTS, $t1dgrs2_results_file);
@@ -94,9 +94,9 @@ while(<T1DGRS2_RESULTS>) {
     @F = split("\t");
     if ($F[1] eq $sample_id) {
         if (exists($id_xref{$F[1]})) {
-            print OUTPUT_FILE join(",", $F[1], $id_xref{$F[1]}, $F[2], $missing_hla_count, $missing_non_hla_count, $missingness)."\n";
+            print OUTPUT_FILE join(",", $F[1], $id_xref{$F[1]}, $F[2], $missingness)."\n";
         } else {
-            print OUTPUT_FILE join(",", $F[1], "NA", $F[2], $missing_hla_count, $missing_non_hla_count, $missingness)."\n";
+            print OUTPUT_FILE join(",", $F[1], "NA", $F[2], $missingness)."\n";
         }
     }
 }

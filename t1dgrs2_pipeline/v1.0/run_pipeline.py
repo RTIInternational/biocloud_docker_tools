@@ -6,6 +6,7 @@ import sys
 import os
 import copy
 import logging
+import sys
 
 # Get arguments
 parser = argparse.ArgumentParser()
@@ -33,8 +34,9 @@ args = parser.parse_args()
 
 
 def initialize_dir (dir):
-    dir = dir if (dir[-1] == "/") else (dir + "/")
-    os.system("mkdir -p {}".format(dir))
+    if dir:
+        dir = dir if (dir[-1] == "/") else (dir + "/")
+        os.system("mkdir -p {}".format(dir))
 
     return dir
 
@@ -51,8 +53,9 @@ def set_wf_inputs (wf_def, wf_args):
         else:
             sys.exit("Workflow parameter does not exist: {}".format(parameter))
     
-    for parameter in wf_args:
-        if wf_def['inputs'][parameter]['type'] == 'dir':
+    for input in wf_def['inputs']:
+        key = "inputs.{}".format(input)
+        if wf_def['inputs'][input]['type'] == 'dir':
             wf_vars[key] = initialize_dir(wf_vars[key])
 
     return wf_vars
@@ -77,7 +80,7 @@ def set_task_inputs (wf_vars, task_def, step_inputs, base_key):
         key = "{}.inputs.{}".format(base_key, parameter)
         wf_vars[key] = process_wf_vars(step_inputs[parameter], wf_vars, '')
     
-    for parameter in step_inputs:
+    for parameter in task_def['inputs']:
         key = "{}.inputs.{}".format(base_key, parameter)
         if task_def['inputs'][parameter]['type'] == 'dir':
             wf_vars[key] = initialize_dir(wf_vars[key])
@@ -129,6 +132,10 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     return logger
 
+def close_logger(logger):
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+        handler.close()
 
 class logger_writer:
     def __init__(self, level):
@@ -171,7 +178,7 @@ next_step = {
     'step': wf_def['entry_point'],
     'inputs': wf_def['entry_point_inputs'],
 }
-while next_step['step'] != 'exit':
+while next_step['step'] != 'exit' and next_step['step'] != 'error':
     # Create directory for step
     step_dir = "{}{}".format(wf_vars['inputs.working_dir'], next_step['step'])
     os.system("mkdir -p {}".format(step_dir))
@@ -186,9 +193,8 @@ while next_step['step'] != 'exit':
     wf_logger.info("Running task {}".format(task))
     # Prepare task command
     cmd = prepare_task_cmd(wf_tasks[task]['cmd'], wf_vars, base_key)
-    print("\n".join(str(item) for item in cmd) + "\n")
+    step_logger.info("\n".join(str(item) for item in cmd) + "\n")
     # Set task outputs
-    step_logger.info(wf_vars)
     set_task_outputs(wf_vars, wf_tasks[task], base_key)
     # Run task command
     sys.stdout = logger_writer(step_logger.info)
@@ -201,11 +207,14 @@ while next_step['step'] != 'exit':
     if next_step['step'] == 'error':
         step_logger.error(result.stderr)
         wf_logger.error(result.stderr)
-        sys.exit(result.stderr)
+        close_logger(wf_logger)
     elif next_step['step'] == 'exit':
         step_logger.info(result.stdout)
         step_logger.info("Task {} complete".format(task))
         wf_logger.info("Workflow {} complete".format(wf_def['name']))
+        close_logger(wf_logger)
     else:
         step_logger.info(result.stdout)
         step_logger.info("Task {} complete".format(task))
+    # Close logger for step
+    close_logger(step_logger)

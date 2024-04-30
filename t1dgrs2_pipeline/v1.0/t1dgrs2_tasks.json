@@ -1,6 +1,9 @@
 {
     "download_gvcfs_from_s3": {
         "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
             "source_s3_bucket": {
                 "type": "str"
             },
@@ -47,16 +50,16 @@
             },
             "log": {
                 "type": "file",
-                "value": "s3_download.log"
+                "value": "<inputs.working_dir>s3_download.log"
             }
         }
     },
     "filter_gvcfs_by_consent": {
         "inputs": {
-            "imported_gvcfs_dir": {
+            "working_dir": {
                 "type": "dir"
             },
-            "working_dir": {
+            "imported_gvcfs_dir": {
                 "type": "dir"
             },
             "consented_gvcfs_dir": {
@@ -95,16 +98,19 @@
         "outputs": {
             "genedx_manifest": {
                 "type": "file",
-                "value": "genedx_manifest.csv"
+                "value": "<inputs.working_dir>genedx_manifest.csv"
             },
             "log": {
                 "type": "file",
-                "value": "filter_gvcfs_by_consent.log"
+                "value": "<inputs.working_dir>filter_gvcfs_by_consent.log"
             }
         }
     },
     "batch_calculate_t1dgrs2": {
         "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
             "gvcf_dir": {
                 "type": "dir"
             },
@@ -114,10 +120,7 @@
             "genedx_manifest": {
                 "type": "file"
             },
-            "out_dir": {
-                "type": "dir"
-            },
-            "working_dir": {
+            "output_dir": {
                 "type": "dir"
             },
             "argo_api_url": {
@@ -146,8 +149,8 @@
             "<inputs.variant_list>",
             "--genedx_manifest",
             "<inputs.genedx_manifest>",
-            "--out_dir",
-            "<inputs.out_dir>",
+            "--output_dir",
+            "<inputs.output_dir>",
             "--working_dir",
             "<inputs.working_dir>",
             "--argo_api_url",
@@ -162,12 +165,18 @@
         "outputs": {
             "log": {
                 "type": "file",
-                "value": "batch_calculate_t1dgrs2.log"
+                "value": "<inputs.working_dir>batch_calculate_t1dgrs2.log"
             }
         }
     },
     "extract_gvcf_variants": {
         "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "output_dir": {
+                "type": "dir"
+            },
             "gvcf": {
                 "type": "file"
             },
@@ -223,12 +232,18 @@
             },
             "log": {
                 "type": "file",
-                "value": "extract_gvcf_variants.log"
+                "value": "<inputs.working_dir>extract_gvcf_variants.log"
             }
         }
     },
     "convert_vcf_to_bfile": {
         "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "output_dir": {
+                "type": "dir"
+            },
             "vcf": {
                 "type": "file"
             },
@@ -241,7 +256,7 @@
             }
         },
         "cmd": [
-            "plink2",
+            "plink",
             "--vcf",
             "<inputs.vcf>",
             "--out",
@@ -269,12 +284,18 @@
             },
             "log": {
                 "type": "file",
-                "value": "convert_vcf_to_bfile.log"
+                "value": "<inputs.working_dir>convert_vcf_to_bfile.log"
             }
         }
     },
     "merge_bfile_with_reference": {
         "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "output_dir": {
+                "type": "dir"
+            },
             "ref_bfile": {
                 "type": "str"
             },
@@ -296,10 +317,10 @@
             }
         },
         "cmd": [
-            "plink2",
+            "plink",
             "--bfile",
             "<inputs.ref_bfile>",
-            "--pmerge",
+            "--bmerge",
             "<inputs.sample_bed>",
             "<inputs.sample_bim>",
             "<inputs.sample_fam>",
@@ -332,12 +353,18 @@
             },
             "log": {
                 "type": "file",
-                "value": "merge_bfile_with_reference.log"
+                "value": "<inputs.working_dir>merge_bfile_with_reference.log"
             }
         }
     },
     "calculate_t1dgrs2": {
         "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "output_dir": {
+                "type": "dir"
+            },
             "bfile": {
                 "type": "str"
             },
@@ -352,7 +379,7 @@
         "cmd": [
             "python",
             "-m",
-            "t1dgrs2 ",
+            "t1dgrs2",
             "-b",
             "<inputs.bfile>",
             "-c",
@@ -375,12 +402,18 @@
             },
             "log": {
                 "type": "file",
-                "value": "calculate_t1dgrs2.log"
+                "value": "<inputs.working_dir>calculate_t1dgrs2.log"
             }
         }
     },
     "generate_file_for_export": {
         "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "output_dir": {
+                "type": "dir"
+            },
             "t1dgrs2_results_file": {
                 "type": "file"
             },
@@ -441,7 +474,81 @@
             },
             "log": {
                 "type": "file",
-                "value": "generate_file_for_export.log"
+                "value": "<inputs.working_dir>generate_file_for_export.log"
+            }
+        }
+    },
+    "merge_results": {
+        "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "output_dir": {
+                "type": "dir"
+            },
+            "sample_results_dir": {
+                "type": "dir"
+            },
+            "output_file": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "/opt/merge_results_files.sh",
+            "--sample_results_dir",
+            "<inputs.sample_results_dir>",
+            "--output_file",
+            "<inputs.output_file>"
+        ],
+        "outputs": {
+            "results_file": {
+                "type": "file",
+                "value": "<inputs.output_file>"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.working_dir>merge_results.log"
+            }
+        }
+    },
+    "sftp_results": {
+        "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "sftp_server": {
+                "type": "str"
+            },
+            "username": {
+                "type": "str"
+            },
+            "password": {
+                "type": "str"
+            },
+            "results_file": {
+                "type": "str"
+            },
+            "target_dir": {
+                "type": "dir"
+            }
+        },
+        "cmd": [
+            "python /opt/sftp_results.py",
+            "--sftp_server",
+            "<inputs.sftp_server>",
+            "--username",
+            "<inputs.username>",
+            "--password",
+            "<inputs.password>",
+            "--results_file",
+            "<inputs.results_file>",
+            "--target_dir",
+            "<inputs.target_dir>"
+        ],
+        "outputs": {
+            "log": {
+                "type": "file",
+                "value": "<inputs.working_dir>sftp_results.log"
             }
         }
     }

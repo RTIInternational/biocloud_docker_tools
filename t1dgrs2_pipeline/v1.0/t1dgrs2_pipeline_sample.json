@@ -6,7 +6,7 @@
             "default": "",
             "required": true
         },
-        "out_prefix": {
+        "output_dir": {
             "type": "str",
             "default": "",
             "required": true
@@ -65,10 +65,11 @@
     },
     "entry_point": "extract_gvcf_variants",
     "entry_point_inputs": {
-        "gvcf": "<inputs.gvcf>",
-        "out_prefix": "<inputs.out_prefix>",
-        "variant_list": "<inputs.variant_list>",
         "working_dir": "<inputs.working_dir>extract_gvcf_variants",
+        "output_dir": "<inputs.output_dir>extract_gvcf_variants",
+        "gvcf": "<inputs.gvcf>",
+        "out_prefix": "<inputs.output_dir>extract_gvcf_variants/<inputs.sample_id>",
+        "variant_list": "<inputs.variant_list>",
         "pass_only": "<inputs.pass_only>",
         "filter_by_gq": "<inputs.filter_by_gq>",
         "hom_gq_threshold": "<inputs.hom_gq_threshold>",
@@ -81,8 +82,10 @@
                 "returncode_0": {
                     "step": "convert_vcf_to_bfile",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>convert_vcf_to_bfile",
+                        "output_dir": "<inputs.output_dir>convert_vcf_to_bfile",
                         "vcf": "<steps.extract_gvcf_variants.outputs.t1dgrs2_variants_vcf>",
-                        "out_prefix": "<inputs.out_prefix>"
+                        "out_prefix": "<inputs.output_dir>convert_vcf_to_bfile/<inputs.sample_id>"
                     }
                 },
                 "returncode_1": { 
@@ -96,11 +99,13 @@
                 "returncode_0": {
                     "step": "merge_bfile_with_reference",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>merge_bfile_with_reference",
+                        "output_dir": "<inputs.output_dir>merge_bfile_with_reference",
                         "ref_bfile": "<inputs.ref_bfile>",
                         "sample_bed": "<steps.convert_vcf_to_bfile.outputs.bed>",
                         "sample_bim": "<steps.convert_vcf_to_bfile.outputs.bim>",
                         "sample_fam": "<steps.convert_vcf_to_bfile.outputs.fam>",
-                        "out_prefix": "<inputs.out_prefix>_with_ref"
+                        "out_prefix": "<inputs.output_dir>merge_bfile_with_reference/<inputs.sample_id>_with_ref"
                     }
                 },
                 "returncode_1": { 
@@ -114,8 +119,10 @@
                 "returncode_0": {
                     "step": "calculate_t1dgrs2",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>calculate_t1dgrs2",
+                        "output_dir": "<inputs.output_dir>calculate_t1dgrs2",
                         "bfile": "<steps.merge_bfile_with_reference.outputs.bfile>",
-                        "out_prefix": "<inputs.out_prefix>_with_ref"
+                        "out_prefix": "<inputs.output_dir>calculate_t1dgrs2/<inputs.sample_id>_with_ref"
                     }
                 },
                 "returncode_1": { 
@@ -129,11 +136,13 @@
                 "returncode_0": {
                     "step": "generate_file_for_export",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>generate_file_for_export",
+                        "output_dir": "<inputs.output_dir>generate_file_for_export",
                         "t1dgrs2_results_file": "<steps.calculate_t1dgrs2.outputs.results>",
                         "missing_file": "<steps.extract_gvcf_variants.outputs.missing>",
                         "sample_id": "<inputs.sample_id>",
                         "genedx_manifest": "<inputs.genedx_manifest>",
-                        "output_file": "<inputs.out_prefix>_for_export.tsv"
+                        "output_file": "<inputs.output_dir><inputs.sample_id>_for_export.tsv"
                     }
                 },
                 "returncode_1": {

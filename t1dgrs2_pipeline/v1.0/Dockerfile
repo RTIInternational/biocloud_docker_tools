@@ -20,7 +20,9 @@ RUN apt-get update \
         wget \
         unzip \
         cpanminus \
-        git
+        git \
+        fonts-texgyre \
+        libatlas-base-dev
 
 ENV PATH /opt/conda/bin:$PATH
 
@@ -47,6 +49,7 @@ RUN ln -s /root/miniconda3/bin/python3.11 /usr/bin/python
 RUN conda install -y conda-forge::boto3
 RUN conda install -y conda-forge::xlsx2csv
 RUN conda install -c conda-forge -y cryptography=42.0.4
+RUN conda install -y conda-forge::paramiko
 
 # Install t1dgrs2 and dependencies
 RUN conda install -c conda-forge -y setuptools=67.6.1
@@ -64,22 +67,17 @@ ADD t1dgrs2_hg19_variants.tsv /t1dgrs2/
 ADD hla_variants.txt /t1dgrs2/
 ADD non_hla_variants.txt /t1dgrs2/
 
+#### Install plink1.9 ####
+RUN conda install -c bioconda -y plink
+
 #### Install PERL modules ####
 RUN cpanm install JSON
-
-#### Install plink2 ####
-ENV DEBIAN_FRONTEND noninteractive
-RUN wget https://s3.amazonaws.com/plink2-assets/alpha5/plink2_linux_x86_64_20240105.zip \
-    && unzip plink2_linux_x86_64_20240105.zip -d /plink_tmp \
-    && cp /plink_tmp/plink2 /opt/ \
-    && rm -rf plink2_linux_x86_64_20240105.zip plink_tmp
-ENV PATH=pkg-config:$PATH:/opt/
-RUN rm -Rf /var/lib/apt/lists/*
 
 #### Install custom scripts ####
 # Add pipelien config files
 ADD t1dgrs2_pipeline.json /opt/
 ADD t1dgrs2_pipeline_sample.json /opt/
+ADD t1dgrs2_pipeline_export.json /opt/
 ADD t1dgrs2_tasks.json /opt/
 # Add scripts
 ADD entrypoint.sh /opt/
@@ -89,6 +87,8 @@ ADD filter_gvcfs_by_consent.sh /opt/
 ADD batch_calculate_t1dgrs2.py /opt/
 ADD extract_gvcf_variants.pl /opt/
 ADD generate_file_for_export.pl /opt/
+ADD merge_results_files.sh /opt/
+ADD sftp_results.py /opt/
 # Change permissions
 RUN chmod 755 /opt/entrypoint.sh
 RUN chmod 755 /opt/run_pipeline.py
@@ -97,9 +97,8 @@ RUN chmod 755 /opt/filter_gvcfs_by_consent.sh
 RUN chmod 755 /opt/batch_calculate_t1dgrs2.py
 RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/generate_file_for_export.pl
-
-# Add example config
-# ADD config_examples/t1dgrs2_pipeline_sample_config.json /opt/
+RUN chmod 755 /opt/merge_results_files.sh
+RUN chmod 755 /opt/sftp_results.py
 
 WORKDIR /data
 RUN chown -R docker:staff /data

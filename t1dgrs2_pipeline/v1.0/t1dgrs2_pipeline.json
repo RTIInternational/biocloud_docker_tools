@@ -8,8 +8,8 @@
         },
         "output_dir": {
             "type": "dir",
-            "default": "/home/merge-shared-folder/",
-            "required": false
+            "default": "",
+            "required": true
         },
         "source_s3_bucket": {
             "type": "str",
@@ -80,6 +80,7 @@
     },
     "entry_point": "download_gvcfs_from_s3",
     "entry_point_inputs": {
+        "working_dir": "<inputs.working_dir>download_gvcfs_from_s3",
         "source_s3_bucket": "<inputs.source_s3_bucket>",
         "s3_access_key": "<inputs.s3_access_key>",
         "s3_secret_access_key": "<inputs.s3_secret_access_key>",
@@ -114,11 +115,11 @@
                 "returncode_0": {
                     "step": "batch_calculate_t1dgrs2",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>batch_calculate_t1dgrs2",
+                        "output_dir": "<inputs.output_dir>batch_calculate_t1dgrs2",
                         "gvcf_dir": "<inputs.output_dir>gvcfs_consented",
                         "variant_list": "<inputs.variant_list>",
                         "genedx_manifest": "<steps.filter_gvcfs_by_consent.outputs.genedx_manifest>",
-                        "out_dir": "<inputs.output_dir>t1dgrs",
-                        "working_dir": "<inputs.working_dir>batch_calculate_t1dgrs2",
                         "argo_api_url": "<inputs.argo_api_url>",
                         "simultaneous_jobs": "<inputs.simultaneous_jobs>",
                         "control_dir": "<inputs.control_dir>",

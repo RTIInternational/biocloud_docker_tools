@@ -3,6 +3,7 @@ import json
 import os
 import time
 import requests
+import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -25,7 +26,7 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
-    '--out_dir',
+    '--output_dir',
     required = True,
     help = 'Output directory',
     type = str
@@ -65,26 +66,6 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-gvcf_dir = args.gvcf_dir if (args.gvcf_dir[-1] == "/") else (args.gvcf_dir + "/")
-os.system("mkdir -p {}".format(gvcf_dir))
-out_dir = args.out_dir if (args.out_dir[-1] == "/") else (args.out_dir + "/")
-os.system("mkdir -p {}".format(out_dir))
-working_dir = args.working_dir if (args.working_dir[-1] == "/") else (args.working_dir + "/")
-os.system("mkdir -p {}".format(working_dir))
-if args.control_dir:
-    control_dir = args.control_dir if (args.control_dir[-1] == "/") else (args.control_dir + "/")
-    os.system("mkdir -p {}".format(control_dir))
-
-# Get a list of all gvcf files to process
-files = os.listdir(gvcf_dir)
-files_with_paths = [gvcf_dir + file for file in files]
-files_to_process = dict(zip(files, files_with_paths))
-if args.control_dir:
-    control_files = os.listdir(control_dir)
-    control_files_with_paths = [control_dir + file for file in control_files]
-    control_files_to_process = dict(zip(control_files, control_files_with_paths))
-    files_to_process = files_to_process.update(control_files_to_process)
-
 # Function to get the number of running workflows
 def get_running_workflows():
     response = requests.get(args.argo_api_url)
@@ -96,6 +77,30 @@ def get_running_workflows():
     workflows = data['items']
     running_workflows = [wf for wf in workflows if 'phase' not in wf['status'] or wf['status']['phase'] == 'Running']
     return len(running_workflows)
+
+gvcf_dir = args.gvcf_dir if (args.gvcf_dir[-1] == "/") else (args.gvcf_dir + "/")
+os.system("mkdir -p {}".format(gvcf_dir))
+output_dir = args.output_dir if (args.output_dir[-1] == "/") else (args.output_dir + "/")
+os.system("mkdir -p {}".format(output_dir))
+working_dir = args.working_dir if (args.working_dir[-1] == "/") else (args.working_dir + "/")
+os.system("mkdir -p {}".format(working_dir))
+if args.control_dir:
+    control_dir = args.control_dir if (args.control_dir[-1] == "/") else (args.control_dir + "/")
+    os.system("mkdir -p {}".format(control_dir))
+
+# Get a list of all gvcf files to process
+files = os.listdir(gvcf_dir)
+files_with_paths = [gvcf_dir + file for file in files]
+files_to_process = dict(zip(files, files_with_paths))
+if len(files_to_process) == 0:
+    sys.exit("No files to process")
+
+if control_dir:
+    control_files = os.listdir(control_dir)
+    control_files_with_paths = [control_dir + file for file in control_files]
+    control_files_to_process = dict(zip(control_files, control_files_with_paths))
+    if len(control_files_to_process) > 0:
+        files_to_process = files_to_process | control_files_to_process
 
 # Loop over all files
 for file, path in files_to_process.items():
@@ -110,9 +115,9 @@ for file, path in files_to_process.items():
         time.sleep(30)
 
     # Create output dir for sample
-    sample_out_dir = "{}{}/".format(out_dir, file_id)
-    if not os.path.exists(sample_out_dir):
-        os.makedirs(sample_out_dir)
+    sample_output_dir = "{}{}/".format(output_dir, file_id)
+    if not os.path.exists(sample_output_dir):
+        os.makedirs(sample_output_dir)
     
     # Create working dir for sample
     sample_working_dir = "{}{}/".format(working_dir, file_id)
@@ -122,11 +127,11 @@ for file, path in files_to_process.items():
     # Create workflow args for gvcf file
     wf_arguments = {
         "working_dir": sample_working_dir,
-        "out_prefix": "{}{}".format(sample_out_dir, file_id),
+        "output_dir": sample_output_dir,
         "gvcf": path,
         "sample_id": file_id,
         "variant_list": args.variant_list,
-        "gene_dx_manifest": args.genedx_manifest,
+        "genedx_manifest": args.genedx_manifest,
         "pass_only": 0,
         "filter_by_gq": 0,
         "hom_gq_threshold": 99,
@@ -168,5 +173,5 @@ for file, path in files_to_process.items():
     }
 
     headers = {'Content-Type': 'application/json'}
-    print(f"Starting file:{file_id}")
+    print(f"Starting file: {file_id}")
     response = requests.post(args.argo_api_url, headers=headers, data=json.dumps(workflow))
