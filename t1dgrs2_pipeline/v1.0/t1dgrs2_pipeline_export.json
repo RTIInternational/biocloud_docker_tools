@@ -1,0 +1,87 @@
+{
+    "name": "t1dgrs2_pipeline_export",
+    "inputs": {
+        "working_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "results_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "output_file": {
+            "type": "string",
+            "default": "",
+            "required": true
+        },
+        "sftp_server": {
+            "type": "str",
+            "default": "esnftp.rti.org",
+            "required": false
+        },
+        "username": {
+            "type": "str",
+            "default": "svcEarlyCheck",
+            "required": false
+        },
+        "password": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "target_dir": {
+            "type": "dir",
+            "default": "/T1DRESULTS",
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.working_dir>/t1dgrs2_pipeline_export.log"
+        }
+    },
+    "entry_point": "merge_results",
+    "entry_point_inputs": {
+        "sample_results_dir": "<inputs.results_dir>",
+        "output_file": "<inputs.output_file>"
+    },
+    "pipeline": {
+        "merge_results": {
+            "task": "merge_results",
+            "check_output": {
+                "returncode_0": {
+                    "step": "sftp_results",
+                    "inputs": {
+                        "sftp_server": "<inputs.sftp_server>",
+                        "username": "<inputs.username>",
+                        "password": "<inputs.password>",
+                        "results_file": "<inputs.output_file>",
+                        "target_dir": "<inputs.target_dir>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "sftp_results": {
+            "task": "sftp_results",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}
