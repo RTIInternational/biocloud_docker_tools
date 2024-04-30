@@ -17,7 +17,7 @@ To use this script, you will need to have the following:
 
 
 ## Usage
-Download results JSON from S3:
+Download results JSON from the Cromwell server:
 ```bash
 $ curl -X GET "http://localhost:8000/api/workflows/v1/$job/outputs" > outputs.json
 ```
