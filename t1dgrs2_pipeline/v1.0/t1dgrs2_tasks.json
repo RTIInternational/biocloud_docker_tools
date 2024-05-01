@@ -533,7 +533,8 @@
             }
         },
         "cmd": [
-            "python /opt/sftp_results.py",
+            "python",
+            "/opt/sftp_results.py",
             "--sftp_server",
             "<inputs.sftp_server>",
             "--username",
