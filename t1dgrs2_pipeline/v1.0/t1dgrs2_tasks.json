@@ -489,7 +489,10 @@
             "sample_results_dir": {
                 "type": "dir"
             },
-            "output_file": {
+            "output_result_file": {
+                "type": "str"
+            },
+            "output_control_file": {
                 "type": "str"
             }
         },
@@ -497,13 +500,19 @@
             "/opt/merge_results_files.sh",
             "--sample_results_dir",
             "<inputs.sample_results_dir>",
-            "--output_file",
-            "<inputs.output_file>"
+            "--output_result_file",
+            "<inputs.output_result_file>",
+            "--output_control_file",
+            "<inputs.output_control_file>"
         ],
         "outputs": {
             "results_file": {
                 "type": "file",
-                "value": "<inputs.output_file>"
+                "value": "<inputs.output_result_file>"
+            },
+            "control_file": {
+                "type": "file",
+                "value": "<inputs.output_control_file>"
             },
             "log": {
                 "type": "file",

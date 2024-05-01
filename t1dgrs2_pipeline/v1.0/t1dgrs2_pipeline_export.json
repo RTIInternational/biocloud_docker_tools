@@ -16,7 +16,12 @@
             "default": "",
             "required": true
         },
-        "output_file": {
+        "output_result_file": {
+            "type": "string",
+            "default": "",
+            "required": true
+        },
+        "output_contorl_file": {
             "type": "string",
             "default": "",
             "required": true
@@ -51,7 +56,8 @@
     "entry_point": "merge_results",
     "entry_point_inputs": {
         "sample_results_dir": "<inputs.results_dir>",
-        "output_file": "<inputs.output_file>"
+        "output_result_file": "<inputs.output_result_file>",
+        "output_contorl_file": "<inputs.output_contorl_file>"
     },
     "pipeline": {
         "merge_results": {
@@ -63,7 +69,7 @@
                         "sftp_server": "<inputs.sftp_server>",
                         "username": "<inputs.username>",
                         "password": "<inputs.password>",
-                        "results_file": "<inputs.output_file>",
+                        "results_file": "<inputs.output_result_file>",
                         "target_dir": "<inputs.target_dir>"
                     }
                 },

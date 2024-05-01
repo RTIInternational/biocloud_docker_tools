@@ -136,9 +136,12 @@ echo "Successfully moved all consented files to gvcfs folder"
 #Move remaining gz files that don't have consent to the alternate folder
 remaining_files=$(ls $imported_gvcfs_dir*.gz |wc -l | cut -d ' ' -f1)
 
-echo "Moving the remaining $remaining_files gvcf files. Along with the tbi files. Will remove them later"
-
-mv $imported_gvcfs_dir*.gz* $nonconsented_gvcfs_dir
+echo "Moving the remaining $remaining_files gvcf files."
+for file in $(ls $imported_gvcfs_dir*.gvcf.gz); do
+	mv $file $nonconsented_gvcfs_dir
+	file_name=$(basename "$file")
+	echo "Moved $file_name to $nonconsented_gvcfs_dir"
+done
 echo "Successfully moved nonconsented gvcfs to nonconsent-gvcfs folder"
 
 ################################

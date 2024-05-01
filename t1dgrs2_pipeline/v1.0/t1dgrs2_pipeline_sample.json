@@ -142,7 +142,7 @@
                         "missing_file": "<steps.extract_gvcf_variants.outputs.missing>",
                         "sample_id": "<inputs.sample_id>",
                         "genedx_manifest": "<inputs.genedx_manifest>",
-                        "output_file": "<inputs.output_dir><inputs.sample_id>_for_export.tsv"
+                        "output_file": "<inputs.output_dir><inputs.sample_id>_for_export.csv"
                     }
                 },
                 "returncode_1": {
