@@ -529,7 +529,7 @@
                 "type": "str"
             },
             "target_dir": {
-                "type": "dir"
+                "type": "str"
             }
         },
         "cmd": [
