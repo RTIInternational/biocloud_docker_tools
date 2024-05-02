@@ -21,7 +21,7 @@
             "default": "",
             "required": true
         },
-        "output_contorl_file": {
+        "output_control_file": {
             "type": "string",
             "default": "",
             "required": true
@@ -57,7 +57,7 @@
     "entry_point_inputs": {
         "sample_results_dir": "<inputs.results_dir>",
         "output_result_file": "<inputs.output_result_file>",
-        "output_contorl_file": "<inputs.output_contorl_file>"
+        "output_control_file": "<inputs.output_control_file>"
     },
     "pipeline": {
         "merge_results": {
