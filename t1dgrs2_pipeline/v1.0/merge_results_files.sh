@@ -24,7 +24,7 @@ sample_results_dir=$(echo $sample_results_dir | perl -ne 'chomp; if (substr($_, 
 mkdir -p $sample_results_dir
 
 first_file=true
-for file in $(ls $sample_results_dir*/*_for_export.tsv | grep -v qc ); do
+for file in $(ls ${sample_results_dir}*/*_for_export.csv | grep -v qc ); do
     if [ "$first_file" = true ] ; then
         head -n 1 $file
         first_file=false
@@ -33,7 +33,7 @@ for file in $(ls $sample_results_dir*/*_for_export.tsv | grep -v qc ); do
 done > $output_result_file
 
 first_file=true
-for file in $(ls $sample_results_dir*/*_for_export.tsv | grep qc ); do
+for file in $(ls $sample_results_dir*/*_for_export.csv | grep qc ); do
     if [ "$first_file" = true ] ; then
         head -n 1 $file
         first_file=false
