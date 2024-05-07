@@ -4,7 +4,7 @@ This Dockerfile sets up an environment for generating a manifest of objects in a
 
 ## Overview
 
-This was created to automate the generation of manifests (including MD5 checksums and DOIs) within BDC powered by Seven Bridges. The manifests are created before any data can be ingested into BDC, but this dockerfile would be 
+This was created to automate the generation of manifests (including MD5 checksums and DOIs) within BDC powered by Seven Bridges. The manifests are created before any data can be ingested into BDC, but this dockerfile would be useful in 
 
 
 
@@ -13,12 +13,12 @@ This was created to automate the generation of manifests (including MD5 checksum
 `entrypoint.sh` will configure AWS CLI and run the manifest generation script (`generate_manifest_for_aws.py`). If a [AWS credential file](https://github.com/aws/aws-cli) is available (e.g., `~/.aws/credentials`), quickest way to get started is to pass those credentials in as environment variables.
 
 ```
-AWS_PROFILE="<PROFILE_NAME>" 
+export AWS_PROFILE="<PROFILE_NAME>" 
 export AWS_ACCESS_KEY_ID=$(aws configure get ${AWS_PROFILE}.aws_access_key_id)
 export AWS_SECRET_ACCESS_KEY=$(aws configure get ${AWS_PROFILE}.aws_secret_access_key)
 export AWS_DEFAULT_REGION=$(aws configure get ${AWS_PROFILE}.default_region)
 ```
-
+Replace `<PROFILE_NAME>` with the section name within the INI-formatted credentials file.
 The only additional thing needed is the name of the S3 bucket (`export S3_BUCKET="somebucket"`).
 
 Example Docker run command:
@@ -75,7 +75,6 @@ From within the interactive session, trigger `entrypoint.sh` to 1.) configure AW
 > bash /opt/entrypoint.sh
 
 
-
 <details>
 
 ```
@@ -100,8 +99,11 @@ Done. Receipt manifest located at rti-test-bucket.manifest.20240506182516.tsv
 2024-05-06 18:25:17      20721 rti-test-bucket.manifest.20240506182516.tsv
 ```
 </details>
+<br>
 
-The resulting manifest will look something like the following:
+## Output
+
+A TSV file will be generated locally and uploaded to the S3 bucket. The manifest will look something like the following:
 
 | input_file_path                                            | file_name                                                  | s3_file_size | s3_md5sum                           | md5sum                           | s3_path                                                    | s3_modified_date          | guid                                         | ga4gh_drs_uri                                                |
 | ---------------------------------------------------------- | ---------------------------------------------------------- | ------------ | ----------------------------------- | -------------------------------- | ---------------------------------------------------------- | ------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
