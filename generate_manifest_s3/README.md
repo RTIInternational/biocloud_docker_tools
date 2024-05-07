@@ -1,16 +1,11 @@
 # Manifest Generation (AWS)
 
-This Dockerfile sets up an environment for generating a manifest of objects in a S3 bucket.
-
 ## Overview
-
-This was created to automate the generation of manifests (including MD5 checksums and DOIs) within BDC powered by Seven Bridges. The manifests are created before any data can be ingested into BDC, but this dockerfile would be useful in 
-
-
+This Dockerfile sets up an environment for generating an [inventory manifest](#output) of objects in an S3 bucket with relevant metadata, including the md5checksum/etag, file size, modified date, and more. It also includes a script to configure AWS CLI. 
 
 ## Usage
 
-`entrypoint.sh` will configure AWS CLI and run the manifest generation script (`generate_manifest_for_aws.py`). If a [AWS credential file](https://github.com/aws/aws-cli) is available (e.g., `~/.aws/credentials`), quickest way to get started is to pass those credentials in as environment variables.
+`entrypoint.sh` will configure AWS CLI and run the manifest generation script (`generate_manifest_for_aws.py`). If a [AWS credential file](https://github.com/aws/aws-cli) is available (e.g., `~/.aws/credentials`), the quickest way to get started is to pass those credentials in as environment variables.
 
 ```
 export AWS_PROFILE="<PROFILE_NAME>" 
@@ -19,7 +14,7 @@ export AWS_SECRET_ACCESS_KEY=$(aws configure get ${AWS_PROFILE}.aws_secret_acces
 export AWS_DEFAULT_REGION=$(aws configure get ${AWS_PROFILE}.default_region)
 ```
 Replace `<PROFILE_NAME>` with the section name within the INI-formatted credentials file.
-The only additional thing needed is the name of the S3 bucket (`export S3_BUCKET="somebucket"`).
+The only additional thing needed is the name of the S3 bucket (`export S3_BUCKET="somebucket"`) without the `s3://` path.
 
 Example Docker run command:
 
