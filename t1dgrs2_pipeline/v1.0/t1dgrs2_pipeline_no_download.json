@@ -84,7 +84,7 @@
                         "output_dir": "<inputs.output_dir>batch_calculate_t1dgrs2",
                         "gvcf_dir": "<inputs.output_dir>gvcfs_consented",
                         "variant_list": "<inputs.variant_list>",
-                        "genedx_manifest": "<inputs.genedx_manifest_path>",
+                        "genedx_manifest": "<steps.filter_gvcfs_by_consent.outputs.genedx_manifest>",
                         "argo_api_url": "<inputs.argo_api_url>",
                         "simultaneous_jobs": "<inputs.simultaneous_jobs>",
                         "control_dir": "<inputs.control_dir>",
