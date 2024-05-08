@@ -78,6 +78,7 @@ RUN cpanm install JSON
 ADD t1dgrs2_pipeline.json /opt/
 ADD t1dgrs2_pipeline_sample.json /opt/
 ADD t1dgrs2_pipeline_export.json /opt/
+ADD t1dgrs2_pipeline_no_download.json /opt/
 ADD t1dgrs2_tasks.json /opt/
 # Add scripts
 ADD entrypoint.sh /opt/
