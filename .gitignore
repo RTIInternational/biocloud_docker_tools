@@ -1,6 +1,7 @@
 # project-specific
 editor.vim
 GAP.config
+run_image.sh
 
 # pycharm
 .idea/
