@@ -1,0 +1,111 @@
+{
+    "name": "t1dgrs2_pipeline",
+    "inputs": {
+        "working_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "gvcf_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "genedx_manifest_path": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "master_rti_manifest": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "new_rti_manifest": {
+            "type": "str",
+            "default": "",
+            "required": false
+        },
+        "variant_list": {
+            "type": "file",
+            "default": "/t1dgrs2/t1dgrs2_hg19_variants.tsv",
+            "required": false
+        },
+        "argo_api_url": {
+            "type": "str",
+            "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+            "required": false
+        },
+        "simultaneous_jobs": {
+            "type": "int",
+            "default": 50,
+            "required": false
+        },
+        "ref_bfile": {
+            "type": "file",
+            "default": "/home/merge-shared-folder/t1dgrs2/pipeline_files/t1dgrs2_ref",
+            "required": false
+        },
+        "control_dir": {
+            "type": "dir",
+            "default": "/home/merge-shared-folder/t1dgrs2/pipeline_files/control_dir",
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.working_dir>/t1dgrs2_pipeline.log"
+        }
+    },
+    "entry_point": "filter_gvcfs_by_consent",
+    "entry_point_inputs": {
+        "imported_gvcfs_dir": "<inputs.gvcf_dir>",
+        "working_dir": "<inputs.working_dir>filter_gvcfs_by_consent",
+        "consented_gvcfs_dir": "<inputs.output_dir>gvcfs_consented",
+        "nonconsented_gvcfs_dir": "<inputs.output_dir>gvcfs_nonconsented",
+        "master_rti_manifest": "<inputs.master_rti_manifest>",
+        "new_rti_manifest": "<inputs.new_rti_manifest>",
+        "genedx_manifest_path": "<inputs.genedx_manifest_path>"
+    },
+    "pipeline": {
+        "filter_gvcfs_by_consent": {
+            "task": "filter_gvcfs_by_consent",
+            "check_output": {
+                "returncode_0": {
+                    "step": "batch_calculate_t1dgrs2",
+                    "inputs": {
+                        "working_dir": "<inputs.working_dir>batch_calculate_t1dgrs2",
+                        "output_dir": "<inputs.output_dir>batch_calculate_t1dgrs2",
+                        "gvcf_dir": "<inputs.output_dir>gvcfs_consented",
+                        "variant_list": "<inputs.variant_list>",
+                        "genedx_manifest": "<inputs.genedx_manifest_path>",
+                        "argo_api_url": "<inputs.argo_api_url>",
+                        "simultaneous_jobs": "<inputs.simultaneous_jobs>",
+                        "control_dir": "<inputs.control_dir>",
+                        "ref_bfile": "<inputs.ref_bfile>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "batch_calculate_t1dgrs2": {
+            "task": "batch_calculate_t1dgrs2",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}
