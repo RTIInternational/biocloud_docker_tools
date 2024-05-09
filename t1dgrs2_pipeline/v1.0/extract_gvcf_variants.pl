@@ -88,7 +88,7 @@ while(<GVCF>){
             !$pass_only
             || (uc($F[6]) eq "PASS")
         ) {
-            if ($F[0] =~ /chr(\d+)$/) {
+            if ($F[0] =~ /(\d+)$/) {
                 my $chr = $1;
                 my @keys = split(":", $F[8]);
                 my @values = split(":", $F[9]);
