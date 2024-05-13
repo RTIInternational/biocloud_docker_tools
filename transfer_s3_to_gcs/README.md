@@ -190,19 +190,6 @@ transferSpec:
 </details>
 <br>
 
-<!-- ## Output -->
-<!-- 
-A TSV file will be generated locally and uploaded to the S3 bucket. The manifest will look something like the following:
-
-| input_file_path                                            | file_name                                                  | s3_file_size | s3_md5sum                           | md5sum                           | s3_path                                                    | s3_modified_date          | guid                                         | ga4gh_drs_uri                                                |
-| ---------------------------------------------------------- | ---------------------------------------------------------- | ------------ | ----------------------------------- | -------------------------------- | ---------------------------------------------------------- | ------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
-| s3://rti-test-bucket/aggregate-all-proj-billing-report.csv | s3://rti-test-bucket/aggregate-all-proj-billing-report.csv | 509754247    | dbf2a67bfc6b609363f99bcf8d0c3799-30 | b1f79144c782e699e004e78f2da099e7 | s3://rti-test-bucket/aggregate-all-proj-billing-report.csv | 2020-01-01 21:05:40+00:00 | dg.1212/0e0877ba-731b-4ce9-b266-34b71e6d6322 | drs://dg.1212:dg.1212%2F0e0877ba-731b-4ce9-b266-34b71e6d6322 |
-| s3://rti-test-bucket/billing-budget-alert-email.png        | s3://rti-test-bucket/billing-budget-alert-email.png        | 1345755      | 2992b062c8ce8876cdcc552e233c6c3c    | 2992b062c8ce8876cdcc552e233c6c3c | s3://rti-test-bucket/billing-budget-alert-email.png        | 2020-01-01 21:05:52+00:00 | dg.1212/dfafc275-1206-4684-8368-512b4ae479ec | drs://dg.1212:dg.1212%2Fdfafc275-1206-4684-8368-512b4ae479ec |
-| s3://rti-test-bucket/var_report.xml                        | s3://rti-test-bucket/var_report.xml                        | 1380403      | 7845dda8786244538b5ebb826021af1d    | 7845dda8786244538b5ebb826021af1d | s3://rti-test-bucket/var_report.xml                        | 2020-01-01 21:05:56+00:00 | dg.1212/14cccdae-c671-4abe-b1fd-b288b15eff38 | drs://dg.1212:dg.1212%2F14cccdae-c671-4abe-b1fd-b288b15eff38 |
-| s3://rti-test-bucket/test.txt.gz                           | s3://rti-test-bucket/test.txt.gz                           | 924487       | e18ece94da761771c8bbdb9b8be3d0db    | e18ece94da761771c8bbdb9b8be3d0db | s3://rti-test-bucket/test.txt.gz                           | 2020-01-01 21:06:00+00:00 | dg.1212/e2ac1985-db23-4bfe-bfe1-07a476177c66 | drs://dg.1212:dg.1212%2Fe2ac1985-db23-4bfe-bfe1-07a476177c66 |
-| s3://rti-test-bucket/test.txt                              | s3://rti-test-bucket/test.txt                              | 79580051     | bc98ca9dfb02a387703603a447644e94-5  | 6ae3f98be14578ea5b3c6c712a442408 | s3://rti-test-bucket/test.txt                              | 2020-01-01 21:05:40+00:00 | dg.1212/5ee01ada-1f63-40ef-a6b2-dc3ce2aa0a03 | drs://dg.1212:dg.1212%2F5ee01ada-1f63-40ef-a6b2-dc3ce2aa0a03 | 
--->
-
 ## Reference
 Some helpful resources in troubleshooting common problems with the Google service account.
 
