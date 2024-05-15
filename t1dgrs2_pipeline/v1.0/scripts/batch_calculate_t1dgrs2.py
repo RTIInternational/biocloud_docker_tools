@@ -13,13 +13,6 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
-    '--variant_list',
-    required = True,
-    help = 'List of variants to extract',
-    type = str,
-    default = '/data/t1dgrs2_hg19_variants.tsv'
-)
-parser.add_argument(
     '--genedx_manifest',
     required = True,
     help = 'GeneDx manifest file',
@@ -130,7 +123,6 @@ for file, path in files_to_process.items():
         "output_dir": sample_output_dir,
         "gvcf": path,
         "sample_id": file_id,
-        "variant_list": args.variant_list,
         "genedx_manifest": args.genedx_manifest,
         "pass_only": 0,
         "filter_by_gq": 0,

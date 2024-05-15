@@ -21,6 +21,9 @@
             },
             "download_limit": {
                 "type": "int"
+            },
+            "samples_to_download": {
+                "type": "file"
             }
         },
         "cmd": [
@@ -37,7 +40,9 @@
             "--downloaded_samples",
             "<inputs.downloaded_samples>",
             "--download_limit",
-            "<inputs.download_limit>"
+            "<inputs.download_limit>",
+            "--samples_to_download",
+            "<inputs.samples_to_download"
         ],
         "outputs": {
             "downloaded_samples": {
@@ -71,9 +76,6 @@
             "master_rti_manifest": {
                 "type": "file"
             },
-            "new_rti_manifest": {
-                "type": "file"
-            },
             "genedx_manifest_path": {
                 "type": "file"
             }
@@ -90,8 +92,6 @@
             "<inputs.nonconsented_gvcfs_dir>",
             "--master_rti_manifest",
             "<inputs.master_rti_manifest>",
-            "--new_rti_manifest",
-            "<inputs.new_rti_manifest>",
             "--genedx_manifest_path",
             "<inputs.genedx_manifest_path>"
         ],
@@ -113,9 +113,6 @@
             },
             "gvcf_dir": {
                 "type": "dir"
-            },
-            "variant_list": {
-                "type": "file"
             },
             "genedx_manifest": {
                 "type": "file"
@@ -145,8 +142,6 @@
             "/opt/batch_calculate_t1dgrs2.py",
             "--gvcf_dir",
             "<inputs.gvcf_dir>",
-            "--variant_list",
-            "<inputs.variant_list>",
             "--genedx_manifest",
             "<inputs.genedx_manifest>",
             "--output_dir",
@@ -183,10 +178,6 @@
             "out_prefix": {
                 "type": "str"
             },
-            "variant_list": {
-                "type": "file",
-                "default": "/t1dgrs2/t1dgrs2_hg19_variants.tsv"
-            },
             "pass_only": {
                 "type": "int",
                 "default": 0
@@ -211,7 +202,7 @@
             "--out_prefix",
             "<inputs.out_prefix>",
             "--variant_list",
-            "<inputs.variant_list>",
+            "/pipeline/inputs/t1dgrs2_hg19_variants.tsv",
             "--pass_only",
             "<inputs.pass_only>",
             "--filter_by_gq",
@@ -249,10 +240,6 @@
             },
             "out_prefix": {
                 "type": "str"
-            },
-            "threads": {
-                "type": "int",
-                "default": 1
             }
         },
         "cmd": [
@@ -261,9 +248,7 @@
             "<inputs.vcf>",
             "--out",
             "<inputs.out_prefix>",
-            "--make-bed",
-            "--threads",
-            "<inputs.threads>"
+            "--make-bed"
         ],
         "outputs": {
             "bed": {
@@ -310,10 +295,6 @@
             },
             "out_prefix": {
                 "type": "str"
-            },
-            "threads": {
-                "type": "int",
-                "default": 1
             }
         },
         "cmd": [
@@ -326,9 +307,7 @@
             "<inputs.sample_fam>",
             "--out",
             "<inputs.out_prefix>",
-            "--make-bed",
-            "--threads",
-            "<inputs.threads>"
+            "--make-bed"
         ],
         "outputs": {
             "bfile": {
@@ -368,10 +347,6 @@
             "bfile": {
                 "type": "str"
             },
-            "config": {
-                "type": "file",
-                "default": "/t1dgrs2/t1dgrs2_settings.yml"
-            },
             "out_prefix": {
                 "type": "str"
             }
@@ -383,7 +358,7 @@
             "-b",
             "<inputs.bfile>",
             "-c",
-            "<inputs.config>",
+            "/t1dgrs2/t1dgrs2_settings.yml",
             "-o",
             "<inputs.out_prefix>"
         ],
@@ -429,17 +404,9 @@
             "output_file": {
                 "type": "str"
             },
-            "hla_variants_file": {
-                "type": "file",
-                "default": "/t1dgrs2/hla_variants.txt"
-            },
             "missing_hla_threshold": {
                 "type": "int",
                 "default": 1
-            },
-            "non_hla_variants_file": {
-                "type": "file",
-                "default": "/t1dgrs2/non_hla_variants.txt"
             },
             "missing_non_hla_threshold": {
                 "type": "int",
@@ -459,11 +426,11 @@
             "--output_file",
             "<inputs.output_file>",
             "--hla_variants_file",
-            "<inputs.hla_variants_file>",
+            "/pipeline/inputs/hla_variants.txt",
             "--missing_hla_threshold",
             "<inputs.missing_hla_threshold>",
             "--non_hla_variants_file",
-            "<inputs.non_hla_variants_file>",
+            "/pipeline/inputs/non_hla_variants.txt",
             "--missing_non_hla_threshold",
             "<inputs.missing_non_hla_threshold>"
         ],

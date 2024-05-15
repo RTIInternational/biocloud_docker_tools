@@ -1,4 +1,3 @@
-
 # Base image
 FROM ubuntu:22.04
 
@@ -62,10 +61,8 @@ RUN cd /temp
 RUN git clone https://github.com/t2diabetesgenes/t1dgrs2.git \
     && cp /t1dgrs2/data/input/* /t1dgrs2/
 RUN rm -rf /temp
-ADD t1dgrs2_settings.yml /t1dgrs2/
-ADD t1dgrs2_hg19_variants.tsv /t1dgrs2/
-ADD hla_variants.txt /t1dgrs2/
-ADD non_hla_variants.txt /t1dgrs2/
+ADD t1dgrs2/data/input/* /t1dgrs2/
+ADD pipeline_config/t1dgrs2_settings.yml /t1dgrs2/
 
 #### Install plink1.9 ####
 RUN conda install -c bioconda -y plink
@@ -73,23 +70,30 @@ RUN conda install -c bioconda -y plink
 #### Install PERL modules ####
 RUN cpanm install JSON
 
+# Add pipeline inputs
+RUN mkdir -p /pipeline/inputs
+ADD pipeline_inputs/t1dgrs2_hg19_variants.tsv /pipeline/inputs/
+ADD pipeline_inputs/hla_variants.txt /pipeline/inputs/
+ADD pipeline_inputs/non_hla_variants.txt /pipeline/inputs/
+
+# Add pipeline config files
+RUN mkdir -p /pipeline/config
+ADD pipeline_config/entrypoint_download.json /pipeline/config/
+ADD pipeline_config/entrypoint_export.json /pipeline/config/
+ADD pipeline_config/entrypoint_sample.json /pipeline/config/
+ADD pipeline_config/t1dgrs2_tasks.json /pipeline/config/
+
 #### Install custom scripts ####
-# Add pipelien config files
-ADD t1dgrs2_pipeline.json /opt/
-ADD t1dgrs2_pipeline_sample.json /opt/
-ADD t1dgrs2_pipeline_export.json /opt/
-ADD t1dgrs2_pipeline_no_download.json /opt/
-ADD t1dgrs2_tasks.json /opt/
 # Add scripts
-ADD entrypoint.sh /opt/
-ADD run_pipeline.py /opt/
-ADD download_gvcfs_from_s3.py /opt/
-ADD filter_gvcfs_by_consent.sh /opt/
-ADD batch_calculate_t1dgrs2.py /opt/
-ADD extract_gvcf_variants.pl /opt/
-ADD generate_file_for_export.pl /opt/
-ADD merge_results_files.sh /opt/
-ADD sftp_results.py /opt/
+ADD scripts/entrypoint.sh /opt/
+ADD scripts/run_pipeline.py /opt/
+ADD scripts/download_gvcfs_from_s3.py /opt/
+ADD scripts/filter_gvcfs_by_consent.sh /opt/
+ADD scripts/batch_calculate_t1dgrs2.py /opt/
+ADD scripts/extract_gvcf_variants.pl /opt/
+ADD scripts/generate_file_for_export.pl /opt/
+ADD scripts/merge_results_files.sh /opt/
+ADD scripts/sftp_results.py /opt/
 # Change permissions
 RUN chmod 755 /opt/entrypoint.sh
 RUN chmod 755 /opt/run_pipeline.py

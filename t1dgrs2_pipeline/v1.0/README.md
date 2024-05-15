@@ -33,6 +33,3 @@ docker build . -t t1dgrs2_pipeline/t1dgrs2_pipeline:v1.0
 ```
 </details>
 
-
-Add:
-checksum

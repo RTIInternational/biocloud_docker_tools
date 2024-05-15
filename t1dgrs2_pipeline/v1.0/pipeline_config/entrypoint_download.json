@@ -1,5 +1,5 @@
 {
-    "name": "t1dgrs2_pipeline",
+    "name": "entrypoint_download",
     "inputs": {
         "working_dir": {
             "type": "dir",
@@ -11,30 +11,35 @@
             "default": "",
             "required": true
         },
-        "gvcf_dir": {
-            "type": "dir",
-            "default": "",
-            "required": true
+        "source_s3_bucket": {
+            "type": "str",
+            "default": "gdx-rti-earlycheck",
+            "required": false
         },
-        "genedx_manifest_path": {
+        "s3_access_key": {
             "type": "str",
             "default": "",
             "required": true
+        },
+        "s3_secret_access_key": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "downloaded_samples": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "download_limit": {
+            "type": "int",
+            "default": 1000,
+            "required": false
         },
         "master_rti_manifest": {
             "type": "str",
             "default": "",
             "required": true
-        },
-        "new_rti_manifest": {
-            "type": "str",
-            "default": "",
-            "required": false
-        },
-        "variant_list": {
-            "type": "file",
-            "default": "/t1dgrs2/t1dgrs2_hg19_variants.tsv",
-            "required": false
         },
         "argo_api_url": {
             "type": "str",
@@ -55,6 +60,11 @@
             "type": "dir",
             "default": "/home/merge-shared-folder/t1dgrs2/pipeline_files/control_dir",
             "required": false
+        },
+        "samples_to_download": {
+            "type": "file",
+            "default": "",
+            "required": false
         }
     },
     "outputs": {
@@ -63,17 +73,37 @@
             "value": "<inputs.working_dir>/t1dgrs2_pipeline.log"
         }
     },
-    "entry_point": "filter_gvcfs_by_consent",
+    "entry_point": "download_gvcfs_from_s3",
     "entry_point_inputs": {
-        "imported_gvcfs_dir": "<inputs.gvcf_dir>",
-        "working_dir": "<inputs.working_dir>filter_gvcfs_by_consent",
-        "consented_gvcfs_dir": "<inputs.output_dir>gvcfs_consented",
-        "nonconsented_gvcfs_dir": "<inputs.output_dir>gvcfs_nonconsented",
-        "master_rti_manifest": "<inputs.master_rti_manifest>",
-        "new_rti_manifest": "<inputs.new_rti_manifest>",
-        "genedx_manifest_path": "<inputs.genedx_manifest_path>"
+        "working_dir": "<inputs.working_dir>download_gvcfs_from_s3",
+        "source_s3_bucket": "<inputs.source_s3_bucket>",
+        "s3_access_key": "<inputs.s3_access_key>",
+        "s3_secret_access_key": "<inputs.s3_secret_access_key>",
+        "target_dir": "<inputs.output_dir>gvcfs_imported",
+        "downloaded_samples": "<inputs.downloaded_samples>",
+        "download_limit": "<inputs.download_limit>",
+        "samples_to_download": "<inputs.samples_to_download>"
     },
     "pipeline": {
+        "download_gvcfs_from_s3": {
+            "task": "download_gvcfs_from_s3",
+            "check_output": {
+                "returncode_0": {
+                    "step": "filter_gvcfs_by_consent",
+                    "inputs": {
+                        "imported_gvcfs_dir": "<inputs.output_dir>gvcfs_imported",
+                        "working_dir": "<inputs.working_dir>filter_gvcfs_by_consent",
+                        "consented_gvcfs_dir": "<inputs.output_dir>gvcfs_consented",
+                        "nonconsented_gvcfs_dir": "<inputs.output_dir>gvcfs_nonconsented",
+                        "master_rti_manifest": "<inputs.master_rti_manifest>",
+                        "genedx_manifest_path": "<steps.download_gvcfs_from_s3.outputs.genedx_manifest_path>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
         "filter_gvcfs_by_consent": {
             "task": "filter_gvcfs_by_consent",
             "check_output": {
@@ -83,7 +113,6 @@
                         "working_dir": "<inputs.working_dir>batch_calculate_t1dgrs2",
                         "output_dir": "<inputs.output_dir>batch_calculate_t1dgrs2",
                         "gvcf_dir": "<inputs.output_dir>gvcfs_consented",
-                        "variant_list": "<inputs.variant_list>",
                         "genedx_manifest": "<steps.filter_gvcfs_by_consent.outputs.genedx_manifest>",
                         "argo_api_url": "<inputs.argo_api_url>",
                         "simultaneous_jobs": "<inputs.simultaneous_jobs>",

@@ -1,5 +1,5 @@
 {
-    "name": "t1dgrs2_pipeline_export",
+    "name": "entrypoint_export",
     "inputs": {
         "working_dir": {
             "type": "dir",
@@ -50,7 +50,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>/t1dgrs2_pipeline_export.log"
+            "value": "<inputs.working_dir>/t1dgrs2_export_pipeline.log"
         }
     },
     "entry_point": "merge_results",

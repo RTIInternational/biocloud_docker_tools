@@ -9,33 +9,45 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     '--source_s3_bucket',
     help='S3 bucket containing files to transfer',
-    type = str
+    type = str,
+    required = True
 )
 parser.add_argument(
     '--s3_access_key',
     help='Access key for S3 bucket',
-    type = str
+    type = str,
+    required = True
 )
 parser.add_argument(
     '--s3_secret_access_key',
     help='Secret access key for S3 bucket',
-    type = str
+    type = str,
+    required = True
 )
 parser.add_argument(
     '--target_dir',
     help='Directory to copy files to',
-    type = str
+    type = str,
+    required = True
 )
 parser.add_argument(
     '--downloaded_samples',
     help='File containing list of previously samples - these samples are ignored in the source bucket',
-    type = str
+    type = str,
+    required = True
 )
 parser.add_argument(
     '--download_limit',
     help='Max number of samples to download',
     type = int,
-    default = 1000
+    default = 1000,
+    required = False
+)
+parser.add_argument(
+    '--samples_to_download',
+    help='(Optional) List of files to download',
+    type = str,
+    required = False
 )
 args = parser.parse_args()
 
@@ -54,26 +66,34 @@ session = boto3.Session(aws_access_key_id=args.s3_access_key, aws_secret_access_
 s3 = session.resource('s3')
 my_bucket = s3.Bucket(args.source_s3_bucket)
 
-#Load previously downloaded samples
-try:
-    with open(args.downloaded_samples, 'r') as f:
-        previous_sample_downloads = json.load(f)
-except FileNotFoundError:
-    previous_sample_downloads = []
+samples_to_download = []
+previous_sample_downloads = []
+if args.samples_to_download:
+    with open(args.samples_to_download, 'r') as f:
+        samples_to_download = json.load(f)
+    download_limit = len(samples_to_download)
+else:
+    download_limit = args.download_limit
+    #Load previously downloaded samples
+    if (args.downloaded_samples):
+        with open(args.downloaded_samples, 'r') as f:
+            previous_sample_downloads = json.load(f)
 
-#Make list of samples that have NOT been downloaded yet
+#Make list of samples to download
 source_manifest_file = ""
 new_available_samples = {}
-download_limit = args.download_limit
 for s3_object in my_bucket.objects.all():
     if (".xlsx" in s3_object.key):
         source_manifest_file = s3_object.key
-    if download_limit > 0:
-        result = re.search('^(\S+/)(\d+).hard-filtered.gvcf.gz$', s3_object.key)
-        if result:
-            path = result.group(1)
-            sample = result.group(2)
-            if sample not in previous_sample_downloads and sample not in new_available_samples:
+    result = re.search('^(\S+/)(\d+).hard-filtered.gvcf.gz$', s3_object.key)
+    if result:
+        path = result.group(1)
+        sample = result.group(2)
+        if len(samples_to_download) > 0:
+            if sample in samples_to_download:
+                new_available_samples[sample] = path
+        elif download_limit > 0:
+            if sample not in previous_sample_downloads:
                 new_available_samples[sample] = path
                 download_limit = download_limit - 1
 
@@ -119,7 +139,7 @@ if source_manifest_file:
 # Save the list of downloaded samples
 print("Updating {}".format(args.downloaded_samples))
 with open(args.downloaded_samples, 'w') as f:
-    json.dump(previous_sample_downloads, f)
+    json.dump(sorted(set(previous_sample_downloads)), f)
 
 # Save the list of samples failing checksum
 print("{} samples failed the checksum test.".format(len(failed_checksums)))
