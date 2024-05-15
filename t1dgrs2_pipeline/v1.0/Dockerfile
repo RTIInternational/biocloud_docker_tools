@@ -56,11 +56,6 @@ RUN conda install -c bioconda -y t1dgrs2
 
 # Add supporting files for t1dgrs2
 RUN mkdir /t1dgrs2
-RUN mkdir /temp
-RUN cd /temp
-RUN git clone https://github.com/t2diabetesgenes/t1dgrs2.git \
-    && cp /t1dgrs2/data/input/* /t1dgrs2/
-RUN rm -rf /temp
 ADD t1dgrs2/data/input/* /t1dgrs2/
 ADD pipeline_config/t1dgrs2_settings.yml /t1dgrs2/
 
