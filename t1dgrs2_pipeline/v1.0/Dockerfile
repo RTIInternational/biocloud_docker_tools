@@ -54,11 +54,6 @@ RUN conda install -y conda-forge::paramiko
 RUN conda install -c conda-forge -y setuptools=67.6.1
 RUN conda install -c bioconda -y t1dgrs2
 
-# Add supporting files for t1dgrs2
-RUN mkdir /t1dgrs2
-ADD t1dgrs2/data/input/* /t1dgrs2/
-ADD pipeline_config/t1dgrs2_settings.yml /t1dgrs2/
-
 #### Install plink1.9 ####
 RUN conda install -c bioconda -y plink
 
@@ -67,16 +62,11 @@ RUN cpanm install JSON
 
 # Add pipeline inputs
 RUN mkdir -p /pipeline/inputs
-ADD pipeline_inputs/t1dgrs2_hg19_variants.tsv /pipeline/inputs/
-ADD pipeline_inputs/hla_variants.txt /pipeline/inputs/
-ADD pipeline_inputs/non_hla_variants.txt /pipeline/inputs/
+ADD pipeline_inputs/* /pipeline/inputs/
 
 # Add pipeline config files
 RUN mkdir -p /pipeline/config
-ADD pipeline_config/entrypoint_download.json /pipeline/config/
-ADD pipeline_config/entrypoint_export.json /pipeline/config/
-ADD pipeline_config/entrypoint_sample.json /pipeline/config/
-ADD pipeline_config/t1dgrs2_tasks.json /pipeline/config/
+ADD pipeline_config/* /pipeline/config/
 
 #### Install custom scripts ####
 # Add scripts

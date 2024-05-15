@@ -358,7 +358,7 @@
             "-b",
             "<inputs.bfile>",
             "-c",
-            "/t1dgrs2/t1dgrs2_settings.yml",
+            "/pipeline/config/t1dgrs2_settings.yml",
             "-o",
             "<inputs.out_prefix>"
         ],
