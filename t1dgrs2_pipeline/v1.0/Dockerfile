@@ -49,6 +49,7 @@ RUN conda install -y conda-forge::boto3
 RUN conda install -y conda-forge::xlsx2csv
 RUN conda install -c conda-forge -y cryptography=42.0.4
 RUN conda install -y conda-forge::paramiko
+RUN conda install -y conda-forge::pandas
 
 # Install t1dgrs2 and dependencies
 RUN conda install -c conda-forge -y setuptools=67.6.1

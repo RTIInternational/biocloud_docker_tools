@@ -3,6 +3,8 @@ import boto3
 import os
 import json
 import re
+import pandas as pd
+import hashlib
 
 # Get arguments
 parser = argparse.ArgumentParser()
@@ -79,27 +81,49 @@ else:
         with open(args.downloaded_samples, 'r') as f:
             previous_sample_downloads = json.load(f)
 
-#Make list of samples to download
-source_manifest_file = ""
-new_available_samples = {}
+# Download manifest file
+source_manifest_file = "genedx/RTI_Copy_Results_File.xlsx"
+target_manifest_file = "{}RTI_Copy_Results_File.xlsx".format(target_dir)
+print("Downloading {} to {}".format(source_manifest_file, target_manifest_file))
+my_bucket.download_file(source_manifest_file, target_manifest_file)
+manifest = pd.read_excel(target_manifest_file)
+manifest.to_csv(
+    "{}RTI_Copy_Results_File.csv".format(target_dir),
+    index=False
+)
+
+# Make a list of samples not in manifest
+manifest_samples = manifest['GeneDx_Accession'].astype(str).to_list()
+samples_not_in_manifest = []
 for s3_object in my_bucket.objects.all():
-    if (".xlsx" in s3_object.key):
-        source_manifest_file = s3_object.key
+    result = re.search('^\S+/(\d+).hard-filtered.gvcf.gz$', s3_object.key)
+    if result:
+        sample = result.group(1)
+        if sample not in manifest_samples:
+            if len(samples_to_download) > 0:
+                if sample in samples_to_download:
+                    samples_not_in_manifest.append(sample)
+            else:
+                samples_not_in_manifest.append(sample)
+
+#Make list of samples to download
+samples = {}
+for s3_object in my_bucket.objects.all():
     result = re.search('^(\S+/)(\d+).hard-filtered.gvcf.gz$', s3_object.key)
     if result:
         path = result.group(1)
         sample = result.group(2)
         if len(samples_to_download) > 0:
-            if sample in samples_to_download:
-                new_available_samples[sample] = path
+            if sample in samples_to_download and sample not in samples_not_in_manifest:
+                samples[sample] = path
         elif download_limit > 0:
-            if sample not in previous_sample_downloads:
-                new_available_samples[sample] = path
+            if sample not in previous_sample_downloads and sample not in samples_not_in_manifest:
+                samples[sample] = path
                 download_limit = download_limit - 1
 
 # Download gvcfs and md5 files
 failed_checksums = []
-for sample, path in new_available_samples.items():
+for sample, path in samples.items():
     source_gvcf_file = "{}{}.hard-filtered.gvcf.gz".format(path, sample)
     target_gvcf_file = "{}{}.hard-filtered.gvcf.gz".format(target_dir, sample)
     print("Downloading {} to {}".format(source_gvcf_file, target_gvcf_file))
@@ -128,15 +152,16 @@ for sample, path in new_available_samples.items():
             os.system("rm {}*".format(target_gvcf_file))
             failed_checksums.append(sample)
 
-# Download manifest
-if source_manifest_file:
-    target_manifest_file = target_dir + re.sub(r'.+/', '', source_manifest_file)
-    print("Downloading {} to {}".format(source_manifest_file, target_manifest_file))
-    my_bucket.download_file(source_manifest_file, target_manifest_file)
-    with open("{}genedx_manifest_path.txt".format(target_dir), 'w') as f:
-        f.write(target_manifest_file)
-        
+# Write list of samples not in manifest
+print("{} samples with gVCFs not found in GeneDx manifest.".format(len(samples_not_in_manifest)))
+if len(samples_not_in_manifest) > 0:
+    samples_not_in_manifest_json = "{}samples_not_in_manifest.json".format(target_dir)
+    print("See {} for details".format(samples_not_in_manifest_json))
+    with open(samples_not_in_manifest_json, 'w') as f:
+        json.dump(samples_not_in_manifest, f)
+
 # Save the list of downloaded samples
+print("Downloaded {} samples".format(len(samples)))
 print("Updating {}".format(args.downloaded_samples))
 with open(args.downloaded_samples, 'w') as f:
     json.dump(sorted(set(previous_sample_downloads)), f)

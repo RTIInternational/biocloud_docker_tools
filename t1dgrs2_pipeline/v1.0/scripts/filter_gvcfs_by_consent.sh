@@ -6,7 +6,7 @@ consented_gvcfs_dir=""
 nonconsented_gvcfs_dir=""
 master_rti_manifest=""
 new_rti_manifest=""
-genedx_manifest_path=""
+genedx_manifest=""
 
 while [ "$1" != "" ]; 
 do
@@ -26,8 +26,8 @@ do
 		--master_rti_manifest )		shift
 									master_rti_manifest=$1
 									;;
-		--genedx_manifest_path )	shift
-									genedx_manifest_path=$1
+		--genedx_manifest )	shift
+									genedx_manifest=$1
 									;;
 	esac
 	shift
@@ -54,11 +54,7 @@ rti_manifest_t1d_consent_count=$(grep T1D $master_rti_manifest | wc -l)
 echo "$rti_manifest_t1d_consent_count consented samples in RTI manifest"
 
 #GeneDx manifest
-#Because all of the GeneDx manifest will have the name and come in the Excel file, we have to convert it to a csv using the [xlsx2csv] command
-genedx_manifest_xlsx=$(perl -ne 'chomp; print;' $genedx_manifest_path)
-genedx_manifest_csv=${working_dir}genedx_manifest.csv
-xlsx2csv $genedx_manifest_xlsx $genedx_manifest_csv
-genedx_manifest_sample_count=$(wc -l $genedx_manifest_csv | cut -d ' ' -f1)
+genedx_manifest_sample_count=$(wc -l $genedx_manifest | cut -d ' ' -f1)
 echo "$genedx_manifest_sample_count samples in GeneDx manifest"
 
 #Create list of imported gvcf
@@ -71,7 +67,7 @@ perl -lne '
     use warnings;
 	BEGIN {
 		%accession_xref = ();
-		open(GENEDX_MANIFEST, "'$genedx_manifest_csv'");
+		open(GENEDX_MANIFEST, "'$genedx_manifest'");
 		<GENEDX_MANIFEST>;
 		while(<GENEDX_MANIFEST>) {
 			@F = split(",");

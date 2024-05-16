@@ -49,9 +49,9 @@
                 "type": "file",
                 "value": "<inputs.downloaded_samples>"
             },
-            "genedx_manifest_path": {
+            "genedx_manifest": {
                 "type": "file",
-                "value": "<inputs.target_dir>genedx_manifest_path.txt"
+                "value": "<inputs.target_dir>RTI_Copy_Results_File.csv"
             },
             "log": {
                 "type": "file",
@@ -76,7 +76,7 @@
             "master_rti_manifest": {
                 "type": "file"
             },
-            "genedx_manifest_path": {
+            "genedx_manifest": {
                 "type": "file"
             }
         },
@@ -92,14 +92,10 @@
             "<inputs.nonconsented_gvcfs_dir>",
             "--master_rti_manifest",
             "<inputs.master_rti_manifest>",
-            "--genedx_manifest_path",
-            "<inputs.genedx_manifest_path>"
+            "--genedx_manifest",
+            "<inputs.genedx_manifest>"
         ],
         "outputs": {
-            "genedx_manifest": {
-                "type": "file",
-                "value": "<inputs.working_dir>genedx_manifest.csv"
-            },
             "log": {
                 "type": "file",
                 "value": "<inputs.working_dir>filter_gvcfs_by_consent.log"
