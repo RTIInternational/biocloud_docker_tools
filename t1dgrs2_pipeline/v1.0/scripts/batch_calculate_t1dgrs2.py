@@ -149,7 +149,7 @@ for file, path in files_to_process.items():
                     "parameters": [
                         {
                             "name": "wf_definition",
-                            "value": "t1dgrs2_pipeline_sample"
+                            "value": "entrypoint_sample"
                         },
                         {
                             "name": "wf_arguments",
@@ -158,7 +158,7 @@ for file, path in files_to_process.items():
                     ]
                 },
                 "workflowTemplateRef": {
-                    "name": "t1dgrs2-pipeline"
+                    "name": "t1dgrs2"
                 }
             }
         }
