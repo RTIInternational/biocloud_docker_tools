@@ -42,7 +42,7 @@
             "--download_limit",
             "<inputs.download_limit>",
             "--samples_to_download",
-            "<inputs.samples_to_download"
+            "<inputs.samples_to_download>"
         ],
         "outputs": {
             "downloaded_samples": {
