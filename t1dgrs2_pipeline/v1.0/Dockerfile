@@ -46,10 +46,10 @@ RUN ln -s /root/miniconda3/bin/python3.11 /usr/bin/python
 
 # Install python packages
 RUN conda install -y conda-forge::boto3
-RUN conda install -y conda-forge::openpyxl
 RUN conda install -c conda-forge -y cryptography=42.0.4
 RUN conda install -y conda-forge::paramiko
 RUN conda install -y conda-forge::pandas
+RUN conda install -y conda-forge::openpyxl
 
 # Install t1dgrs2 and dependencies
 RUN conda install -c conda-forge -y setuptools=67.6.1
