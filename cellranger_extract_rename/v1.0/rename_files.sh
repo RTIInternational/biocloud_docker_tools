@@ -174,7 +174,7 @@ if [[ $j -gt ${#linker_array[@]} || $j -lt 5 ]]; then
     exit 1
 fi
 
-file_list=(outs/web_summary.html outs/metrics_summary.csv outs/raw_feature_bc_matrix.h5 outs/possorted_genome_bam.bam outs/possorted_genome_bam.bam.bai outs/filtered_feature_bc_matrix.h5)
+file_list=($zip_file_name/web_summary.html $zip_file_name/metrics_summary.csv $zip_file_name/raw_feature_bc_matrix.h5 $zip_file_name/possorted_genome_bam.bam $zip_file_name/possorted_genome_bam.bam.bai $zip_file_name/filtered_feature_bc_matrix.h5)
 # file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
 # file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai raw_feature_bc_matrix/matrix.mtx.gz raw_feature_bc_matrix/features.tsv.gz raw_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/matrix.mtx.gz filtered_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/features.tsv.gz)
 
@@ -190,23 +190,26 @@ for file in ${file_list[@]}; do
   echo_verbose "File name extension extracted: $file_name_extension"
   file_name_comb=$file_name\.$file_name_extension
 
-  #unzip -j $zip_file $file -d $output_dir/$file_name_comb;
-  unzip -p $zip_file $file >$output_dir/$file_name_comb;
-  
-  # Removing "_bam" from filename
-  if [[ $file_name_comb == *"_bam"* ]]; then
-    echo_verbose "Found '_bam' in $file_name_comb"
-    new_file=${file_name_comb//"_bam"/}
-    echo_verbose "Removed '_bam': $new_file"
-    echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${new_file}'";
-    echo_verbose ""
-    mv $output_dir/${file_name_comb} $output_dir/${linker}_${new_file};
+  unzip -l $zip_file | grep -q $file;
+  if [[ "$?" == "0" ]]; then
+    unzip -p $zip_file $file >$output_dir/$file_name_comb;
+    
+    # Removing "_bam" from filename
+    if [[ $file_name_comb == *"_bam"* ]]; then
+      echo_verbose "Found '_bam' in $file_name_comb"
+      new_file=${file_name_comb//"_bam"/}
+      echo_verbose "Removed '_bam': $new_file"
+      echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${new_file}'";
+      echo_verbose ""
+      mv $output_dir/${file_name_comb} $output_dir/${linker}_${new_file};
+    else
+      echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${file_name_comb}'";
+      echo_verbose ""
+      mv $output_dir/${file_name_comb} $output_dir/${linker}_${file_name_comb};
+    fi
   else
-    echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${file_name_comb}'";
-    echo_verbose ""
-    mv $output_dir/${file_name_comb} $output_dir/${linker}_${file_name_comb};
+    echo "File $file not found. Skipping"
   fi
-  
 done
 
 echo_verbose "Copying ZIP file to output directory: $zip_file -> ${output_dir}/${linker}_${zip_file}"
