@@ -158,7 +158,7 @@ for file, path in files_to_process.items():
                     ]
                 },
                 "workflowTemplateRef": {
-                    "name": "t1dgrs2"
+                    "name": "t1dgrs2-process-sample"
                 }
             }
         }
@@ -167,4 +167,3 @@ for file, path in files_to_process.items():
     headers = {'Content-Type': 'application/json'}
     print(f"Starting file: {file_id}")
     response = requests.post(args.argo_api_url, headers=headers, data=json.dumps(workflow))
-
