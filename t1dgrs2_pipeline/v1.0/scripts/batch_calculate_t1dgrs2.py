@@ -167,3 +167,4 @@ for file, path in files_to_process.items():
     headers = {'Content-Type': 'application/json'}
     print(f"Starting file: {file_id}")
     response = requests.post(args.argo_api_url, headers=headers, data=json.dumps(workflow))
+
