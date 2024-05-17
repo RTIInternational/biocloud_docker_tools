@@ -14,8 +14,8 @@ usage() {
  echo ""
  echo "Example usage"
  echo " Required flags:               ./rename_files.sh -z outs.zip -l RMIP_001_001_A_001_A"
- echo " Verbose mode:                 ./rename_files.sh -v -z outs.zip -l RMIP_001_001_A_246"
- echo " Writing to output directory:  ./rename_files.sh -z outs.zip -l RMIP_001_001_A_246 -o test_output"
+ echo " Verbose mode:                 ./rename_files.sh -v -z outs.zip -l RMIP_001_001_A_001_B"
+ echo " Writing to output directory:  ./rename_files.sh -z outs.zip -l RMIP_001_001_A_001_C -o test_output"
 }
 
 # Defining tool functions
