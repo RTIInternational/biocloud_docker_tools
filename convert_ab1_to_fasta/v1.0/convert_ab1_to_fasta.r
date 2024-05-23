@@ -148,18 +148,36 @@ sangerReadF <- SangerRead(readFileName = input_filename,
 output_dir <- "./temp_output"
 print_verbose("Here is writeFasta:")
 writeFasta(sangerReadF, outputDir = output_dir, compress = FALSE, compression_level = NA)
+generateReport(sangerReadF,outputDir = ".")
 
 raw_file_name <- list.files(path = output_dir, pattern = "*.fa", full.names = F)
 print_verbose(paste0("Found written SangerAlignment file(s): ", raw_file_name))
+fasta_text <- read.table(paste0(output_dir,"/",raw_file_name))
+
+# Constructing definition to add to FASTA file
+construct_definition <- function(organism="",sample="",molecule_type="",target_gene="",description="") {
+  definition=""
+  definition_list <- list(organism=organism, sample=sample, type=molecule_type, gene=target_gene, description=description)
+  for (i in names(definition_list)){
+    if(nchar(definition_list[i])>0){
+      definition <- paste0(definition," [",i,"=",definition_list[i],"]")
+    }
+  }
+  return(definition)
+}
+
+definition <- construct_definition(
+  organism=organism,
+  sample=linker,
+  molecule_type=molecule_type,
+  target_gene=target_gene,
+  description=description
+)
+fasta_text[grepl(pattern = ">", x = test_text$V1),] <- paste0(test_text[grepl(pattern = ">", x = test_text$V1),],definition)
 
 out_file_name <- paste0(linker,"_",raw_file_name)
 print_verbose(paste0("Renaming SangerAlignment file(s): ", linker,"_",raw_file_name))
 print_verbose(paste0("Here is out_file_name: ", out_file_name))
-
-if(file.copy(paste0(output_dir,"/",raw_file_name),out_file_name)) {
-  print_verbose(paste0("Success! Created: ",out_file_name))
-} else {
-  print_verbose(paste0("Failed to create: ",out_file_name," - possible file already exists"))
-}
+write.table(fasta_text, file=out_file_name,quote = FALSE, row.names = FALSE, col.names = FALSE)
 
 unlink("./temp_output", recursive = TRUE)

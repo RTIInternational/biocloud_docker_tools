@@ -24,7 +24,7 @@ docker build -t convert_ab1_to_fasta:v1 .
 
 Run
 ```
-docker run -it -v $PWD:/data convert_ab1_to_fasta:v1 Rscript convert_ab1_to_fasta.r -i <path-to-input-ab1> -l <input-linker-string>
+docker run -it -v $PWD:/data convert_ab1_to_fasta:v1 Rscript convert_ab1_to_fasta.r -i <path-to-input-ab1> -l <input-linker-string> -r <read-mode>
 ```
 
 Usage info:
@@ -32,13 +32,14 @@ Usage info:
 Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
               [-i | --input_filename]    <Path to input ab1 file> (REQUIRED)
-              [-l | --linker   ]    <String identifier for sample> (REQUIRED, e.g. RMIP_001_001_A_001_A)
+              [-l | --linker        ]    <String identifier for sample> (REQUIRED, e.g. RMIP_001_001_A_001_A)
+              [-r | --read_mode_in  ]    <Single character identifier telling whether to do Forward or Reverse read, i.e. F or R> (REQUIRED)
              -- Optional Parameters -- 
-              [-v | --verbose  ]    <Activates verbose mode>
+              [-v | --verbose]    <Activates verbose mode>
              -- Help Flag --  
-              [-h | --help     ]    <Displays this help message>
+              [-h | --help   ]    <Displays this help message>
              Example:
-             convert_ab1_to_fasta.r -v -i ./my_data/006C003_matK-M13-FP.ab1 -l RMIP_001_001_A_001_A
+             convert_ab1_to_fasta.r -v -i ./my_data/Achl_ACHLO006-09_1_F.ab1 -l RMIP_001_001_A_001_A
 ```
 
 ## Files included
