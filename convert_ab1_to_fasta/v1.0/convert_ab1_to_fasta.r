@@ -10,22 +10,30 @@ argString <- commandArgs(trailingOnly = T) # Read in command line arguments
 usage <- paste("Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
               [-i | --input_filename]    <Path to input ab1 file> (REQUIRED)
-              [-l | --linker        ]    <String identifier for sample> (REQUIRED, e.g. RMIP_001_001_A_001_A)
-              [-r | --read_mode_in  ]    <Single character identifier telling whether to do Forward or Reverse read, i.e. F or R> (REQUIRED)
+              [-l | --linker        ]    <String identifier for sample> (REQUIRED, e.g. \"RMIP_001_001_A_001_A\")
              -- Optional Parameters -- 
-              [-v | --verbose]    <Activates verbose mode>
+              [-v | --verbose       ]    <Activates verbose mode>
+              [-o | --organism      ]	   <String for organism sample came from, e.g. \"Homo Sapiens\">
+              [-m | --molecule_type ]	   <String for molecule type, e.g. \"DNA\" or \"RNA\">
+              [-g | --target_gene   ]	   <String telling target gene, e.g. \"SOX2\">
+              [-d | --description   ]	   <String with description of sequence, e.g. \"Homo Sapiens SRY-Box Transcription Factor 2 (SOX2) mRNA, exon 1\">
+              [-r | --read_mode_in  ]    <Single character identifier telling whether to do Forward or Reverse read, i.e. F or R>
              -- Help Flag --  
-              [-h | --help   ]    <Displays this help message>
+              [-h | --help   ]           <Displays this help message>
              Example:
-             convert_ab1_to_fasta.r -v -i ./my_data/Achl_ACHLO006-09_1_F.ab1 -l RMIP_001_001_A_001_A
+             convert_ab1_to_fasta.r -v -i ./my_data/006C003_matK-GATC-M13-RPells-1289382.ab1 -l RMIP_001_001_A_001_A -o \"Homo Sapiens\" -m \"RNA\" -g \"SOX2\" -d \"Here is a test description\"
               \n",sep="")
 
 # Setup the matrix which consists of long flag (should be all lower case), short flag (case sensitive), parameter class (0=no-arg, 1=required-arg, 2=optional-arg) and parameter type (logical, character, numeric)
 spec <- matrix(c(
-          'input_filename',   'i', 2, "character",
-          'linker',           'l', 2, "character",
+          'input_filename',   'i', 1, "character",
+          'linker',           'l', 1, "character",
+          'organism',		      'o', 2, "character",
+          'molecule_type',		'm', 2, "character",
+          'target_gene',		  'g', 2, "character",
+          'description',		  'd', 2, "character",
           'read_mode_in',     'r', 2, "character",
-          'verbose',          'v', 2, "integer",
+          'verbose',          'v', 0, "logical",
           'help',             'h', 0, "logical"
           ), byrow=TRUE, ncol=4);
 
@@ -62,8 +70,18 @@ if (is.null(args$linker)){
     exitFlag <- 1
 }
 
+if (is.null(args$organism)){args$organism <- ""}
+if (is.null(args$molecule_type)){args$molecule_type <- ""}
+if (is.null(args$target_gene)){args$target_gene <- ""}
+if (is.null(args$description)){args$description <- ""}
+
 if (is.null(args$read_mode_in)){
-  print("MISSING READ_MODE_IN - specify read mode using either F (forward) or R (reverse)")
+  # print("MISSING READ_MODE_IN - specify read mode using either F (forward) or R (reverse)")  
+  # exitFlag <- 1
+  print("WARNING: missing read_mode_in - running with default F (forward)")
+  args$read_mode_in <- "F"
+} else if ((toupper(args$read_mode_in) != "F") && (toupper(args$read_mode_in) != "R")) {
+  print(paste0("INVALID READ_MODE_IN '",args$read_mode_in,"' - value put in not recognized"))
   exitFlag <- 1
 }
 
@@ -72,23 +90,14 @@ if (exitFlag) {
     q(save="no",status=1,runLast=FALSE)
 }
 
-if (!("verbose" %in% names(args))){
-  args$verbose <- 0
-}
-
-if (args$verbose){
-    print("Verbose mode activated")
-}
+if (is.null(args$verbose)){args$verbose <- F} else {print("Verbose mode activated")}
 
 # Extracting input arguments
 print_verbose <- function(x) {if (args$verbose) {print(x)}}
-input_filename <- args$input_filename
-linker <- args$linker
-read_mode_in <- args$read_mode_in
 
-if (toupper(read_mode_in) == "F") {
+if (toupper(args$read_mode_in) == "F") {
   read_mode <- "Forward Read"
-} else if (toupper(read_mode_in == "R")) {
+} else if (toupper(args$read_mode_in) == "R") {
   read_mode <- "Reverse Read"
 }
 
@@ -100,8 +109,8 @@ print_verbose("Checking validity of linker...")
 
 validate_linker <- function(x){
   # Function to validate input linker string.  Intended to be assigned to 'exitFlag' variable
-  #  - Returns 0 if valid, i.e. don't exit if valid
-  #  - Returns 1 if invalid, i.e. exit if invalid
+  #  - Returns exit code 0 if valid, i.e. don't exit if valid
+  #  - Returns exit code 1 if invalid, i.e. exit if invalid
   linker_regex <- c("RMIP","\\d{3}","\\d{3}","\\w{1}","\\d{3}","\\w{1}")
   linker_part_lengths <- c(4,3,3,1,3,1)
   
@@ -133,26 +142,26 @@ validate_linker <- function(x){
   return(0)
 }
 
-exitFlag <- validate_linker(linker)
+exitFlag <- validate_linker(args$linker)
 
 if (exitFlag){
     print("ERROR: check linker and error messages")
     q(save="no",status=1,runLast=FALSE)
 }
 
-print_verbose(paste0("Here is input_filename: '",input_filename,"'"))
+print_verbose(paste0("Here is input_filename: '",args$input_filename,"'"))
 
-sangerReadF <- SangerRead(readFileName = input_filename,
+sangerReadF <- SangerRead(readFileName = args$input_filename,
                             readFeature = read_mode)
 
-output_dir <- "./temp_output"
+temp_output_dir <- "./temp_output"
 print_verbose("Here is writeFasta:")
-writeFasta(sangerReadF, outputDir = output_dir, compress = FALSE, compression_level = NA)
+writeFasta(sangerReadF, outputDir = temp_output_dir, compress = FALSE, compression_level = NA)
 generateReport(sangerReadF,outputDir = ".")
 
-raw_file_name <- list.files(path = output_dir, pattern = "*.fa", full.names = F)
+raw_file_name <- list.files(path = temp_output_dir, pattern = "*.fa", full.names = F)
 print_verbose(paste0("Found written SangerAlignment file(s): ", raw_file_name))
-fasta_text <- read.table(paste0(output_dir,"/",raw_file_name))
+fasta_text <- read.table(paste0(temp_output_dir,"/",raw_file_name))
 
 # Constructing definition to add to FASTA file
 construct_definition <- function(organism="",sample="",molecule_type="",target_gene="",description="") {
@@ -167,17 +176,17 @@ construct_definition <- function(organism="",sample="",molecule_type="",target_g
 }
 
 definition <- construct_definition(
-  organism=organism,
-  sample=linker,
-  molecule_type=molecule_type,
-  target_gene=target_gene,
-  description=description
+  organism=args$organism,
+  sample=args$linker,
+  molecule_type=args$molecule_type,
+  target_gene=args$target_gene,
+  description=args$description
 )
-fasta_text[grepl(pattern = ">", x = test_text$V1),] <- paste0(test_text[grepl(pattern = ">", x = test_text$V1),],definition)
+fasta_text[grepl(pattern = ">", x = fasta_text$V1),] <- paste0(fasta_text[grepl(pattern = ">", x = fasta_text$V1),],definition)
 
-out_file_name <- paste0(linker,"_",raw_file_name)
-print_verbose(paste0("Renaming SangerAlignment file(s): ", linker,"_",raw_file_name))
+out_file_name <- paste0(args$linker,"_",raw_file_name)
+print_verbose(paste0("Renaming SangerAlignment file(s): ", args$linker,"_",raw_file_name))
 print_verbose(paste0("Here is out_file_name: ", out_file_name))
 write.table(fasta_text, file=out_file_name,quote = FALSE, row.names = FALSE, col.names = FALSE)
 
-unlink("./temp_output", recursive = TRUE)
+unlink(temp_output_dir, recursive = TRUE)
