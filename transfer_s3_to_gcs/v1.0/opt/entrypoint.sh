@@ -34,6 +34,8 @@ else
     --description "$S3_BUCKET" \
     --source-creds-file /opt/AWScreds.txt \
     --project "$GC_PROJECT" \
+    --overwrite-when 'different' \
+    --delete-from 'destination-if-unique' \
     --no-enable-posix-transfer-logs
 fi
 
