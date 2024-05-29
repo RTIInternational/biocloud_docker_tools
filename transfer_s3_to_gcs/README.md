@@ -137,12 +137,12 @@ docker run \
 From within the interactive session, trigger `entrypoint.sh` to 1.) activate the Google Service Account, and 2.) create a Google transfer job.
 - Verify credentials were applied by running `gcloud auth list`
 
-A transfer job can be created one time for each Google Storage bucket. If a job needs to be repeated, the transfer job must be deleted from the operations list.
+Note: A transfer job can be created one time for each Google Storage bucket. If a job needs to be repeated, use the `--run` flag on `/opt/entrypoint.sh`.
+
 In order to do that:
 1. set project name for gcloud to the project name ( `gcloud config set project "$GC_PROJECT"` )
 2. find the name of the transfer job ( `gcloud transfer operations list` )
-3. delete the transfer job ( `gcloud transfer job delete <NAME_OF_JOB>`)
-Once complete, you can initiate a new transfer job by rerunning `bash /opt/entrypoint.sh`
+3. run the transfer job with `bash /opt/entrypoint.sh --run`
 
 Transfer jobs can be monitored through `gcloud transfer operations list`.
 Once the job is complete, Google Storage buckets can be examined with `gsutil ls -r $S3_BUCKET`
