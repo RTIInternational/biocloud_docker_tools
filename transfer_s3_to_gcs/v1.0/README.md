@@ -134,7 +134,7 @@ docker run \
   -it transfer_s3_to_gcs:v1.0
 ```
 
-From within the interactive session, trigger `entrypoint.sh` to 1.) activate the Google Service Account, and 2.) create a Google transfer job.
+From within the interactive session, trigger `/opt/entrypoint.sh` to 1.) activate the Google Service Account, and 2.) create a Google transfer job.
 - Verify credentials were applied by running `gcloud auth list`
 
 Note: A transfer job can be created one time for each Google Storage bucket. If a job needs to be repeated, use the `--run` flag on `/opt/entrypoint.sh`.
@@ -146,6 +146,22 @@ In order to do that:
 
 Transfer jobs can be monitored through `gcloud transfer operations list`.
 Once the job is complete, Google Storage buckets can be examined with `gsutil ls -r $S3_BUCKET`
+
+If the original configuration of a job needs to be updated, find the name of the transfer job and update it with: `gcloud transfer jobs update JOB_NAME [options]`:
+
+- JOB_NAME is the unique name of the job to update.
+- The options that can be updated are listed by running gcloud transfer jobs update --help.
+
+For example, to update the source and destination of a job, and to remove its description, run the following command:
+
+```
+gcloud transfer jobs update \
+  JOB_NAME \
+  --source=gs://new-bucket-1 \
+  --destination=gs://new-bucket-2 \
+  --clear-description
+```
+
 
 <details>
 
