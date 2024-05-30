@@ -114,7 +114,7 @@ validate_linker <- function(x){
   linker_regex <- c("RMIP","\\d{3}","\\d{3}","\\w{1}","\\d{3}","\\w{1}")
   linker_part_lengths <- c(4,3,3,1,3,1)
   
-  print_verbose("Splitting linker into parts...")
+  print_verbose(paste0("Splitting linker '",x,"' into parts..."))
   linker_parts <- unlist(strsplit(x=x,split="_"))
   print_verbose(paste0("Got '",length(linker_parts),"' parts"))
   
