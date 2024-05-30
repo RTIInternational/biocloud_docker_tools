@@ -155,7 +155,6 @@ sangerReadF <- SangerRead(readFileName = args$input_filename,
                             readFeature = read_mode)
 
 temp_output_dir <- "./temp_output"
-print_verbose("Here is writeFasta:")
 writeFasta(sangerReadF, outputDir = temp_output_dir, compress = FALSE, compression_level = NA)
 generateReport(sangerReadF,outputDir = ".")
 
