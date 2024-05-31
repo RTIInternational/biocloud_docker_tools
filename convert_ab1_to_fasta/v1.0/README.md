@@ -1,6 +1,6 @@
 # Description
 
-This Docker image contains an in-house script written to convert AB1 files into FASTA files.  Its purpose is to fit into the traditional Sanger sequencing workflow to process outputs into a machine readable format.  The input to this should be a directory containing AB1 file(s), and the output is a FASTA file renamed with a prepended linker string.
+This Docker image contains an in-house script written to convert AB1 files into FASTA files.  Its purpose is to fit into the traditional Sanger sequencing workflow to process outputs into a machine readable format.  The input to this should be a directory containing AB1 file(s), and the output is a FASTA file renamed with a prepended linker string and a PDF and HTML report of the AB1 read object.
 
 Given the example linker `RMIP_001_002_A_003_B`, this can be separated into different components, delimited by `_`.  Details on the linker and its format are below.
 
@@ -50,7 +50,7 @@ Usage: convert_ab1_to_fasta.r [OPTIONS]
 ## Files included
 
 - `Dockerfile`: the Docker file used to build this image
-- `convert_ab1_to_fasta.r`: R script that serves as the main executable when the Docker container is run.  Expected behavior is to take a specified .ab1 file, copy that to a temporary directory, and rename it to include a prefix signifying a sample name.  This renamed file is written to the current working directory.
+- `convert_ab1_to_fasta.r`: R script that serves as the main executable when the Docker container is run.  Expected behavior is to take a specified .ab1 file, copy that to a temporary directory, and rename it to include a prefix signifying a sample name.  This renamed file is written to a directory named in the format <linker>_output.  A PDF and HTML report are also included in this directory.
 
 ## Contact
 

@@ -149,16 +149,25 @@ if (exitFlag){
     q(save="no",status=1,runLast=FALSE)
 }
 
+output_dir <- paste0(args$linker,"_output")
+print_verbose(paste0("Creating output directory: ", output_dir))
+if(!dir.exists(output_dir)){
+  dir.create(output_dir)
+}
+
 print_verbose(paste0("Here is input_filename: '",args$input_filename,"'"))
 
 sangerReadF <- SangerRead(readFileName = args$input_filename,
                             readFeature = read_mode)
 
+readName <- sangerReadF@objectResults@readResultTable$readName
+readName_short <- substr(x = readName, start = 0, stop = nchar(readName)-4)
+
 temp_output_dir <- "./temp_output"
 writeFasta(sangerReadF, outputDir = temp_output_dir, compress = FALSE, compression_level = NA)
-generateReport(sangerReadF,outputDir = ".")
+generateReport(sangerReadF,outputDir = output_dir)
 
-raw_file_name <- list.files(path = temp_output_dir, pattern = "*.fa", full.names = F)
+raw_file_name <- list.files(path = temp_output_dir, pattern = paste0(readName_short,".fa"), full.names = F)
 print_verbose(paste0("Found written SangerAlignment file(s): ", raw_file_name))
 fasta_text <- read.table(paste0(temp_output_dir,"/",raw_file_name))
 
@@ -186,6 +195,6 @@ fasta_text[grepl(pattern = ">", x = fasta_text$V1),] <- paste0(fasta_text[grepl(
 out_file_name <- paste0(args$linker,"_",raw_file_name)
 print_verbose(paste0("Renaming SangerAlignment file(s): ", args$linker,"_",raw_file_name))
 print_verbose(paste0("Here is out_file_name: ", out_file_name))
-write.table(fasta_text, file=out_file_name,quote = FALSE, row.names = FALSE, col.names = FALSE)
+write.table(fasta_text, file=paste0(output_dir,"/",out_file_name),quote = FALSE, row.names = FALSE, col.names = FALSE)
 
 unlink(temp_output_dir, recursive = TRUE)
