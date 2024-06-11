@@ -22,8 +22,12 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libc6-dev
 
-# Copy requirements.txt and install dependencies
-COPY ./opt/requirements.txt /opt/
+# Copy necessary files
+COPY ./requirements.txt /opt/
+COPY ./*.sh /opt/
+COPY ./*.py /opt/
+
+# Install dependencies
 RUN python3.9 -m pip install --no-cache-dir -r requirements.txt
 
 # Install aws cli
@@ -36,9 +40,6 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Copy other necessary files
-COPY ./*.sh /opt/
-COPY ./*.py /opt/
 
 # Make scripts executable
 RUN chmod u+x /opt/*.sh
