@@ -2,7 +2,7 @@
 
 # Configure AWS CLI
 echo "[[ configure_aws_cli.sh ]]"
-bash /usr/local/bin/configure_aws_cli.sh
+bash /opt/configure_aws_cli.sh
 
 echo "[[ Generate manifest for s3://$S3_BUCKET ]]"
 python3.9 /opt/generate_manifest_for_aws.py --bucket "$S3_BUCKET"

@@ -37,12 +37,12 @@ RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Copy other necessary files
-COPY ./opt/configure_aws_cli.sh /usr/local/bin/configure_aws_cli.sh
-COPY ./opt/entrypoint.sh /opt/
-COPY ./opt/*.py /opt/
+COPY ./*.sh /opt/
+COPY ./*.py /opt/
 
 # Make scripts executable
-RUN chmod +x /usr/local/bin/configure_aws_cli.sh /opt/entrypoint.sh /opt/generate_manifest_for_aws.py
+RUN chmod u+x /opt/*.sh
+RUN chmod u+x /opt/*.py
 
 # Expose port
 EXPOSE 80
