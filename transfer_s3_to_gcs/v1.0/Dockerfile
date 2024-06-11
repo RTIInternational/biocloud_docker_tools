@@ -20,7 +20,7 @@ RUN apt-get update && \
 WORKDIR /opt
 
 # Copy the local code to the container's working directory
-COPY ./opt/ /opt/
+COPY ./*sh /opt/
 
 # Make sure the scripts are executable
-RUN chmod +x /opt/*.sh
+RUN chmod u+x /opt/*.sh
