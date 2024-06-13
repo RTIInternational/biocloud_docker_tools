@@ -1,5 +1,5 @@
-# FROM ubuntu:20.04
-FROM --platform=linux/amd64 ubuntu:20.04
+FROM ubuntu:20.04
+# FROM --platform=linux/amd64 ubuntu:20.04
 LABEL description='Generate manifest of S3 objects'
 LABEL maintainer='Stephen Hwang <shwang@rti.org>'
 LABEL description='Use to create a TSV manifest of S3 objects in designated bucket; includes checksum/etags, file sizes'
