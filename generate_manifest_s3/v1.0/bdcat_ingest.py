@@ -30,6 +30,9 @@ import logging
 import boto3
 import botocore
 
+logging.getLogger("boto3").setLevel(logging.WARNING)
+logging.getLogger("botocore").setLevel(logging.WARNING)
+
 def get_bucket_name(row):
 	return 'nih-nhlbi-' + row['study_id'].replace(".", "-") + '-' + row['consent_group']
 
