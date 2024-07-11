@@ -8,7 +8,7 @@ LABEL software-version="v2"
 LABEL license="https://github.com/aws/aws-cli?tab=License-1-ov-file"
 LABEL reference="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"
 
-# Install necessary tools, AWS CLI, Python, and clean up
+# Install necessary tools, AWS CLI, Python, and clean up 
 RUN apt-get update && \
     apt-get install -y unzip curl && \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
