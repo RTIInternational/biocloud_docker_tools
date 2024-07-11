@@ -1,7 +1,7 @@
 # # Manifest Generation (GCP)
 
 ## Overview
-This Dockerfile sets up an environment to 1.) interact with AWS cloud resources, and 2.) to generate an [inventory manifest](#output) of objects in an Google Storage bucket with relevant metadata, including the md5checksum/etag, file size, modified date, and more. This is done by grabbing the inventory manifest file from the corresponding S3 bucket. Command line tools, like AWS CLI, `gcloud`, `gsutil`, and `bq`, are available from this image.
+This Dockerfile sets up an environment to 1.) interact with AWS cloud resources, and 2.) to generate an [inventory manifest](#output) of objects in an Google Storage bucket with relevant metadata, including the md5checksum/etag, file size, modified date, and more. This is done by grabbing the inventory manifest file from the corresponding S3 bucket. Command line tools, like AWS CLI, `gcloud`, `gsutil`, and `bq`, are available from this image. 
 
 
 ## Setup
