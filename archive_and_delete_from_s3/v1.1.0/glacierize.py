@@ -43,8 +43,9 @@ app = typer.Typer()
 
 @app.command()
 def main(
-    bucket_name: str = typer.Option(..., "--bucket-name", "-b", help="The name of the S3 bucket that contains the objects."),
+    bucket_name: str = typer.Option(..., "--bucket-name", "-b", help="The name of the S3 bucket containing the objects.  **Currently hardcoded as `rti-cromwell-output` for safety reasons.** This feature is under development and cannot be used with other buckets at this time.")
     prefix: str = typer.Option(..., "--prefix", "-p", help="The name of the S3 folder (excluding the bucket name) to archive and delete recursively."),
+
     aws_access_key: str = typer.Option(..., "--aws-access-key", "-a", help="AWS access key ID"),
     aws_secret_access_key: str = typer.Option(..., "--aws-secret-access-key", "-s", help="AWS secret access key"),
     days_to_archive: int = typer.Option(180, "--days-to-archive", help="The number of days before moving the object to Intelligent-Tiering storage (default: 180)."),
