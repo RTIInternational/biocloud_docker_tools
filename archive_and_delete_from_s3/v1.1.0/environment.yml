@@ -1,0 +1,10 @@
+name: glacierize
+
+channels:
+  - conda-forge
+
+dependencies:
+  - boto3
+  - pytz
+  - argparse
+  - typer
