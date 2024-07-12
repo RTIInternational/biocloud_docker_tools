@@ -13,7 +13,7 @@ Welcome to the RTI BioCloud Docker Library! This repository serves as a central 
 <br><br>
 
 # Developers
-Commiting a Dockerfile to this repository will automatically result in the building of a new docker image that is uploaded to Docker Hub. To submit a commit developers should complete the following steps: 
+Committing a Dockerfile to this repository will automatically result in the building of a new docker image that is uploaded to Docker Hub. To submit a commit developers should complete the following steps: 
 1. Fork this repository to their account (if not previously done).
 2. Create a branch for the specific docker you working on.
     * Create the necessary directory structure when applicable as described above.
