@@ -128,8 +128,9 @@ def main(
         False, "--dry-run", help="Perform a trial run with no changes made."
     ),
 ):
+
     # hard coding rti-cromwell-output for safety
-    # if a person knows what they are doing then they can edit the code themselves
+    # **Modify with caution**
     bucket_name = "rti-cromwell-output"
 
     # Create an S3 client
@@ -152,6 +153,9 @@ def main(
     # generate the log file name with the current date
     now = datetime.datetime.now()
     log_file_name = f"rti_cromwell_output_cleanup_{now:%Y_%m_%d_%Hh_%Mm_%Ss}.txt"
+
+    message = f"Archiving & deleting files from {bucket_name}"
+    print(message)
 
     # open the log file and redirect standard output to it
     with open(log_file_name, "w") as log_file:
