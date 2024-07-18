@@ -42,58 +42,6 @@ from botocore.exceptions import ClientError
 app = typer.Typer()
 
 
-def move_to_glacier(bucket_name: str, key: str):
-    """Move the object from the given bucket and key to Intelligent-Tiering storage.
-
-    Args:
-        bucket_name (str): The name of the S3 bucket that contains the object.
-        key (str): The key of the object in the S3 bucket.
-
-    Returns:
-        None
-    """
-    obj = s3.Object(bucket_name, key)
-    size = obj.content_length
-    print(f"size: {size}B")
-
-    # 5GB limit
-    if size > 5 * 1024 * 1024 * 1024:
-        print("larger than 5GB, or 5,368,709,120 bytes")
-        return
-
-    if dry_run:
-        print(
-            f"[DRY-RUN] Would move object s3://{bucket_name}/{key} to Intelligent-Tiering.\n"
-        )
-    else:
-        obj.copy_from(
-            CopySource={"Bucket": bucket_name, "Key": key},
-            StorageClass="INTELLIGENT_TIERING",
-        )
-        print(f"Moved object s3://{bucket_name}/{key} to Intelligent-Tiering.\n")
-
-
-def delete_object(bucket_name: str, key: str):
-    """Delete the object from the given bucket and key.
-
-    Args:
-        bucket_name (str): The name of the S3 bucket that contains the object.
-        key (str): The key of the object in the S3 bucket.
-
-    Returns:
-        None
-    """
-    obj = s3.Object(bucket_name, key)
-    size = obj.content_length
-    print(f"size: {size}B")
-
-    if dry_run:
-        print(f"[DRY-RUN] Would delete object s3://{bucket_name}/{key}\n")
-    else:
-        response = client.delete_object(Bucket=bucket_name, Key=key)
-        print(f"Deleted object s3://{bucket_name}/{key}\n")
-
-
 @app.command()
 def main(
     bucket_name: str = typer.Option(
@@ -154,8 +102,59 @@ def main(
     now = datetime.datetime.now()
     log_file_name = f"rti_cromwell_output_cleanup_{now:%Y_%m_%d_%Hh_%Mm_%Ss}.txt"
 
-    message = f"Archiving & deleting files from {bucket_name}"
+    message = f"Archiving & deleting files from s3://{bucket_name}/{prefix}"
     print(message)
+
+    def _move_to_glacier(bucket_name: str, key: str):
+        """Move the object from the given bucket and key to Intelligent-Tiering storage.
+
+        Args:
+            bucket_name (str): The name of the S3 bucket that contains the object.
+            key (str): The key of the object in the S3 bucket.
+
+        Returns:
+            None
+        """
+        obj = s3.Object(bucket_name, key)
+        size = obj.content_length
+        print(f"size: {size}B")
+
+        # 5GB limit
+        if size > 5 * 1024 * 1024 * 1024:
+            print("larger than 5GB, or 5,368,709,120 bytes")
+            return
+
+        if dry_run:
+            print(
+                f"[DRY-RUN] Would move object s3://{bucket_name}/{key} to Intelligent-Tiering.\n"
+            )
+        else:
+            obj.copy_from(
+                CopySource={"Bucket": bucket_name, "Key": key},
+                StorageClass="INTELLIGENT_TIERING",
+            )
+            print(f"Moved object s3://{bucket_name}/{key} to Intelligent-Tiering.\n")
+
+    def _delete_object(bucket_name: str, key: str):
+        """Delete the object from the given bucket and key.
+
+        Args:
+            bucket_name (str): The name of the S3 bucket that contains the object.
+            key (str): The key of the object in the S3 bucket.
+
+        Returns:
+            None
+        """
+        obj = s3.Object(bucket_name, key)
+        size = obj.content_length
+        print(f"size: {size}B")
+
+        if dry_run:
+            print(f"[DRY-RUN] Would delete object s3://{bucket_name}/{key}\n")
+        else:
+            response = client.delete_object(Bucket=bucket_name, Key=key)
+            print(f"Deleted object s3://{bucket_name}/{key}\n")
+
 
     # open the log file and redirect standard output to it
     with open(log_file_name, "w") as log_file:
@@ -191,15 +190,15 @@ def main(
             if storage_class == "GLACIER" and last_modified.replace(
                 tzinfo=pytz.utc
             ) < utc.localize(delete_date):
-                delete_object(bucket_name, key)
+                _delete_object(bucket_name, key)
             elif storage_class == "INTELLIGENT_TIERING" and last_modified.replace(
                 tzinfo=pytz.utc
             ) < utc.localize(delete_date):
-                delete_object(bucket_name, key)
+                _delete_object(bucket_name, key)
             elif storage_class == "STANDARD" and last_modified.replace(
                 tzinfo=pytz.utc
             ) < utc.localize(archive_date):
-                move_to_glacier(bucket_name, key)
+                _move_to_glacier(bucket_name, key)
             else:
                 message = "No action necessary."
                 print(message)
