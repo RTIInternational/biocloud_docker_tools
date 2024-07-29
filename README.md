@@ -60,7 +60,24 @@ If all three of these review stages are satisfactory then the approval will be g
 All Docker images are published on Docker Hub under the RTI BioCloud organization. You can find the repository at https://hub.docker.com/u/rtibiocloud. Each image is tagged using the following format: `<tool-version>_<first-7-characters-of-commit-hash>`.
 
 When adding new Dockerfiles, the GitHub action will automatically build and push the Docker images to Docker Hub. If the corresponding repository does not exist, the push command will create it.
+# ECR
 
+To create AWS ECR images from Docker images in Docker Hub, run the following code:
+``` shell
+# Pull image to be transferred to local system
+docker pull <IMAGE_ID or REPOSITORY:TAG>
+
+# Authenticate your Docker client to the Amazon ECR registry
+aws ecr get-login-password --region region | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.region.amazonaws.com
+
+# Create repository in ECR for image
+
+# Tag image
+docker tag <IMAGE_ID> <AWS_ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/<REPO>:<TAG>
+
+# Push image
+docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-west-2.amazonaws.com/<REPO>:<TAG>
+```
 <br><br>
 
 # Contact Us
