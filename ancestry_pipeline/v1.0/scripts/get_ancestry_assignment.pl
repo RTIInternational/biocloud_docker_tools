@@ -29,8 +29,8 @@ close RAW_ANCESTRY;
 
 open(ASSIGNMENT, "> ".$fileOutAncestryAssignment);
 if (abs($scaledMahal) <= $stdDevCutoff) {
-    print ASSIGNMENT $assignment."\n";
+    print ASSIGNMENT $assignment;
 } else {
-    print ASSIGNMENT "Unassigned\n";
+    print ASSIGNMENT "Unassigned";
 }
 close ASSIGNMENT;

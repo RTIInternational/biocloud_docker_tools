@@ -1,14 +1,44 @@
 {
     "name": "ancestry_assignment",
     "inputs": {
+        "working_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
         "gvcf": {
             "type": "file",
             "default": "",
             "required": true
         },
-        "monomorphic_positions": {
-            "type": "str",
-            "default": "include",
+        "variant_list": {
+            "type": "file",
+            "default": "/home/merge-shared-folder/ancestry_pipeline_runs/pipeline_inputs/1000g_ld_pruned.tsv.gz",
+            "required": true
+        },
+        "pass_only": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "filter_by_gq": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "hom_gq_threshold": {
+            "type": "int",
+            "default": 99,
+            "required": false
+        },
+        "het_gq_threshold": {
+            "type": "int",
+            "default": 48,
             "required": false
         },
         "ancestry_pop_type": {
@@ -26,11 +56,6 @@
             "default": "",
             "required": true
         },
-        "final_file_location": {
-            "type": "str",
-            "default": "",
-            "required": true
-        },
         "std_dev_cutoff": {
             "type": "int",
             "default": 3,
@@ -41,30 +66,15 @@
             "default": 1,
             "required": false
         },
-        "variant_position_list": {
-            "type": "file",
-            "default": "/data/.ref/1000g_variants.tsv",
-            "required": false
-        },
-        "ref_bed": {
-            "type": "file",
-            "default": "/data/.ref/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed",
-            "required": false
-        },
-        "ref_bim": {
-            "type": "file",
-            "default": "/data/.ref/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim",
-            "required": false
-        },
-        "ref_fam": {
-            "type": "file",
-            "default": "/data/.ref/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam",
-            "required": false
+        "ref_bfile": {
+            "type": "str",
+            "default": "/home/merge-shared-folder/ancestry_pipeline_runs/pipeline_inputs/all_phase3_unique_grch37_dbsnp_b153_ld_pruned",
+            "required": true
         },
         "ref_psam": {
             "type": "file",
-            "default": "/data/.ref/phase3_orig.psam",
-            "required": false
+            "default": "/home/merge-shared-folder/ancestry_pipeline_runs/pipeline_inputs/phase3_orig.psam",
+            "required": true
         }
     },
     "outputs": {
@@ -74,26 +84,32 @@
         },
         "log": {
             "type": "file",
-            "value": "<inputs.final_file_location>ancestry_assignment.log"
+            "value": "<inputs.output_dir>ancestry_assignment.log"
         }
     },
-    "entry_point": "get_dataset_variants",
+    "entry_point": "extract_gvcf_variants",
     "entry_point_inputs": {
-        "file_in_gvcf": "<inputs.gvcf>",
-        "file_in_pos_list": "<inputs.variant_position_list>",
-        "file_out_prefix": "<inputs.final_file_location>get_dataset_variants/dataset",
-        "monomorphic_positions": "<inputs.monomorphic_positions>"
+        "working_dir": "<inputs.working_dir>extract_gvcf_variants",
+        "output_dir": "<inputs.output_dir>extract_gvcf_variants",
+        "gvcf": "<inputs.gvcf>",
+        "variant_list": "<inputs.variant_list>",
+        "out_prefix": "<inputs.output_dir>extract_gvcf_variants/<inputs.dataset_name>",
+        "pass_only": "<inputs.pass_only>",
+        "filter_by_gq": "<inputs.filter_by_gq>",
+        "hom_gq_threshold": "<inputs.hom_gq_threshold>",
+        "het_gq_threshold": "<inputs.het_gq_threshold>"
     },
     "pipeline": {
-        "get_dataset_variants": {
-            "task": "get_dataset_variants",
+        "extract_gvcf_variants": {
+            "task": "extract_gvcf_variants",
             "check_output": {
                 "returncode_0": {
-                    "step": "convert_dataset_to_bfile",
+                    "step": "convert_vcf_to_bfile",
                     "inputs": {
-                        "file_in_vcf": "<steps.get_dataset_variants.outputs.sample_vcf>",
-                        "file_out_prefix": "<inputs.final_file_location>convert_dataset_to_bfile/dataset",
-                        "threads": "<inputs.threads>"
+                        "working_dir": "<inputs.working_dir>convert_vcf_to_bfile",
+                        "output_dir": "<inputs.output_dir>convert_vcf_to_bfile",
+                        "vcf": "<steps.extract_gvcf_variants.outputs.sample_vcf>",
+                        "out_prefix": "<inputs.output_dir>convert_vcf_to_bfile/<inputs.dataset_name>"
                     }
                 },
                 "returncode_1": { 
@@ -101,17 +117,19 @@
                 }
             }
         },
-        "convert_dataset_to_bfile": {
-            "task": "convert_dataset_to_bfile",
+        "convert_vcf_to_bfile": {
+            "task": "convert_vcf_to_bfile",
             "check_output": {
                 "returncode_0": {
                     "step": "get_ref_samples",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>get_ref_samples",
+                        "output_dir": "<inputs.output_dir>get_ref_samples",
                         "file_in_psam": "<inputs.ref_psam>",
                         "ancestry_pop_type": "<inputs.ancestry_pop_type>",
                         "ancestries_to_include": "<inputs.ancestries_to_include>",
-                        "file_out_ancestry_id_xref": "<inputs.final_file_location>get_ref_samples/ancestry_id_xref.tsv",
-                        "file_out_ref_samples": "<inputs.final_file_location>get_ref_samples/ref_samples.tsv"
+                        "file_out_ancestry_id_xref": "<inputs.output_dir>get_ref_samples/ancestry_id_xref.tsv",
+                        "file_out_ref_samples": "<inputs.output_dir>get_ref_samples/ref_samples.tsv"
                     }
                 },
                 "returncode_1": { 
@@ -125,11 +143,13 @@
                 "returncode_0": {
                     "step": "add_pop_ids_to_fam_files",
                     "inputs": {
-                        "file_in_dataset_fam": "<steps.convert_dataset_to_bfile.outputs.fam>",
-                        "file_in_ref_fam": "<inputs.ref_fam>",
+                        "working_dir": "<inputs.working_dir>add_pop_ids_to_fam_files",
+                        "output_dir": "<inputs.output_dir>add_pop_ids_to_fam_files",
+                        "file_in_dataset_fam": "<steps.convert_vcf_to_bfile.outputs.fam>",
+                        "file_in_ref_fam": "<inputs.ref_bfile>.fam",
                         "file_in_ref_samples": "<steps.get_ref_samples.outputs.ref_samples>",
-                        "file_out_dataset_fam": "<inputs.final_file_location>add_pop_ids_to_fam_files/dataset.fam",
-                        "file_out_ref_fam": "<inputs.final_file_location>add_pop_ids_to_fam_files/ref.fam"
+                        "file_out_dataset_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/dataset.fam",
+                        "file_out_ref_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/ref.fam"
                     }
                 },
                 "returncode_1": { 
@@ -143,12 +163,14 @@
                 "returncode_0": {
                     "step": "get_ref_genotypes",
                     "inputs": {
-                        "bed": "<inputs.ref_bed>",
-                        "bim": "<inputs.ref_bim>",
+                        "working_dir": "<inputs.working_dir>get_ref_genotypes",
+                        "output_dir": "<inputs.output_dir>get_ref_genotypes",
+                        "bed": "<inputs.ref_bfile>.bed",
+                        "bim": "<inputs.ref_bfile>.bim",
                         "fam": "<steps.add_pop_ids_to_fam_files.outputs.ref_fam>",
                         "keep": "<steps.get_ref_samples.outputs.ref_samples>",
-                        "extract": "<steps.get_dataset_variants.outputs.variant_list>",
-                        "file_out_prefix": "<inputs.final_file_location>get_ref_genotypes/ref",
+                        "extract": "<steps.extract_gvcf_variants.outputs.variant_list>",
+                        "file_out_prefix": "<inputs.output_dir>get_ref_genotypes/ref",
                         "threads": "<inputs.threads>"
                     }
                 },
@@ -163,13 +185,15 @@
                 "returncode_0": {
                     "step": "get_merge_conflicts",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>get_merge_conflicts",
+                        "output_dir": "<inputs.output_dir>get_merge_conflicts",
                         "bed_1": "<steps.get_ref_genotypes.outputs.bed>",
                         "bim_1": "<steps.get_ref_genotypes.outputs.bim>",
                         "fam_1": "<steps.get_ref_genotypes.outputs.fam>",
-                        "bed_2": "<steps.convert_dataset_to_bfile.outputs.bed>",
-                        "bim_2": "<steps.convert_dataset_to_bfile.outputs.bim>",
+                        "bed_2": "<steps.convert_vcf_to_bfile.outputs.bed>",
+                        "bim_2": "<steps.convert_vcf_to_bfile.outputs.bim>",
                         "fam_2": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
-                        "file_out_prefix": "<inputs.final_file_location>get_merge_conflicts/dataset_ref",
+                        "file_out_prefix": "<inputs.output_dir>get_merge_conflicts/dataset_ref",
                         "threads": "<inputs.threads>"
                     }
                 },
@@ -184,25 +208,29 @@
                 "returncode_0": {
                     "step": "prepare_smartpca_input",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>prepare_smartpca_input",
+                        "output_dir": "<inputs.output_dir>prepare_smartpca_input",
                         "file_in_bed": "<steps.get_merge_conflicts.outputs.bed>",
                         "file_in_bim": "<steps.get_merge_conflicts.outputs.bim>",
                         "file_in_fam": "<steps.get_merge_conflicts.outputs.fam>",
                         "file_in_pop_id_xref": "<steps.get_ref_samples.outputs.ancestry_id_xref>",
                         "dataset_name": "<inputs.dataset_name>",
                         "ref_pops": "<inputs.ancestries_to_include>",
-                        "file_out_prefix": "<inputs.final_file_location>prepare_smartpca_input/dataset_ref_smartpca",
-                        "smartpca_out_prefix": "<inputs.final_file_location>smartpca/dataset_ref_smartpca",
+                        "file_out_prefix": "<inputs.output_dir>prepare_smartpca_input/dataset_ref_smartpca",
+                        "smartpca_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca",
                         "threads": "<inputs.threads>"
                     }
                 },
                 "returncode_1": { 
                     "step": "flip_ref",
                     "inputs": {
-                        "bed": "<inputs.ref_bed>",
-                        "bim": "<inputs.ref_bim>",
+                        "working_dir": "<inputs.working_dir>flip_ref",
+                        "output_dir": "<inputs.output_dir>flip_ref",
+                        "bed": "<inputs.ref_bfile>.bed",
+                        "bim": "<inputs.ref_bfile>.fam",
                         "fam": "<steps.add_pop_ids_to_fam_files.outputs.ref_fam>",
                         "flip": "<steps.get_merge_conflicts.outputs.missnp>",
-                        "file_out_prefix": "<inputs.final_file_location>flip_ref/ref",
+                        "file_out_prefix": "<inputs.output_dir>flip_ref/ref",
                         "threads": "<inputs.threads>"
                     }
                 }
@@ -214,13 +242,15 @@
                 "returncode_0": {
                     "step": "merge_dataset_ref",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>merge_dataset_ref",
+                        "output_dir": "<inputs.output_dir>merge_dataset_ref",
                         "bed_1": "<steps.flip_ref.outputs.bed>",
                         "bim_1": "<steps.flip_ref.outputs.bim>",
                         "fam_1": "<steps.flip_ref.outputs.fam>",
-                        "bed_2": "<steps.convert_dataset_to_bfile.outputs.bed>",
-                        "bim_2": "<steps.convert_dataset_to_bfile.outputs.bim>",
+                        "bed_2": "<steps.convert_vcf_to_bfile.outputs.bed>",
+                        "bim_2": "<steps.convert_vcf_to_bfile.outputs.bim>",
                         "fam_2": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
-                        "file_out_prefix": "<inputs.final_file_location>merge_dataset_ref/dataset_ref",
+                        "file_out_prefix": "<inputs.output_dir>merge_dataset_ref/dataset_ref",
                         "threads": "<inputs.threads>"
                     }
                 },
@@ -235,14 +265,16 @@
                 "returncode_0": {
                     "step": "prepare_smartpca_input",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>prepare_smartpca_input",
+                        "output_dir": "<inputs.output_dir>prepare_smartpca_input",
                         "file_in_bed": "<steps.merge_dataset_ref.outputs.bed>",
                         "file_in_bim": "<steps.merge_dataset_ref.outputs.bim>",
                         "file_in_fam": "<steps.merge_dataset_ref.outputs.fam>",
                         "file_in_pop_id_xref": "<steps.get_ref_samples.outputs.ancestry_id_xref>",
                         "dataset_name": "<inputs.dataset_name>",
                         "ref_pops": "<inputs.ancestries_to_include>",
-                        "file_out_prefix": "<inputs.final_file_location>prepare_smartpca_input/dataset_ref_smartpca",
-                        "smartpca_out_prefix": "<inputs.final_file_location>smartpca/dataset_ref_smartpca",
+                        "file_out_prefix": "<inputs.output_dir>prepare_smartpca_input/dataset_ref_smartpca",
+                        "smartpca_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca",
                         "threads": "<inputs.threads>"
                     }
                 },
@@ -257,8 +289,10 @@
                 "returncode_0": {
                     "step": "smartpca",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>smartpca",
+                        "output_dir": "<inputs.output_dir>smartpca",
                         "file_in_par": "<steps.prepare_smartpca_input.outputs.par>",
-                        "file_out_prefix": "<inputs.final_file_location>smartpca/dataset_ref_smartpca"
+                        "file_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca"
                     }
                 },
                 "returncode_1": { 
@@ -272,12 +306,14 @@
                 "returncode_0": {
                     "step": "process_smartpca_results",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>process_smartpca_results",
+                        "output_dir": "<inputs.output_dir>process_smartpca_results",
                         "file_in_evec": "<steps.smartpca.outputs.evec>",
                         "file_in_eval": "<steps.smartpca.outputs.eval>",
                         "file_in_snpweight": "<steps.smartpca.outputs.snpweight>",
                         "file_in_bim_id_xref": "<steps.prepare_smartpca_input.outputs.bim_xref>",
                         "file_in_fam_id_xref": "<steps.prepare_smartpca_input.outputs.fam_xref>",
-                        "file_out_prefix": "<inputs.final_file_location>process_smartpca_results/dataset_ref_smartpca"
+                        "file_out_prefix": "<inputs.output_dir>process_smartpca_results/dataset_ref_smartpca"
                     }
                 },
                 "returncode_1": { 
@@ -291,11 +327,13 @@
                 "returncode_0": {
                     "step": "assign_ancestry_mahalanobis",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>assign_ancestry_mahalanobis",
+                        "output_dir": "<inputs.output_dir>assign_ancestry_mahalanobis",
                         "file_in_evec": "<steps.process_smartpca_results.outputs.evec>",
                         "ref_ancestries": "<inputs.ancestries_to_include>",
                         "dataset_name": "<inputs.dataset_name>",
                         "std_dev_cutoff": "<inputs.std_dev_cutoff>",
-                        "out_dir": "<inputs.final_file_location>assign_ancestry_mahalanobis/"
+                        "out_dir": "<inputs.output_dir>assign_ancestry_mahalanobis/"
                     }
                 },
                 "returncode_1": { 
@@ -309,9 +347,11 @@
                 "returncode_0": {
                     "step": "get_ancestry_assignment",
                     "inputs": {
+                        "working_dir": "<inputs.working_dir>get_ancestry_assignment",
+                        "output_dir": "<inputs.output_dir>get_ancestry_assignment",
                         "file_in_raw_ancestry_assignment": "<steps.assign_ancestry_mahalanobis.outputs.raw_ancestry_assignment>",
                         "std_dev_cutoff": "<inputs.std_dev_cutoff>",
-                        "file_out_ancestry_assignment": "<inputs.final_file_location>ancestry_assignment.txt"
+                        "file_out_ancestry_assignment": "<inputs.output_dir>ancestry_assignment.txt"
                     }
                 },
                 "returncode_1": { 

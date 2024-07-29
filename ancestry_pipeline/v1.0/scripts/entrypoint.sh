@@ -6,7 +6,7 @@ if [ -z "$wf_arguments" ]; then
     exit 
 else
     python3 /opt/run_pipeline.py \
-        --wf_definition /opt/ancestry_pipeline.json \
-        --wf_tasks /opt/ancestry_tasks.json \
+        --wf_definition /pipeline/config/ancestry_pipeline.json \
+        --wf_tasks /pipeline/config/ancestry_tasks.json \
         --wf_arguments $wf_arguments
 fi
