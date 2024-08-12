@@ -5,9 +5,9 @@ library(openxlsx)
 library("sevenbridges2")
 library(getopt)
 
-####################################
-###    INPUT ARGUMENTS     #########
-####################################
+#########################################
+########    INPUT ARGUMENTS     ########
+#########################################
 argString <- commandArgs(trailingOnly = T) # Read in command line arguments
 
 # This is for setting up a human readable set of documentation to display if something is amiss.
