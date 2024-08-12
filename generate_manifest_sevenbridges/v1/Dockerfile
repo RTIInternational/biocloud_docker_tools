@@ -2,7 +2,7 @@ FROM rocker/r-ubuntu:22.04
 
 LABEL maintainer="David Williams <dnwilliams@rti.org>"
 LABEL description="This Docker image contains an in-house script written to generate a file manifest of projects in Seven Bridges."
-LABEL base-image="rocker/r-ubuntu:20.04"
+LABEL base-image="rocker/r-ubuntu:22.04"
 LABEL software-version="1.0"
 
 # Install vim and required packages for R libraries
@@ -29,3 +29,6 @@ WORKDIR /data
 
 # Add to environment
 ENV PATH=$PATH:/opt/
+
+# Set default command to display help message
+CMD ["Rscript", "/opt/generate_manifest_sevenbridges.R", "-h"]
