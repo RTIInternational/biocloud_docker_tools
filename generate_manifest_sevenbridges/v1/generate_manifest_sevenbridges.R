@@ -268,7 +268,7 @@ df_file_manifest <- df_files %>%
   mutate(size = size*byte_to_gigabyte) %>%
   filter(type=="file") %>%
   select(`File Name` = name, `File Size (GB)` = size, `Upload Date` = upload_date, `Path` = path, `SB URI` = sb_uri) %>%
-  arrange(desc(`File Name`))
+  arrange(`File Name`)
 
 #####################################
 ###    WRITING TO EXCEL     #########
