@@ -24,6 +24,7 @@ if(!require('httr')){install.packages('httr', dependencies = T); library(httr)}
 if(!require('stringr')){install.packages('stringr', dependencies = T); library(stringr)}
 if(!require('lubridate')){install.packages('lubridate', dependencies = T); library(lubridate)}
 if(!require('sevenbridges2')){install.packages('sevenbridges2', dependencies = T); library(sevenbridges2)}
+if(!require('jsonlite')){install.packages('jsonlite', dependencies = T); library(jsonlite)}
 
 #-----------------------------------------------------
 # Setup global arguments and command line use
@@ -82,7 +83,7 @@ add_to_log <- function(lvl, func, message){
 #-----------------------------------------------------
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Initialize file and folder dataframes
+# Initialize empty dataframes and lists
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 df_files_empty <- data.frame(
@@ -101,6 +102,8 @@ df_folders_empty <- data.frame(
   parent_id = character(0),
   parent_name = character(0)
 )
+
+metadata_list <- list()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Function to extract file and folder info
@@ -188,7 +191,25 @@ create_final_name <- function(new_name, parent_name) {
   return(paste(parent_name, new_name, sep = "/"))  # Combine parent_name and new_name
 }
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Function to get existing metadata
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+get_metadata <- function(file_id, auth_token) {
+  url <- paste0("https://api.sb.biodatacatalyst.nhlbi.nih.gov/v2/files/", file_id, "/metadata")
+  
+  response <- VERB(
+    "GET", 
+    url, 
+    add_headers('X-SBG-Auth-Token' = auth_token), 
+    content_type("application/json"), 
+    accept("application/json")
+  )
+  
+  # Parse the response content
+  metadata <- fromJSON(content(response, "text", encoding = "UTF-8"), flatten = TRUE)
+  metadata$id <- file_id
+  return(metadata)
+}
 
 #-----------------------------------------------------
 # Main 
@@ -223,7 +244,7 @@ df_files <- list_df_files_folders_out[[1]]
 df_folders <- list_df_files_folders_out[[2]]
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Build Metadata Manifest
+# Build empty Metadata Manifest
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Join df_files with df_folders to get the parent directory name
@@ -241,35 +262,52 @@ df_files$name <- mapply(create_final_name, df_files$name, df_files$parent_name)
 # Remove unnecessary columns
 df_files <- df_files[ , !(names(df_files) %in% c("upload_directory_id", "upload_directory","parent_name", "type"))]
 
-# Add columns for possible metadata fields
-df_files <- cbind(
-  df_files,
-  experimental_strategy = "",
-  library_id = "",
-  platform = "",
-  platform_unit_id = "",
-  file_segment_number = "",
-  quality_scale = "",
-  paired_end = "",
-  reference_genome = "",
-  investigation = "",
-  case_id = "",
-  case_uuid = "",
-  gender = "",
-  race = "",
-  ethnicity = "",
-  primary_site = "",
-  disease_type = "",
-  age_at_diagnosis = "",
-  vital_status = "",
-  days_to_death = "",
-  sample_id = "",
-  sample_uuid = "",
-  sample_type = "",
-  aliquote_id = "",
-  aliquot_uuid = "",
-  description = ""
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Get existing metadata for all files and add to empty metadata manifest
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Loop through the files dataframe and get metadata for each file
+for (i in 1:nrow(df_files)) {
+  file_id <- df_files$id[i]
+  metadata <- get_metadata(file_id, token)
+  metadata_list[[i]] <- metadata
+}
+
+# Find all unique columns from all metadata
+all_columns <- unique(unlist(lapply(metadata_list, names)))
+
+# Ensure each metadata dataframe has all columns
+metadata_list <- lapply(metadata_list, function(df) {
+  missing_cols <- setdiff(all_columns, names(df))
+  df[missing_cols] <- ""
+  return(df)
+})
+
+# Combine the metadata with the original dataframe
+metadata_df <- do.call(rbind, lapply(metadata_list, as.data.frame))
+
+# Combine existing metadata with empty metadata manifest
+df_combined <- left_join(df_files, metadata_df, by = "id")
+
+# List of all required metadata fields (in correct order)
+required_columns <- c(
+  "id", "name", "size","project", "experimental_strategy", "library_id", "platform", "platform_unit_id",
+  "file_segment_number", "quality_scale", "paired_end", "reference_genome",
+  "investigation", "case_id", "case_uuid", "gender", "race", "ethnicity",
+  "primary_site", "disease_type", "age_at_diagnosis", "vital_status",
+  "days_to_death", "sample_id", "sample_uuid", "sample_type", "aliquote_id",
+  "aliquot_uuid", "description"
 )
+
+# Add missing columns with blank (empty string) values
+for (col in required_columns) {
+  if (!(col %in% names(df_combined))) {
+    df_combined[[col]] <- ""
+  }
+}
+
+# Reorder the columns in df_combined to desired order
+df_combined <- df_combined %>%
+  select(all_of(required_columns))
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Output final manifest to csv
@@ -278,7 +316,7 @@ df_files <- cbind(
 today <- format(Sys.Date(), "%Y%m%d")
 output_file_name <- paste0("manifest_", today, ".csv")
 output_file_path <- file.path(output_path, output_file_name)
-write.csv(df_files, output_file_path, row.names = FALSE)
+write.csv(df_combined, output_file_path, row.names = FALSE)
 
 add_to_log("info", "main", paste("CSV file written to", output_file_path))
 add_to_log("info", "main", "Metadata Manifest generated successfully")
