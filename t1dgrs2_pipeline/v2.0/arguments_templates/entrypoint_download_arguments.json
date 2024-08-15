@@ -1,0 +1,16 @@
+{
+    "working_dir": "<RUN_DIR>/working_dir",
+    "output_dir": "<RUN_DIR>/output_dir",
+    "source_s3_bucket": "gdx-rti-earlycheck",
+    "s3_access_key": "AKIA3YCQWZJONLDDSAMC",
+    "s3_secret_access_key": "<S3_SECRET_ACCESS_KEY>",
+    "downloaded_samples": "/home/merge-shared-folder/t1dgrs2-pipeline-runs/pipeline_inputs/downloaded_samples.json",
+    "download_limit": 200,
+    "master_rti_manifest": "/home/merge-shared-folder/t1dgrs2-pipeline-runs/pipeline_inputs/manifests/Master_RTI_manifest_list.csv",
+    "argo_api_url": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+    "simultaneous_jobs": 50,
+    "ref_bfile": "/home/merge-shared-folder/t1dgrs2-pipeline-runs/pipeline_inputs/ref/t1dgrs2_ref",
+    "control_dir": "/home/merge-shared-folder/t1dgrs2-pipeline-runs/pipeline_inputs/controls",
+    "samples_to_download": "",
+    "t1dgrs2_variant_list": ""
+}
