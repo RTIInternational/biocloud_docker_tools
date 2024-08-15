@@ -1,3 +1,6 @@
 [submodule "t1dgrs2_pipeline/v1.0/t1dgrs2"]
 	path = t1dgrs2_pipeline/v1.0/t1dgrs2
 	url = https://github.com/t2diabetesgenes/t1dgrs2.git
+[submodule "t1dgrs2_pipeline/v2.0/t1dgrs2"]
+	path = t1dgrs2_pipeline/v2.0/t1dgrs2
+	url = https://github.com/t2diabetesgenes/t1dgrs2
