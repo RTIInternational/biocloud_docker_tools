@@ -68,7 +68,7 @@ extract_file_info <- function(project_id,parent_id=NA,parent_name="root", df_fil
   }
   return(df_files)
 }
-###
+####
 
 log_loc<-file.path('/scratch',"file_tagging.log")
 lf <- log_open(log_loc,logdir = FALSE, show_notes = FALSE)
