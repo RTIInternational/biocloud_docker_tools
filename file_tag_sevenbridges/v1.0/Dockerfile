@@ -15,6 +15,11 @@ WORKDIR /scratch
 # Install necessary R packages
 RUN Rscript -e 'install.packages(c("readr","tidyverse","openxlsx","sevenbridges2","tools","logr","stringr","optparse"), repos = "http://cran.us.r-project.org")'
 
+#Add to environment
+ENV PATH=$PATH:/opt/
+
 # Copy script
-COPY file_tagging.R /home/r-environment/file_tagging.R
-#CMD R -e "Rscript /home/r-environment/file_tagging.R"
+COPY file_tagging.R /opt/file_tagging.R
+
+# Set default command to display help message
+CMD ["Rscript", "/opt/file_tagging.R", "-h"]
