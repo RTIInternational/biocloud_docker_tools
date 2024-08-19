@@ -70,7 +70,7 @@ extract_file_info <- function(project_id,parent_id=NA,parent_name="root", df_fil
 }
 ####
 
-log_loc<-file.path('/scratch',"file_tagging.log")
+log_loc<-file.path("file_tagging.log")
 lf <- log_open(log_loc,logdir = FALSE, show_notes = FALSE)
 log_print(paste("File tagging starting...",Sys.time()))
 
