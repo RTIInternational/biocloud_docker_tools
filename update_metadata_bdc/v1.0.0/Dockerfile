@@ -1,4 +1,4 @@
-#----------------------------------------------------------------
+#-----------------------------------------------------------------
 # Use the official R image as a base
 #----------------------------------------------------------------
 FROM r-base:4.3.2
@@ -15,15 +15,15 @@ LABEL software.version="1.0.0"
 LABEL license="GPL-2 | GPL-3 "
 LABEL about.tags="RMIP"
 
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 #----------------------------------------------------------------
 # Install required command line tools and packages
 #----------------------------------------------------------------
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -qq update && apt-get -y upgrade && \
-	apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends \
     curl \
     libcurl4-openssl-dev \
     libssl-dev \
