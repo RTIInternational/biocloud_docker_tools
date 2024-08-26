@@ -21,7 +21,7 @@ LABEL about.tags="RMIP"
 #----------------------------------------------------------------
 ENV LANG=C.UTF-8 
 ENV LC_ALL=C.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
+ARG DEBIAN_FRONTEND noninteractive
 
 RUN apt-get -qq update && apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
@@ -40,9 +40,8 @@ ENV R_VERSION 4.3.2
 
 # Configure CRAN for package retrieval
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
-RUN Rscript -e "install.packages('getopt', dependencies = T)"
-RUN Rscript -e "install.packages(c('dplyr', 'httr', 'stringr','lubridate','sevenbridges2'), dependencies = T)"
-RUN Rscript -e "library('getopt');##### R SESSION INFORMATION #####; sessionInfo()"
+RUN Rscript -e "install.packages(c('getopt', 'dplyr', 'httr', 'stringr','lubridate','sevenbridges2'), dependencies = T)"
+RUN Rscript -e "library('getopt'); ##### R SESSION INFORMATION #####; sessionInfo()"
 
 #----------------------------------------------------------------
 # Copy over analysis scripts
