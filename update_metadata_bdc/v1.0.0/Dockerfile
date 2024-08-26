@@ -19,8 +19,9 @@ LABEL about.tags="RMIP"
 #----------------------------------------------------------------
 # Install required command line tools and packages
 #----------------------------------------------------------------
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-ENV DEBIAN_FRONTEND noninteractive
+ENV LANG=C.UTF-8 
+ENV LC_ALL=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -qq update && apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
@@ -30,7 +31,7 @@ RUN apt-get -qq update && apt-get -y upgrade && \
     libxml2-dev \
     build-essential && \
     apt-get clean && \
-    apt-get autoremove
+    apt-get -y autoremove
 
 #----------------------------------------------------------------
 # Install R Packages
