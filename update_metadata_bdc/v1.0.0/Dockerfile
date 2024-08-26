@@ -41,9 +41,6 @@ ENV R_VERSION 4.3.2
 # Configure CRAN for package retrieval
 RUN echo "r <- getOption('repos'); r['CRAN'] <- 'http://cran.us.r-project.org'; options(repos = r);" > ~/.Rprofile
 RUN Rscript -e "install.packages(c('getopt', 'dplyr', 'httr', 'stringr','lubridate','sevenbridges2'), dependencies = T)"
-RUN Rscript -e "library('getopt'); \
-    ##### R SESSION INFORMATION #####; \
-    sessionInfo()"
 
 #----------------------------------------------------------------
 # Copy over analysis scripts
