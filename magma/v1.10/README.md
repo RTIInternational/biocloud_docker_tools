@@ -1,6 +1,10 @@
 # MAGMA
 [MAGMA](https://ctg.cncr.nl/software/magma) is a tool for gene analysis and generalized gene-set analysis of GWAS data. It can be used to analyse both raw genotype data as well as summary SNP p-values from a previous GWAS or meta-analysis.
 
+* [MAGMA manual (version 1.10) ](https://vu.data.surfsara.nl/index.php/s/MUiv3y1SFRePnyG)
+
+<br>
+
 ## Example code
 Data must be converted to build37, unless you have PLINK formatted genotype data in build 38.
 
