@@ -25,10 +25,10 @@ docker run -ti \
 <summary>Build instructions</summary>
 
 ``` shell
-cd biocloud_docker_tools/t1dgrs2_pipeline/v1.0
+cd biocloud_docker_tools/t1dgrs2_pipeline/v2.0
 
 # Local build
-docker build . -t t1dgrs2_pipeline/t1dgrs2_pipeline:v1.0
+docker build . -t t1dgrs2_pipeline/t1dgrs2_pipeline:v2.0
 
 ```
 </details>

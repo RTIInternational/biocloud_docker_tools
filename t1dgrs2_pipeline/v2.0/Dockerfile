@@ -73,22 +73,18 @@ ADD pipeline_config/* /pipeline/config/
 # Add scripts
 ADD scripts/entrypoint.sh /opt/
 ADD scripts/run_pipeline.py /opt/
-ADD scripts/download_gvcfs_from_s3.py /opt/
-ADD scripts/filter_gvcfs_by_consent.sh /opt/
-ADD scripts/batch_calculate_t1dgrs2.py /opt/
+ADD scripts/download_gvcfs_from_revvity_sftp.py /opt/
+ADD scripts/batch_extract_gvcf_variants.py /opt/
 ADD scripts/extract_gvcf_variants.pl /opt/
 ADD scripts/generate_file_for_export.pl /opt/
-ADD scripts/merge_results_files.sh /opt/
 ADD scripts/sftp_results.py /opt/
 # Change permissions
 RUN chmod 755 /opt/entrypoint.sh
 RUN chmod 755 /opt/run_pipeline.py
-RUN chmod 755 /opt/download_gvcfs_from_s3.py
-RUN chmod 755 /opt/filter_gvcfs_by_consent.sh
-RUN chmod 755 /opt/batch_calculate_t1dgrs2.py
+RUN chmod 755 /opt/download_gvcfs_from_revvity_sftp.py
+RUN chmod 755 /opt/batch_extract_gvcf_variants.py
 RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/generate_file_for_export.pl
-RUN chmod 755 /opt/merge_results_files.sh
 RUN chmod 755 /opt/sftp_results.py
 
 WORKDIR /data

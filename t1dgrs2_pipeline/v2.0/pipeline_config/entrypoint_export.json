@@ -53,31 +53,15 @@
             "value": "<inputs.working_dir>/t1dgrs2_export_pipeline.log"
         }
     },
-    "entry_point": "merge_results",
+    "entry_point": "sftp_results",
     "entry_point_inputs": {
-        "sample_results_dir": "<inputs.results_dir>",
-        "output_result_file": "<inputs.output_result_file>",
-        "output_control_file": "<inputs.output_control_file>"
+        "sftp_server": "<inputs.sftp_server>",
+        "username": "<inputs.username>",
+        "password": "<inputs.password>",
+        "results_file": "<inputs.output_result_file>",
+        "target_dir": "<inputs.target_dir>"
     },
     "pipeline": {
-        "merge_results": {
-            "task": "merge_results",
-            "check_output": {
-                "returncode_0": {
-                    "step": "sftp_results",
-                    "inputs": {
-                        "sftp_server": "<inputs.sftp_server>",
-                        "username": "<inputs.username>",
-                        "password": "<inputs.password>",
-                        "results_file": "<inputs.output_result_file>",
-                        "target_dir": "<inputs.target_dir>"
-                    }
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
-        },
         "sftp_results": {
             "task": "sftp_results",
             "check_output": {

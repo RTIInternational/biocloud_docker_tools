@@ -4,16 +4,22 @@
             "working_dir": {
                 "type": "dir"
             },
-            "source_s3_bucket": {
+            "sftp_server": {
                 "type": "str"
             },
-            "s3_access_key": {
+            "sftp_username": {
                 "type": "str"
             },
-            "s3_secret_access_key": {
+            "sftp_password": {
                 "type": "str"
+            },
+            "source_sftp_dir": {
+                "type": "dir"
             },
             "target_dir": {
+                "type": "dir"
+            },
+            "manifest_dir": {
                 "type": "dir"
             },
             "downloaded_samples": {
@@ -28,15 +34,19 @@
         },
         "cmd": [
             "python",
-            "/opt/download_gvcfs_from_s3.py",
-            "--source_s3_bucket",
-            "<inputs.source_s3_bucket>",
-            "--s3_access_key",
-            "<inputs.s3_access_key>",
-            "--s3_secret_access_key",
-            "<inputs.s3_secret_access_key>",
+            "/opt/download_gvcfs_from_revvity_sftp.py",
+            "--sftp_server",
+            "<inputs.sftp_server>",
+            "--username",
+            "<inputs.sftp_username>",
+            "--password",
+            "<inputs.sftp_password>",
+            "--source_dir",
+            "<inputs.source_sftp_dir>",
             "--target_dir",
             "<inputs.target_dir>",
+            "--manifest_dir",
+            "<inputs.rti_manifest_dir>",
             "--downloaded_samples",
             "<inputs.downloaded_samples>",
             "--download_limit",
@@ -49,60 +59,13 @@
                 "type": "file",
                 "value": "<inputs.downloaded_samples>"
             },
-            "genedx_manifest": {
-                "type": "file",
-                "value": "<inputs.target_dir>RTI_Copy_Results_File.csv"
-            },
             "log": {
                 "type": "file",
                 "value": "<inputs.working_dir>s3_download.log"
             }
         }
     },
-    "filter_gvcfs_by_consent": {
-        "inputs": {
-            "working_dir": {
-                "type": "dir"
-            },
-            "imported_gvcfs_dir": {
-                "type": "dir"
-            },
-            "consented_gvcfs_dir": {
-                "type": "dir"
-            },
-            "nonconsented_gvcfs_dir": {
-                "type": "dir"
-            },
-            "master_rti_manifest": {
-                "type": "file"
-            },
-            "genedx_manifest": {
-                "type": "file"
-            }
-        },
-        "cmd": [
-            "/opt/filter_gvcfs_by_consent.sh",
-            "--imported_gvcfs_dir",
-            "<inputs.imported_gvcfs_dir>",
-            "--working_dir",
-            "<inputs.working_dir>",
-            "--consented_gvcfs_dir",
-            "<inputs.consented_gvcfs_dir>",
-            "--nonconsented_gvcfs_dir",
-            "<inputs.nonconsented_gvcfs_dir>",
-            "--master_rti_manifest",
-            "<inputs.master_rti_manifest>",
-            "--genedx_manifest",
-            "<inputs.genedx_manifest>"
-        ],
-        "outputs": {
-            "log": {
-                "type": "file",
-                "value": "<inputs.working_dir>filter_gvcfs_by_consent.log"
-            }
-        }
-    },
-    "batch_calculate_t1dgrs2": {
+    "batch_extract_gvcf_variants": {
         "inputs": {
             "working_dir": {
                 "type": "dir"
@@ -110,7 +73,7 @@
             "gvcf_dir": {
                 "type": "dir"
             },
-            "genedx_manifest": {
+            "variant_list": {
                 "type": "file"
             },
             "output_dir": {
@@ -123,40 +86,28 @@
             "simultaneous_jobs": {
                 "type": "int",
                 "default": 50
-            },
-            "control_dir": {
-                "type": "dir",
-                "default": ""
-            },
-            "ref_bfile": {
-                "type": "str",
-                "default": ""
             }
         },
         "cmd": [
             "python",
-            "/opt/batch_calculate_t1dgrs2.py",
-            "--gvcf_dir",
-            "<inputs.gvcf_dir>",
-            "--genedx_manifest",
-            "<inputs.genedx_manifest>",
-            "--output_dir",
-            "<inputs.output_dir>",
+            "/opt/batch_extract_gvcf_variants.py",
             "--working_dir",
             "<inputs.working_dir>",
+            "--output_dir",
+            "<inputs.output_dir>",
+            "--gvcf_dir",
+            "<inputs.gvcf_dir>",
+            "--variant_list",
+            "<inputs.variant_list>",
             "--argo_api_url",
             "<inputs.argo_api_url>",
             "--simultaneous_jobs",
-            "<inputs.simultaneous_jobs>",
-            "--control_dir",
-            "<inputs.control_dir>",
-            "--ref_bfile",
-            "<inputs.ref_bfile>"
+            "<inputs.simultaneous_jobs>"
         ],
         "outputs": {
             "log": {
                 "type": "file",
-                "value": "<inputs.working_dir>batch_calculate_t1dgrs2.log"
+                "value": "<inputs.working_dir>batch_extract_gvcf_variants.log"
             }
         }
     },
@@ -169,6 +120,9 @@
                 "type": "dir"
             },
             "gvcf": {
+                "type": "file"
+            },
+            "variant_list": {
                 "type": "file"
             },
             "out_prefix": {
@@ -198,7 +152,7 @@
             "--out_prefix",
             "<inputs.out_prefix>",
             "--variant_list",
-            "/pipeline/inputs/t1dgrs2_hg19_variants.tsv",
+            "<inputs.variant_list>",
             "--pass_only",
             "<inputs.pass_only>",
             "--filter_by_gq",
@@ -269,7 +223,7 @@
             }
         }
     },
-    "merge_bfile_with_reference": {
+    "merge_sample_bfiles_and_controls": {
         "inputs": {
             "working_dir": {
                 "type": "dir"

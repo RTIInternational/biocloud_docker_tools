@@ -58,7 +58,7 @@
             "value": "<inputs.working_dir>t1dgrs2_sample_pipeline.log"
         }
     },
-    "entry_point": "extract_gvcf_variants",
+    "entry_point": "calculate_t1dgrs2",
     "entry_point_inputs": {
         "working_dir": "<inputs.working_dir>extract_gvcf_variants",
         "output_dir": "<inputs.output_dir>extract_gvcf_variants",
@@ -70,60 +70,6 @@
         "het_gq_threshold": "<inputs.het_gq_threshold>"
     },
     "pipeline": {
-        "extract_gvcf_variants": {
-            "task": "extract_gvcf_variants",
-            "check_output": {
-                "returncode_0": {
-                    "step": "convert_vcf_to_bfile",
-                    "inputs": {
-                        "working_dir": "<inputs.working_dir>convert_vcf_to_bfile",
-                        "output_dir": "<inputs.output_dir>convert_vcf_to_bfile",
-                        "vcf": "<steps.extract_gvcf_variants.outputs.t1dgrs2_variants_vcf>",
-                        "out_prefix": "<inputs.output_dir>convert_vcf_to_bfile/<inputs.sample_id>"
-                    }
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
-        },
-        "convert_vcf_to_bfile": {
-            "task": "convert_vcf_to_bfile",
-            "check_output": {
-                "returncode_0": {
-                    "step": "merge_bfile_with_reference",
-                    "inputs": {
-                        "working_dir": "<inputs.working_dir>merge_bfile_with_reference",
-                        "output_dir": "<inputs.output_dir>merge_bfile_with_reference",
-                        "ref_bfile": "<inputs.ref_bfile>",
-                        "sample_bed": "<steps.convert_vcf_to_bfile.outputs.bed>",
-                        "sample_bim": "<steps.convert_vcf_to_bfile.outputs.bim>",
-                        "sample_fam": "<steps.convert_vcf_to_bfile.outputs.fam>",
-                        "out_prefix": "<inputs.output_dir>merge_bfile_with_reference/<inputs.sample_id>_with_ref"
-                    }
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
-        },
-        "merge_bfile_with_reference": {
-            "task": "merge_bfile_with_reference",
-            "check_output": {
-                "returncode_0": {
-                    "step": "calculate_t1dgrs2",
-                    "inputs": {
-                        "working_dir": "<inputs.working_dir>calculate_t1dgrs2",
-                        "output_dir": "<inputs.output_dir>calculate_t1dgrs2",
-                        "bfile": "<steps.merge_bfile_with_reference.outputs.bfile>",
-                        "out_prefix": "<inputs.output_dir>calculate_t1dgrs2/<inputs.sample_id>_with_ref"
-                    }
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
-        },
         "calculate_t1dgrs2": {
             "task": "calculate_t1dgrs2",
             "check_output": {

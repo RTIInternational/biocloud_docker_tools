@@ -7,15 +7,9 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--gvcf_dir',
+    '--working_dir',
     required = True,
-    help = 'Dir containing gvcf files fromw which to extract variants',
-    type = str
-)
-parser.add_argument(
-    '--genedx_manifest',
-    required = True,
-    help = 'GeneDx manifest file',
+    help = 'Working directory',
     type = str
 )
 parser.add_argument(
@@ -25,15 +19,15 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
-    '--working_dir',
+    '--gvcf_dir',
     required = True,
-    help = 'Working directory',
+    help = 'Dir containing gvcf files fromw which to extract variants',
     type = str
 )
 parser.add_argument(
-    '--ref_bfile',
+    '--variant_list',
     required = True,
-    help = 'Reference samples to merge with test sample',
+    help = 'List of variants to extract',
     type = str
 )
 parser.add_argument(
@@ -47,15 +41,8 @@ parser.add_argument(
     '--simultaneous_jobs',
     required = False,
     help = '# of simultaneous jobs',
-    default = 25,
+    default = 50,
     type = int
-)
-parser.add_argument(
-    '--control_dir',
-    required = False,
-    help = 'Directory containing the gvcfs for control samples',
-    type = str,
-    default = ''
 )
 args = parser.parse_args()
 
@@ -77,9 +64,6 @@ output_dir = args.output_dir if (args.output_dir[-1] == "/") else (args.output_d
 os.system("mkdir -p {}".format(output_dir))
 working_dir = args.working_dir if (args.working_dir[-1] == "/") else (args.working_dir + "/")
 os.system("mkdir -p {}".format(working_dir))
-if args.control_dir:
-    control_dir = args.control_dir if (args.control_dir[-1] == "/") else (args.control_dir + "/")
-    os.system("mkdir -p {}".format(control_dir))
 
 # Get a list of all gvcf files to process
 files = os.listdir(gvcf_dir)
@@ -87,13 +71,6 @@ files_with_paths = [gvcf_dir + file for file in files]
 files_to_process = dict(zip(files, files_with_paths))
 if len(files_to_process) == 0:
     sys.exit("No files to process")
-
-if control_dir:
-    control_files = os.listdir(control_dir)
-    control_files_with_paths = [control_dir + file for file in control_files]
-    control_files_to_process = dict(zip(control_files, control_files_with_paths))
-    if len(control_files_to_process) > 0:
-        files_to_process = files_to_process | control_files_to_process
 
 # Loop over all files
 for file, path in files_to_process.items():
@@ -107,28 +84,17 @@ for file, path in files_to_process.items():
     while get_running_workflows() >= args.simultaneous_jobs:
         time.sleep(30)
 
-    # Create output dir for sample
-    sample_output_dir = "{}{}/".format(output_dir, file_id)
-    if not os.path.exists(sample_output_dir):
-        os.makedirs(sample_output_dir)
-    
-    # Create working dir for sample
-    sample_working_dir = "{}{}/".format(working_dir, file_id)
-    if not os.path.exists(sample_working_dir):
-        os.makedirs(sample_working_dir)
-    
     # Create workflow args for gvcf file
     wf_arguments = {
         "working_dir": sample_working_dir,
         "output_dir": sample_output_dir,
         "gvcf": path,
+        "variant_list": args.variant_list,
         "sample_id": file_id,
-        "genedx_manifest": args.genedx_manifest,
         "pass_only": 0,
         "filter_by_gq": 0,
         "hom_gq_threshold": 99,
-        "het_gq_threshold": 48,
-        "ref_bfile": args.ref_bfile
+        "het_gq_threshold": 48
     }
     file_wf_arguments = working_dir + file_id + '.json'
     with open(file_wf_arguments, 'w', encoding='utf-8') as f:
@@ -149,7 +115,7 @@ for file, path in files_to_process.items():
                     "parameters": [
                         {
                             "name": "wf_definition",
-                            "value": "entrypoint_sample"
+                            "value": "entrypoint_extract_gvcf_variants"
                         },
                         {
                             "name": "wf_arguments",
