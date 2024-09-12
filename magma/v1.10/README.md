@@ -106,3 +106,12 @@ awk 'FNR==NR{map[$1] = $6; next}
   
 ```  
 </details>  
+
+---
+
+<br><br>
+
+## MAGMA CLI Tool
+We created a CLI tool based on this Docker image which automates the process of preparing SNP-location files, annotating SNPs to genes, and performing gene-level analyses using the MAGMA software.
+It is stored on GitHub Enterprise.
+Contact Jesse (jmarks@rti.org) if you would like access: https://github.com/rti-international/mapoa-auxiliary-tools/tree/main/magma-cli
