@@ -70,14 +70,14 @@
             "working_dir": {
                 "type": "dir"
             },
+            "output_dir": {
+                "type": "dir"
+            },
             "gvcf_dir": {
                 "type": "dir"
             },
             "variant_list": {
                 "type": "file"
-            },
-            "output_dir": {
-                "type": "dir"
             },
             "argo_api_url": {
                 "type": "str",
@@ -105,6 +105,14 @@
             "<inputs.simultaneous_jobs>"
         ],
         "outputs": {
+            "plink_merge_list": {
+                "type": "file",
+                "value": "<inputs.output_dir>plink_merge_list.txt"
+            },
+            "missingness_merge_list": {
+                "type": "file",
+                "value": "<inputs.output_dir>missingness_merge_list.txt"
+            },
             "log": {
                 "type": "file",
                 "value": "<inputs.working_dir>batch_extract_gvcf_variants.log"
@@ -118,6 +126,9 @@
             },
             "output_dir": {
                 "type": "dir"
+            },
+            "sample_id": {
+                "type": "str"
             },
             "gvcf": {
                 "type": "file"
@@ -143,6 +154,12 @@
             "het_gq_threshold": {
                 "type": "int",
                 "default": 48
+            },
+            "hla_variants_file": {
+                "type": "file"
+            },
+            "non_hla_variants_file": {
+                "type": "file"
             }
         },
         "cmd": [
@@ -169,7 +186,11 @@
             },
             "missing": {
                 "type": "file",
-                "value": "<inputs.out_prefix>.missing"
+                "value": "<inputs.out_prefix>_missing.txt"
+            },
+            "missings_summary": {
+                "type": "file",
+                "value": "<inputs.out_prefix>_missing_summary.tsv"
             },
             "log": {
                 "type": "file",
@@ -234,14 +255,8 @@
             "ref_bfile": {
                 "type": "str"
             },
-            "sample_bed": {
-                "type": "str"
-            },
-            "sample_bim": {
-                "type": "str"
-            },
-            "sample_fam": {
-                "type": "str"
+            "sample_merge_list": {
+                "type": "file"
             },
             "out_prefix": {
                 "type": "str"
@@ -251,10 +266,8 @@
             "plink",
             "--bfile",
             "<inputs.ref_bfile>",
-            "--bmerge",
-            "<inputs.sample_bed>",
-            "<inputs.sample_bim>",
-            "<inputs.sample_fam>",
+            "--merge-list",
+            "<inputs.sample_merge_list>",
             "--out",
             "<inputs.out_prefix>",
             "--make-bed"
@@ -283,6 +296,44 @@
             "log": {
                 "type": "file",
                 "value": "<inputs.working_dir>merge_bfile_with_reference.log"
+            }
+        }
+    },
+    "merge_file_rows": {
+        "inputs": {
+            "working_dir": {
+                "type": "dir"
+            },
+            "output_dir": {
+                "type": "dir"
+            },
+            "merge_list": {
+                "type": "file"
+            },
+            "header_row_count": {
+                "type": "int"
+            },
+            "out_file": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "/opt/extract_gvcf_variants.pl",
+            "--merge_list",
+            "<inputs.merge_list>",
+            "--merge-header_row_count",
+            "<inputs.header_row_count>",
+            "--out_file",
+            "<inputs.out_file>"
+        ],
+        "outputs": {
+            "merged_file": {
+                "type": "file",
+                "value": "<inputs.out_file>"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.working_dir>merge_file_rows.log"
             }
         }
     },
@@ -342,13 +393,10 @@
             "t1dgrs2_results_file": {
                 "type": "file"
             },
-            "missing_file": {
+            "missingness_summary_file": {
                 "type": "file"
             },
-            "sample_id": {
-                "type": "str"
-            },
-            "genedx_manifest": {
+            "remove_file": {
                 "type": "file"
             },
             "output_file": {
@@ -367,20 +415,14 @@
             "/opt/generate_file_for_export.pl",
             "--t1dgrs2_results_file",
             "<inputs.t1dgrs2_results_file>",
-            "--missing_file",
-            "<inputs.missing_file>",
-            "--sample_id",
-            "<inputs.sample_id>",
-            "--genedx_manifest",
-            "<inputs.genedx_manifest>",
+            "--missingness_summary_file",
+            "<inputs.missingness_summary_file>",
+            "--remove_file",
+            "<inputs.remove_file>",
             "--output_file",
             "<inputs.output_file>",
-            "--hla_variants_file",
-            "/pipeline/inputs/hla_variants.txt",
             "--missing_hla_threshold",
             "<inputs.missing_hla_threshold>",
-            "--non_hla_variants_file",
-            "/pipeline/inputs/non_hla_variants.txt",
             "--missing_non_hla_threshold",
             "<inputs.missing_non_hla_threshold>"
         ],
@@ -392,48 +434,6 @@
             "log": {
                 "type": "file",
                 "value": "<inputs.working_dir>generate_file_for_export.log"
-            }
-        }
-    },
-    "merge_results": {
-        "inputs": {
-            "working_dir": {
-                "type": "dir"
-            },
-            "output_dir": {
-                "type": "dir"
-            },
-            "sample_results_dir": {
-                "type": "dir"
-            },
-            "output_result_file": {
-                "type": "str"
-            },
-            "output_control_file": {
-                "type": "str"
-            }
-        },
-        "cmd": [
-            "/opt/merge_results_files.sh",
-            "--sample_results_dir",
-            "<inputs.sample_results_dir>",
-            "--output_result_file",
-            "<inputs.output_result_file>",
-            "--output_control_file",
-            "<inputs.output_control_file>"
-        ],
-        "outputs": {
-            "results_file": {
-                "type": "file",
-                "value": "<inputs.output_result_file>"
-            },
-            "control_file": {
-                "type": "file",
-                "value": "<inputs.output_control_file>"
-            },
-            "log": {
-                "type": "file",
-                "value": "<inputs.working_dir>merge_results.log"
             }
         }
     },

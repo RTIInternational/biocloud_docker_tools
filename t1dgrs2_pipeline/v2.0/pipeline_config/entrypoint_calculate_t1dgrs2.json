@@ -1,5 +1,5 @@
 {
-    "name": "entrypoint_sample",
+    "name": "entrypoint_calculate_t1dgrs2",
     "inputs": {
         "working_dir": {
             "type": "str",
@@ -11,44 +11,39 @@
             "default": "",
             "required": true
         },
-        "gvcf": {
-            "type": "file",
-            "default": "",
-            "required": true
-        },
-        "sample_id": {
-            "type": "str",
-            "default": "",
-            "required": true
-        },
-        "genedx_manifest": {
-            "type": "file",
-            "default": "",
-            "required": true
-        },
-        "pass_only": {
-            "type": "int",
-            "default": 0,
-            "required": false
-        },
-        "filter_by_gq": {
-            "type": "int",
-            "default": 0,
-            "required": false
-        },
-        "hom_gq_threshold": {
-            "type": "int",
-            "default": 99,
-            "required": false
-        },
-        "het_gq_threshold": {
-            "type": "int",
-            "default": 48,
-            "required": false
-        },
         "ref_bfile": {
             "type": "str",
             "default": "",
+            "required": true
+        },
+        "sample_bfile_merge_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "sample_missingness_summary_merge_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "control_samples": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "variant_list_version": {
+            "type": "str",
+            "default": "mod001",
+            "required": false
+        },
+        "missing_hla_threshold": {
+            "type": "int",
+            "default": 1,
+            "required": false
+        },
+        "missing_non_hla_threshold": {
+            "type": "int",
+            "default": 3,
             "required": false
         }
     },
@@ -58,20 +53,52 @@
             "value": "<inputs.working_dir>t1dgrs2_sample_pipeline.log"
         }
     },
-    "entry_point": "calculate_t1dgrs2",
+    "entry_point": "merge_sample_bfiles_and_controls",
     "entry_point_inputs": {
-        "working_dir": "<inputs.working_dir>extract_gvcf_variants",
-        "output_dir": "<inputs.output_dir>extract_gvcf_variants",
-        "gvcf": "<inputs.gvcf>",
-        "out_prefix": "<inputs.output_dir>extract_gvcf_variants/<inputs.sample_id>",
-        "pass_only": "<inputs.pass_only>",
-        "filter_by_gq": "<inputs.filter_by_gq>",
-        "hom_gq_threshold": "<inputs.hom_gq_threshold>",
-        "het_gq_threshold": "<inputs.het_gq_threshold>"
+        "working_dir": "<inputs.working_dir>merge_sample_bfiles_and_controls",
+        "output_dir": "<inputs.output_dir>merge_sample_bfiles_and_controls",
+        "ref_bfile": "<inputs.ref_bfile>",
+        "sample_bfile_merge_list": "<inputs.sample_bfile_merge_list>",
+        "out_prefix": "<inputs.output_dir>merge_sample_bfiles_and_controls/samples_with_controls"
     },
     "pipeline": {
+        "merge_sample_bfiles_and_controls": {
+            "task": "merge_sample_bfiles_and_controls",
+            "check_output": {
+                "returncode_0": {
+                    "step": "calculate_t1dgrs2",
+                    "inputs": {
+                        "working_dir": "<inputs.working_dir>calculate_t1dgrs2",
+                        "output_dir": "<inputs.output_dir>calculate_t1dgrs2",
+                        "bfile": "<steps.merge_sample_bfiles_and_controls.bfile>",
+                        "out_prefix": "<inputs.output_dir>calculate_t1dgrs2/samples_with_controls"
+                    }
+                },
+                "returncode_1": {
+                    "step": "error"
+                }
+            }
+        },
         "calculate_t1dgrs2": {
             "task": "calculate_t1dgrs2",
+            "check_output": {
+                "returncode_0": {
+                    "step": "merge_missingness_summaries",
+                    "inputs": {
+                        "working_dir": "<inputs.working_dir>merge_missingness_summaries",
+                        "output_dir": "<inputs.output_dir>merge_missingness_summaries",
+                        "merge_list": "<inputs.sample_missingness_summary_merge_list>",
+                        "header_row_count": 1,
+                        "out_file": "<inputs.output_dir>merge_missingness_summaries/missingness_summary.tsv"
+                    }
+                },
+                "returncode_1": {
+                    "step": "error"
+                }
+            }
+        },
+        "merge_missingness_summaries": {
+            "task": "merge_file_rows",
             "check_output": {
                 "returncode_0": {
                     "step": "generate_file_for_export",
@@ -79,10 +106,12 @@
                         "working_dir": "<inputs.working_dir>generate_file_for_export",
                         "output_dir": "<inputs.output_dir>generate_file_for_export",
                         "t1dgrs2_results_file": "<steps.calculate_t1dgrs2.outputs.results>",
-                        "missing_file": "<steps.extract_gvcf_variants.outputs.missing>",
-                        "sample_id": "<inputs.sample_id>",
-                        "genedx_manifest": "<inputs.genedx_manifest>",
-                        "output_file": "<inputs.output_dir><inputs.sample_id>_for_export.csv"
+                        "missingness_summary_file": "<steps.merge_missingness_summaries.outputs.merged_file>",
+                        "remove_file": "<inputs.control_samples>",
+                        "output_file": "<inputs.output_dir><inputs.sample_id>_for_export.csv",
+                        "missing_hla_threshold": "<inputs.missing_hla_threshold>",
+                        "missing_non_hla_threshold": "<inputs.missing_non_hla_threshold>"
+
                     }
                 },
                 "returncode_1": {

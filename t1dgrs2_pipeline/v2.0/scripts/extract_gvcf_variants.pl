@@ -11,6 +11,7 @@ use Data::Dumper;
 # Autoflush STDOUT
 select((select(STDOUT), $|=1)[0]);
 
+my $sample_id = '';
 my $gvcf = '';
 my $out_prefix;
 my $variant_list = '';
@@ -18,15 +19,20 @@ my $pass_only = 0;
 my $filter_by_gq = 0;
 my $hom_gq_threshold = 99;
 my $het_gq_threshold = 48;
+my $hla_variants_file = '';
+my $non_hla_variants_file = '';
 
 GetOptions (
+    'sample_id=s' => \$sample_id,
     'gvcf=s' => \$gvcf,
     'out_prefix=s' => \$out_prefix,
     'variant_list=s' => \$variant_list,
     'pass_only:i' => \$pass_only,
     'filter_by_gq:i' => \$filter_by_gq,
     'hom_gq_threshold:i' => \$hom_gq_threshold,
-    'het_gq_threshold:i' => \$het_gq_threshold
+    'het_gq_threshold:i' => \$het_gq_threshold,
+    'hla_variants_file' => \$hla_variants_file,
+    'non_hla_variants_file' => \$non_hla_variants_file
 ) or die("Invalid options");
 
 sub flip {
@@ -160,11 +166,46 @@ my @missing = sort(keys(%refAlleles));
 if (@missing > 0) {
     print "Missing variants:\n"
 }
-open(OUT_MISSING, "> ".$out_prefix.".missing");
+open(OUT_MISSING, "> ".$out_prefix."_missing.txt");
 foreach my $position (@missing) {
     print OUT_MISSING $variantIds{$position}."\n";
     print $variantIds{$position}."\n";
 }
 close OUT_MISSING;
+
+# Write missingness summary
+$missing_hla_count = 0;
+$missing_non_hla_count = 0;
+if (@missing) {
+    # Read HLA variants
+    my %hla_variants = ();
+    open(HLA, $hla_variants_file);
+    while (<HLA>) {
+        chomp;
+        $hla_variants{$_} = 1;
+    }
+    close HLA;
+
+    # Read non-HLA variants
+    my %non_hla_variants = ();
+    open(NON_HLA, $non_hla_variants_file);
+    while (<NON_HLA>) {
+        chomp;
+        $non_hla_variants{$_} = 1;
+    }
+    close NON_HLA;
+
+    foreach my $missing_variant (@missing) {
+        if (exists($hla_variants{$missing_variant})) {
+            $missing_hla_count++;
+        } elsif (exists($non_hla_variants{$missing_variant})) {
+            $missing_non_hla_count++;
+        }
+    }
+}
+open(OUT_MISSING_SUMMARY, "> ".$out_prefix."_missing_summary.tsv");
+print OUT_MISSING_SUMMARY join("\t", "SAMPLE_ID", "MISSING_HLA_COUNT", "MISSING_NON_HLA_COUNT");
+print OUT_MISSING_SUMMARY join("\t", $sample_id, $missing_hla_count, $missing_non_hla_count);
+close OUT_MISSING_SUMMARY
 
 print "\nExtraction complete\n"

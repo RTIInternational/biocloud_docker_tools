@@ -73,6 +73,8 @@ if len(files_to_process) == 0:
     sys.exit("No files to process")
 
 # Loop over all files
+file_plink_merge_list = "{}plink_merge_list.txt".format(output_dir)
+file_missingness_merge_list = "{}missingness_merge_list.txt".format(output_dir)
 for file, path in files_to_process.items():
     if "gvcf.gz" not in file:
         continue
@@ -83,6 +85,16 @@ for file, path in files_to_process.items():
     # Wait until the number of running workflows is less than max simultaneous jobs
     while get_running_workflows() >= args.simultaneous_jobs:
         time.sleep(30)
+
+    # Create output dir for sample
+    sample_output_dir = "{}{}/".format(output_dir, file_id)
+    if not os.path.exists(sample_output_dir):
+        os.makedirs(sample_output_dir)
+    
+    # Create working dir for sample
+    sample_working_dir = "{}{}/".format(working_dir, file_id)
+    if not os.path.exists(sample_working_dir):
+        os.makedirs(sample_working_dir)
 
     # Create workflow args for gvcf file
     wf_arguments = {
@@ -133,3 +145,11 @@ for file, path in files_to_process.items():
     headers = {'Content-Type': 'application/json'}
     print(f"Starting file: {file_id}")
     response = requests.post(args.argo_api_url, headers=headers, data=json.dumps(workflow))
+
+    # Write sample plink output prefix to merge list
+    with open(file_plink_merge_list, 'a') as f:
+        f.write("{}{}/{}".format(sample_output_dir, "convert_vcf_to_bfile", file_id))
+
+    # Write sample missing summary tsv path to list
+    with open(file_missingness_merge_list, 'a') as f:
+        f.write("{}{}/{}_missing_summary.tsv".format(sample_output_dir, "extract_gvcf_variants", file_id))

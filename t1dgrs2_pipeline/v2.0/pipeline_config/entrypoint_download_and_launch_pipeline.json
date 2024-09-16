@@ -106,6 +106,7 @@
                         "working_dir": "<inputs.working_dir>batch_extract_gvcf_variants",
                         "output_dir": "<inputs.output_dir>batch_extract_gvcf_variants",
                         "gvcf_dir": "<inputs.output_dir>download_gvcfs_from_revvity_sftp/gvcfs",
+                        "variant_list": "/pipeline/inputs/t1dgrs2_hg19_variants_<inputs.variant_list_version>.tsv",
                         "argo_api_url": "<inputs.argo_api_url>",
                         "simultaneous_jobs": "<inputs.simultaneous_jobs>"
                     }

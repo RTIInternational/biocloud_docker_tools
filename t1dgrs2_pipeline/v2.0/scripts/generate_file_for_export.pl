@@ -5,99 +5,69 @@ use warnings;
 use Getopt::Long;
 
 my $t1dgrs2_results_file = '';
-my $missing_file = '';
-my $sample_id = '';
-my $hla_variants_file = '';
-my $missing_hla_threshold = 1;
-my $non_hla_variants_file = '';
-my $missing_non_hla_threshold = 3;
-my $genedx_manifest = '';
+my $missingness_summary_file = '';
+my $remove_file = '';
 my $output_file = '';
+my $missing_hla_threshold = 1;
+my $missing_non_hla_threshold = 3;
 
 GetOptions (
     't1dgrs2_results_file=s' => \$t1dgrs2_results_file,
-    'missing_file=s' => \$missing_file,
-    'sample_id=s' => \$sample_id,
-    'hla_variants_file=s' => \$hla_variants_file,
-    'missing_hla_threshold:i' => \$missing_hla_threshold,
-    'non_hla_variants_file=s' => \$non_hla_variants_file,
-    'missing_non_hla_threshold:i' => \$missing_non_hla_threshold,
-    'genedx_manifest=s' => \$genedx_manifest,
+    'missingness_summary_file=s' => \$missingness_summary_file,
+    'remove_file=s' => \$remove_file,
     'output_file=s' => \$output_file
+    'missing_hla_threshold:i' => \$missing_hla_threshold,
+    'missing_non_hla_threshold:i' => \$missing_non_hla_threshold,
 ) or die("Invalid options");
 
 my @F;
 
-# Read missing_file
-my @missing_variants = ();
-open(MISSING, $missing_file);
+# Read missingness_summary_file
+my %missing_hla_counts = ();
+my %missing_non_hla_counts = ();
+open(MISSING, $missingness_summary_file);
+<MISSING>;
 while (<MISSING>) {
     chomp;
-    push(@missing_variants, $_);
+    @F = split;
+    $missing_hla_counts{$F[0]} = $F[1];
+    $missing_non_hla_counts{$F[0]} = $F[2];
 }
 close MISSING;
 
-# Get counts of missing variants
-my $missing_hla_count = 0;
-my $missing_non_hla_count = 0;
-my $missingness = "FAIL";
-if (@missing_variants) {
-    # Read HLA variants
-    my %hla_variants = ();
-    open(HLA, $hla_variants_file);
-    while (<HLA>) {
-        chomp;
-        $hla_variants{$_} = 1;
-    }
-    close HLA;
-
-    # Read non-HLA variants
-    my %non_hla_variants = ();
-    open(NON_HLA, $non_hla_variants_file);
-    while (<NON_HLA>) {
-        chomp;
-        $non_hla_variants{$_} = 1;
-    }
-    close NON_HLA;
-
-    foreach my $missing_variant (@missing_variants) {
-        if (exists($hla_variants{$missing_variant})) {
-            $missing_hla_count++;
-        } elsif (exists($non_hla_variants{$missing_variant})) {
-            $missing_non_hla_count++;
-        }
-    }
-}
-if (
-    $missing_hla_count < $missing_hla_threshold
-    && $missing_non_hla_count < $missing_non_hla_threshold
-) { $missingness = "PASS"; }
-
-# Read ID xref from manifest file
-my %id_xref = ();
-open(MANIFEST, $genedx_manifest);
-while (<MANIFEST>) {
+# Read list of samples to remove
+my %remove = ();
+open(REMOVE, $remove_file);
+while(<REMOVE>) {
     chomp;
-    @F = split(",");
-    $id_xref{$F[0]} = $F[2];
+    $remove{$_} = 1;
 }
-close MANIFEST;
+close REMOVE;
+
 
 # Open output file for writing
 open(OUTPUT_FILE, ">".$output_file);
-print OUTPUT_FILE join(",", "GeneDx_Accession","RTI_Accession","GRS2","Missingness_Filter")."\n";
+print OUTPUT_FILE join(",", "RTI_Accession","GRS2","Missingness_Filter")."\n";
 
 # Process t1dgrs2 results file
 open(T1DGRS2_RESULTS, $t1dgrs2_results_file);
 <T1DGRS2_RESULTS>;
 while(<T1DGRS2_RESULTS>) {
+    chomp;
     @F = split("\t");
-    if ($F[1] eq $sample_id) {
-        if (exists($id_xref{$F[1]})) {
-            print OUTPUT_FILE join(",", $F[1], $id_xref{$F[1]}, $F[2], $missingness)."\n";
-        } else {
-            print OUTPUT_FILE join(",", $F[1], "NA", $F[2], $missingness)."\n";
+    if (!exists($remove{$F[0]})) {
+        my $missingness = "?";
+        if (exists($missing_hla_counts{$F[0]})) {
+            if (
+                $missing_hla_counts{$F[0]} < $missing_hla_threshold
+                && $missing_non_hla_counts{$F[0]} < $missing_non_hla_threshold
+            ) {
+                $missingness = "PASS";
+            } else {
+                $missingness = "FAIL";
+            }
         }
+        print OUTPUT_FILE join(",", $F[0], $F[2], $missingness)."\n";
     }
 }
 close T1DGRS2_RESULTS;
