@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 use Getopt::Long;
-use JSON;
 use constant FALSE => 0;
 use constant TRUE  => 1;
 use Data::Dumper;
@@ -174,8 +173,8 @@ foreach my $position (@missing) {
 close OUT_MISSING;
 
 # Write missingness summary
-$missing_hla_count = 0;
-$missing_non_hla_count = 0;
+my $missing_hla_count = 0;
+my $missing_non_hla_count = 0;
 if (@missing) {
     # Read HLA variants
     my %hla_variants = ();
@@ -206,6 +205,6 @@ if (@missing) {
 open(OUT_MISSING_SUMMARY, "> ".$out_prefix."_missing_summary.tsv");
 print OUT_MISSING_SUMMARY join("\t", "SAMPLE_ID", "MISSING_HLA_COUNT", "MISSING_NON_HLA_COUNT");
 print OUT_MISSING_SUMMARY join("\t", $sample_id, $missing_hla_count, $missing_non_hla_count);
-close OUT_MISSING_SUMMARY
+close OUT_MISSING_SUMMARY;
 
 print "\nExtraction complete\n"
