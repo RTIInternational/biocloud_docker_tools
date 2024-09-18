@@ -58,9 +58,6 @@ RUN conda install -c bioconda -y t1dgrs2
 #### Install plink1.9 ####
 RUN conda install -c bioconda -y plink
 
-#### Install PERL modules ####
-RUN cpanm install JSON
-
 # Add pipeline inputs
 RUN mkdir -p /pipeline/inputs
 ADD pipeline_inputs/* /pipeline/inputs/
@@ -71,20 +68,22 @@ ADD pipeline_config/* /pipeline/config/
 
 #### Install custom scripts ####
 # Add scripts
-ADD scripts/entrypoint.sh /opt/
-ADD scripts/run_pipeline.py /opt/
-ADD scripts/download_gvcfs_from_revvity_sftp.py /opt/
 ADD scripts/batch_extract_gvcf_variants.py /opt/
+ADD scripts/download_gvcfs_from_revvity_sftp.py /opt/
+ADD scripts/entrypoint.sh /opt/
 ADD scripts/extract_gvcf_variants.pl /opt/
 ADD scripts/generate_file_for_export.pl /opt/
+ADD scripts/merge_file_rows.sh /opt/
+ADD scripts/run_pipeline.py /opt/
 ADD scripts/sftp_results.py /opt/
 # Change permissions
-RUN chmod 755 /opt/entrypoint.sh
-RUN chmod 755 /opt/run_pipeline.py
-RUN chmod 755 /opt/download_gvcfs_from_revvity_sftp.py
 RUN chmod 755 /opt/batch_extract_gvcf_variants.py
+RUN chmod 755 /opt/download_gvcfs_from_revvity_sftp.py
+RUN chmod 755 /opt/entrypoint.sh
 RUN chmod 755 /opt/extract_gvcf_variants.pl
 RUN chmod 755 /opt/generate_file_for_export.pl
+RUN chmod 755 /opt/merge_file_rows.sh
+RUN chmod 755 /opt/run_pipeline.py
 RUN chmod 755 /opt/sftp_results.py
 
 WORKDIR /data
