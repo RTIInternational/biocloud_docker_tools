@@ -52,7 +52,7 @@ RUN conda install -y conda-forge::pandas
 RUN conda install -y conda-forge::openpyxl
 
 # Install t1dgrs2 and dependencies
-RUN conda install -c conda-forge -y setuptools=67.6.1
+RUN conda install -c conda-forge -y setuptools=73.0.1
 RUN conda install -c bioconda -y t1dgrs2
 
 #### Install plink1.9 ####
