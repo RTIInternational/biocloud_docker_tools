@@ -46,7 +46,7 @@
             "--target_dir",
             "<inputs.target_dir>",
             "--manifest_dir",
-            "<inputs.rti_manifest_dir>",
+            "<inputs.manifest_dir>",
             "--downloaded_samples",
             "<inputs.downloaded_samples>",
             "--download_limit",
@@ -136,6 +136,12 @@
             "variant_list": {
                 "type": "file"
             },
+            "hla_variants_file": {
+                "type": "file"
+            },
+            "non_hla_variants_file": {
+                "type": "file"
+            },
             "out_prefix": {
                 "type": "str"
             },
@@ -154,22 +160,22 @@
             "het_gq_threshold": {
                 "type": "int",
                 "default": 48
-            },
-            "hla_variants_file": {
-                "type": "file"
-            },
-            "non_hla_variants_file": {
-                "type": "file"
             }
         },
         "cmd": [
             "/opt/extract_gvcf_variants.pl",
+            "--sample_id",
+            "<inputs.sample_id>",
             "--gvcf",
             "<inputs.gvcf>",
-            "--out_prefix",
-            "<inputs.out_prefix>",
             "--variant_list",
             "<inputs.variant_list>",
+            "--hla_variants_file",
+            "<inputs.hla_variants_file>",
+            "--non_hla_variants_file",
+            "<inputs.non_hla_variants_file>",
+            "--out_prefix",
+            "<inputs.out_prefix>",
             "--pass_only",
             "<inputs.pass_only>",
             "--filter_by_gq",

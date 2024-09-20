@@ -11,8 +11,10 @@ select((select(STDOUT), $|=1)[0]);
 
 my $sample_id = '';
 my $gvcf = '';
-my $out_prefix;
 my $variant_list = '';
+my $hla_variants_file = '';
+my $non_hla_variants_file = '';
+my $out_prefix;
 my $pass_only = 0;
 my $filter_by_gq = 0;
 my $hom_gq_threshold = 99;
@@ -23,14 +25,14 @@ my $non_hla_variants_file = '';
 GetOptions (
     'sample_id=s' => \$sample_id,
     'gvcf=s' => \$gvcf,
-    'out_prefix=s' => \$out_prefix,
     'variant_list=s' => \$variant_list,
+    'hla_variants_file' => \$hla_variants_file,
+    'non_hla_variants_file' => \$non_hla_variants_file
+    'out_prefix=s' => \$out_prefix,
     'pass_only:i' => \$pass_only,
     'filter_by_gq:i' => \$filter_by_gq,
     'hom_gq_threshold:i' => \$hom_gq_threshold,
     'het_gq_threshold:i' => \$het_gq_threshold,
-    'hla_variants_file' => \$hla_variants_file,
-    'non_hla_variants_file' => \$non_hla_variants_file
 ) or die("Invalid options");
 
 sub flip {

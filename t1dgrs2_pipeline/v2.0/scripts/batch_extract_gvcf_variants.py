@@ -31,6 +31,18 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
+    '--hla_variants_file',
+    required = True,
+    help = 'File listing HLA variants used for DQ imputation',
+    type = str
+)
+parser.add_argument(
+    '--non_hla_variants_file',
+    required = True,
+    help = 'File listing HLA variants not used for DQ imputation',
+    type = str
+)
+parser.add_argument(
     '--argo_api_url',
     required = False,
     help = 'URL for ARGO API',
@@ -42,6 +54,34 @@ parser.add_argument(
     required = False,
     help = '# of simultaneous jobs',
     default = 50,
+    type = int
+)
+parser.add_argument(
+    '--pass_only',
+    required = False,
+    help = 'Limit extraction to variants designated PASS',
+    default = 0,
+    type = int
+)
+parser.add_argument(
+    '--filter_by_gq',
+    required = False,
+    help = 'Filter variatns by GQ',
+    default = 0,
+    type = int
+)
+parser.add_argument(
+    '--hom_gq_threshold',
+    required = False,
+    help = 'GQ threshold for homozygous variants',
+    default = 99,
+    type = int
+)
+parser.add_argument(
+    '--het_gq_threshold',
+    required = False,
+    help = 'GQ threshold for heterozygous variants',
+    default = 48,
     type = int
 )
 args = parser.parse_args()
@@ -100,13 +140,15 @@ for file, path in files_to_process.items():
     wf_arguments = {
         "working_dir": sample_working_dir,
         "output_dir": sample_output_dir,
+        "sample_id": file_id,
         "gvcf": path,
         "variant_list": args.variant_list,
-        "sample_id": file_id,
-        "pass_only": 0,
-        "filter_by_gq": 0,
-        "hom_gq_threshold": 99,
-        "het_gq_threshold": 48
+        "hla_variants_file": args.hla_variants_file,
+        "non_hla_variants_file": args.non_hla_variants_file,
+        "pass_only": args.pass_only,
+        "filter_by_gq": args.filter_by_gq,
+        "hom_gq_threshold": args.hom_gq_threshold,
+        "het_gq_threshold": args.het_gq_threshold
     }
     file_wf_arguments = working_dir + file_id + '.json'
     with open(file_wf_arguments, 'w', encoding='utf-8') as f:
