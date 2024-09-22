@@ -116,7 +116,7 @@
                 }
             }
         },
-        "batch_calculate_t1dgrs2": {
+        "batch_extract_gvcf_variants": {
             "task": "batch_extract_gvcf_variants",
             "check_output": {
                 "returncode_0": {

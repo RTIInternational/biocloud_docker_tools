@@ -178,7 +178,7 @@ for file, path in files_to_process.items():
                     ]
                 },
                 "workflowTemplateRef": {
-                    "name": "t1dgrs2-process-sample"
+                    "name": "t1dgrs2-v2-extract-variants"
                 }
             }
         }
