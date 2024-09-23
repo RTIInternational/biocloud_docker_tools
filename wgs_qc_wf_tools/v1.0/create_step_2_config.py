@@ -20,7 +20,7 @@ parser.add_argument(
     required = True
 )
 parser.add_argument(
-    '--step_1_output_json',
+    '--step_1_outputs_json',
     help = 'S3 path to JSON file containing outputs from Step 1',
     type = str,
     required = True

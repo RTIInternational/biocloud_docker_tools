@@ -37,7 +37,7 @@ if ["$task" == "launch_step_1"]; then
         exit 
     fi
     if [ -z "$workflow_id" ]; then
-        workflow_id="3796246"
+        workflow_id="3565858"
     fi
 
     # Launch Step 1
@@ -66,7 +66,7 @@ if ["$task" == "launch_step_2"]; then
         minimum_ancestry_sample_count=50
     fi
     if [ -z "$workflow_id" ]; then
-        workflow_id="3796246"
+        workflow_id="5499609"
     fi
     
     # Create Step 2 config files
