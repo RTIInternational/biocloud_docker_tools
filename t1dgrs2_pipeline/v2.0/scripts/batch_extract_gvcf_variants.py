@@ -4,6 +4,7 @@ import os
 import time
 import requests
 import sys
+import re
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -121,77 +122,81 @@ for file, path in files_to_process.items():
     if "md5" in file or "tbi" in file:
         continue
 
-    file_id = file.split(".")[0]
-    # Wait until the number of running workflows is less than max simultaneous jobs
-    while get_running_workflows() >= args.simultaneous_jobs:
-        time.sleep(30)
+    result = re.search(r'^\S+\-(\d+)_\d+-WGS.+\.hard-filtered.gvcf.gz$', file)
+    if result:
+        sample_id = result.group(1)
 
-    # Create output dir for sample
-    sample_output_dir = "{}{}/".format(output_dir, file_id)
-    if not os.path.exists(sample_output_dir):
-        os.makedirs(sample_output_dir)
-    
-    # Create working dir for sample
-    sample_working_dir = "{}{}/".format(working_dir, file_id)
-    if not os.path.exists(sample_working_dir):
-        os.makedirs(sample_working_dir)
+        # Wait until the number of running workflows is less than max simultaneous jobs
+        while get_running_workflows() >= args.simultaneous_jobs:
+            time.sleep(30)
 
-    # Create workflow args for gvcf file
-    wf_arguments = {
-        "working_dir": sample_working_dir,
-        "output_dir": sample_output_dir,
-        "sample_id": file_id,
-        "gvcf": path,
-        "variant_list": args.variant_list,
-        "hla_variants_file": args.hla_variants_file,
-        "non_hla_variants_file": args.non_hla_variants_file,
-        "pass_only": args.pass_only,
-        "filter_by_gq": args.filter_by_gq,
-        "hom_gq_threshold": args.hom_gq_threshold,
-        "het_gq_threshold": args.het_gq_threshold
-    }
-    file_wf_arguments = working_dir + file_id + '.json'
-    with open(file_wf_arguments, 'w', encoding='utf-8') as f:
-        json.dump(wf_arguments, f)
-    
-    # Submit the workflow for the current file
-    generate_name = file_id + "-"
-    workflow = {
-        "namespace": "early-check-rs-1",
-        "serverDryRun": False,
-        "workflow": {
-            "metadata": {
-                "namespace": "early-check-rs-1",
-                "generateName": generate_name
-            },
-            "spec": {
-                "arguments": {
-                    "parameters": [
-                        {
-                            "name": "wf_definition",
-                            "value": "entrypoint_extract_gvcf_variants"
-                        },
-                        {
-                            "name": "wf_arguments",
-                            "value": file_wf_arguments
-                        }
-                    ]
+        # Create output dir for sample
+        sample_output_dir = "{}{}/".format(output_dir, sample_id)
+        if not os.path.exists(sample_output_dir):
+            os.makedirs(sample_output_dir)
+        
+        # Create working dir for sample
+        sample_working_dir = "{}{}/".format(working_dir, sample_id)
+        if not os.path.exists(sample_working_dir):
+            os.makedirs(sample_working_dir)
+
+        # Create workflow args for gvcf file
+        wf_arguments = {
+            "working_dir": sample_working_dir,
+            "output_dir": sample_output_dir,
+            "sample_id": sample_id,
+            "gvcf": path,
+            "variant_list": args.variant_list,
+            "hla_variants_file": args.hla_variants_file,
+            "non_hla_variants_file": args.non_hla_variants_file,
+            "pass_only": args.pass_only,
+            "filter_by_gq": args.filter_by_gq,
+            "hom_gq_threshold": args.hom_gq_threshold,
+            "het_gq_threshold": args.het_gq_threshold
+        }
+        file_wf_arguments = working_dir + sample_id + '.json'
+        with open(file_wf_arguments, 'w', encoding='utf-8') as f:
+            json.dump(wf_arguments, f)
+        
+        # Submit the workflow for the current file
+        generate_name = sample_id + "-"
+        workflow = {
+            "namespace": "early-check-rs-1",
+            "serverDryRun": False,
+            "workflow": {
+                "metadata": {
+                    "namespace": "early-check-rs-1",
+                    "generateName": generate_name
                 },
-                "workflowTemplateRef": {
-                    "name": "t1dgrs2-v2-extract-variants"
+                "spec": {
+                    "arguments": {
+                        "parameters": [
+                            {
+                                "name": "wf_definition",
+                                "value": "entrypoint_extract_gvcf_variants"
+                            },
+                            {
+                                "name": "wf_arguments",
+                                "value": file_wf_arguments
+                            }
+                        ]
+                    },
+                    "workflowTemplateRef": {
+                        "name": "t1dgrs2-v2-extract-variants"
+                    }
                 }
             }
         }
-    }
 
-    headers = {'Content-Type': 'application/json'}
-    print(f"Starting file: {file_id}")
-    response = requests.post(args.argo_api_url, headers=headers, data=json.dumps(workflow))
+        headers = {'Content-Type': 'application/json'}
+        print(f"Starting file: {file}")
+        response = requests.post(args.argo_api_url, headers=headers, data=json.dumps(workflow))
+        print(response)
 
-    # Write sample plink output prefix to merge list
-    with open(file_plink_merge_list, 'a') as f:
-        f.write("{}{}/{}".format(sample_output_dir, "convert_vcf_to_bfile", file_id))
+        # Write sample plink output prefix to merge list
+        with open(file_plink_merge_list, 'a') as f:
+            f.write("{}{}/{}\n".format(sample_output_dir, "convert_vcf_to_bfile", sample_id))
 
-    # Write sample missing summary tsv path to list
-    with open(file_missingness_merge_list, 'a') as f:
-        f.write("{}{}/{}_missing_summary.tsv".format(sample_output_dir, "extract_gvcf_variants", file_id))
+        # Write sample missing summary tsv path to list
+        with open(file_missingness_merge_list, 'a') as f:
+            f.write("{}{}/{}_missing_summary.tsv\n".format(sample_output_dir, "extract_gvcf_variants", sample_id))
