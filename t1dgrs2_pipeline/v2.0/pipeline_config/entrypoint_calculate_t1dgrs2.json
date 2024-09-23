@@ -50,7 +50,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>t1dgrs2_sample_pipeline.log"
+            "value": "<inputs.working_dir>entrypoint_calculate_t1dgrs2.log"
         }
     },
     "entry_point": "merge_sample_bfiles_and_controls",

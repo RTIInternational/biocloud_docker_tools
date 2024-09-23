@@ -50,7 +50,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>/t1dgrs2_export_pipeline.log"
+            "value": "<inputs.working_dir>/entrypoint_export.log"
         }
     },
     "entry_point": "sftp_results",

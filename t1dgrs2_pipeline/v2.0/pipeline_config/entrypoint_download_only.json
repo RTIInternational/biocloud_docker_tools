@@ -55,7 +55,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>/download_gvcfs_pipeline.log"
+            "value": "<inputs.working_dir>/entrypoint_download_only.log"
         }
     },
     "entry_point": "download_gvcfs_from_revvity_sftp",
@@ -65,7 +65,7 @@
         "sftp_username": "<inputs.sftp_username>",
         "sftp_password": "<inputs.sftp_password>",
         "source_sftp_dir": "<inputs.source_sftp_dir>",
-        "target_dir": "<inputs.output_dir>gvcfs",
+        "target_dir": "<inputs.output_dir>download_gvcfs_from_revvity_sftp/gvcfs",
         "manifest_dir": "<inputs.manifest_dir>",
         "downloaded_samples": "<inputs.downloaded_samples>",
         "download_limit": "<inputs.download_limit>",

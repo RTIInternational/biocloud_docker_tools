@@ -68,14 +68,7 @@ ADD pipeline_config/* /pipeline/config/
 
 #### Install custom scripts ####
 # Add scripts
-ADD scripts/batch_extract_gvcf_variants.py /opt/
-ADD scripts/download_gvcfs_from_revvity_sftp.py /opt/
-ADD scripts/entrypoint.sh /opt/
-ADD scripts/extract_gvcf_variants.pl /opt/
-ADD scripts/generate_file_for_export.pl /opt/
-ADD scripts/merge_file_rows.sh /opt/
-ADD scripts/run_pipeline.py /opt/
-ADD scripts/sftp_results.py /opt/
+ADD scripts/* /opt/
 # Change permissions
 RUN chmod 755 /opt/batch_extract_gvcf_variants.py
 RUN chmod 755 /opt/download_gvcfs_from_revvity_sftp.py

@@ -1,5 +1,5 @@
 {
-    "name": "entrypoint_download_and_launch_pipeline",
+    "name": "entrypoint_download_and_launch",
     "inputs": {
         "working_dir": {
             "type": "dir",
@@ -80,7 +80,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>/download_gvcfs_pipeline.log"
+            "value": "<inputs.working_dir>/entrypoint_download_and_launch_pipeline.log"
         }
     },
     "entry_point": "download_gvcfs_from_revvity_sftp",

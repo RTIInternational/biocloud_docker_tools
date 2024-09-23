@@ -60,7 +60,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>extract_gvcf_variants_pipeline.log"
+            "value": "<inputs.working_dir>entrypoint_extract_gvcf_variants.log"
         }
     },
     "entry_point": "extract_gvcf_variants",

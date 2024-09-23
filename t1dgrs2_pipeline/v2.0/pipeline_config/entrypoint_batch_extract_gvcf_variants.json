@@ -30,23 +30,30 @@
             "type": "int",
             "default": 50,
             "required": false
+        },
+        "variant_list_version": {
+            "type": "str",
+            "default": "mod001",
+            "required": false
         }
     },
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>/download_gvcfs_pipeline.log"
+            "value": "<inputs.working_dir>/entrypoint_batch_extract_gvcf_variants.log"
         }
     },
     "entry_point": "batch_extract_gvcf_variants",
     "entry_point_inputs": {
         "working_dir": "<inputs.working_dir>batch_extract_gvcf_variants",
         "output_dir": "<inputs.output_dir>batch_extract_gvcf_variants",
-        "gvcf_dir": "<inputs.output_dir>download_gvcfs_from_revvity_sftp/gvcfs",
-        "variant_list": "<inputs.variant_list>",
+        "gvcf_dir": "<inputs.gvcf_dir>",
+        "variant_list": "/pipeline/inputs/t1dgrs2_hg19_variants_<inputs.variant_list_version>.tsv",
+        "hla_variants_file": "/pipeline/inputs/hla_variants_<inputs.variant_list_version>.txt",
+        "non_hla_variants_file": "/pipeline/inputs/non_hla_variants_<inputs.variant_list_version>.txt",
         "argo_api_url": "<inputs.argo_api_url>",
         "simultaneous_jobs": "<inputs.simultaneous_jobs>"
-    },
+},
     "pipeline": {
         "batch_extract_gvcf_variants": {
             "task": "batch_extract_gvcf_variants",

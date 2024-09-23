@@ -84,6 +84,9 @@ if ($gvcf =~ /gz$/) {
 print "Extracting " . keys(%variantIds). " variants from $gvcf...\n";
 while(<GVCF>){
     if (/^#/) {
+        if (/^#CHROM/) {
+            s/\S+$/$sample_id/;
+        }
         print OUT_VCF;
     } else {
         chomp;
@@ -202,8 +205,8 @@ if (@missing) {
     }
 }
 open(OUT_MISSING_SUMMARY, "> ".$out_prefix."_missing_summary.tsv");
-print OUT_MISSING_SUMMARY join("\t", "SAMPLE_ID", "MISSING_HLA_COUNT", "MISSING_NON_HLA_COUNT");
-print OUT_MISSING_SUMMARY join("\t", $sample_id, $missing_hla_count, $missing_non_hla_count);
+print OUT_MISSING_SUMMARY join("\t", "SAMPLE_ID", "MISSING_HLA_COUNT", "MISSING_NON_HLA_COUNT")."\n";
+print OUT_MISSING_SUMMARY join("\t", $sample_id, $missing_hla_count, $missing_non_hla_count)."\n";
 close OUT_MISSING_SUMMARY;
 
 print "\nExtraction complete\n"
