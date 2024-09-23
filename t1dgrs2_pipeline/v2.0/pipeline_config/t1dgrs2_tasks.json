@@ -79,6 +79,12 @@
             "variant_list": {
                 "type": "file"
             },
+            "hla_variants_file": {
+                "type": "file"
+            },
+            "non_hla_variants_file": {
+                "type": "file"
+            },
             "argo_api_url": {
                 "type": "str",
                 "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1"
@@ -99,6 +105,10 @@
             "<inputs.gvcf_dir>",
             "--variant_list",
             "<inputs.variant_list>",
+            "--hla_variants_file",
+            "<inputs.hla_variants_file>",
+            "--non_hla_variants_file",
+            "<inputs.non_hla_variants_file>",
             "--argo_api_url",
             "<inputs.argo_api_url>",
             "--simultaneous_jobs",
