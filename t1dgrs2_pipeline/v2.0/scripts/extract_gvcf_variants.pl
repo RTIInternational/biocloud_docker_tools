@@ -19,15 +19,13 @@ my $pass_only = 0;
 my $filter_by_gq = 0;
 my $hom_gq_threshold = 99;
 my $het_gq_threshold = 48;
-my $hla_variants_file = '';
-my $non_hla_variants_file = '';
 
 GetOptions (
     'sample_id=s' => \$sample_id,
     'gvcf=s' => \$gvcf,
     'variant_list=s' => \$variant_list,
     'hla_variants_file' => \$hla_variants_file,
-    'non_hla_variants_file' => \$non_hla_variants_file
+    'non_hla_variants_file' => \$non_hla_variants_file,
     'out_prefix=s' => \$out_prefix,
     'pass_only:i' => \$pass_only,
     'filter_by_gq:i' => \$filter_by_gq,
