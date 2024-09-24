@@ -22,7 +22,7 @@ parser.add_argument(
 parser.add_argument(
     '--gvcf_dir',
     required = True,
-    help = 'Dir containing gvcf files fromw which to extract variants',
+    help = 'Dir containing gvcf files from which to extract variants',
     type = str
 )
 parser.add_argument(
@@ -42,6 +42,14 @@ parser.add_argument(
     required = True,
     help = 'File listing HLA variants not used for DQ imputation',
     type = str
+)
+parser.add_argument(
+    '--sequencing_provider',
+    required = False,
+    help = 'Sequencing provider',
+    default = 'revvity',
+    type = str,
+    choices = ['revvity', 'genedx']
 )
 parser.add_argument(
     '--argo_api_url',
@@ -122,7 +130,10 @@ for file, path in files_to_process.items():
     if "md5" in file or "tbi" in file:
         continue
 
-    result = re.search(r'^\S+\-(\d+)_\d+-WGS.+\.hard-filtered.gvcf.gz$', file)
+    if args.sequencing_provider == 'revvity':
+        result = re.search(r'^\S+\-(\d+)_\d+-WGS.+\.hard-filtered.gvcf.gz$', file)
+    elif args.sequencing_provider == 'genedx':
+        result = re.search(r'^(\d+).hard-filtered.gvcf.gz$', file)
     if result:
         sample_id = result.group(1)
 
@@ -191,7 +202,6 @@ for file, path in files_to_process.items():
         headers = {'Content-Type': 'application/json'}
         print(f"Starting file: {file}")
         response = requests.post(args.argo_api_url, headers=headers, data=json.dumps(workflow))
-        print(response)
 
         # Write sample plink output prefix to merge list
         with open(file_plink_merge_list, 'a') as f:

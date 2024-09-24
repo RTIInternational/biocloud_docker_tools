@@ -16,11 +16,6 @@
             "default": "",
             "required": true
         },
-        "variant_list": {
-            "type": "file",
-            "default": "",
-            "required": true
-        },
         "argo_api_url": {
             "type": "str",
             "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
@@ -34,6 +29,11 @@
         "variant_list_version": {
             "type": "str",
             "default": "mod001",
+            "required": false
+        },
+        "sequencing_provider": {
+            "type": "str",
+            "default": "revvity",
             "required": false
         }
     },
@@ -51,6 +51,7 @@
         "variant_list": "/pipeline/inputs/t1dgrs2_hg19_variants_<inputs.variant_list_version>.tsv",
         "hla_variants_file": "/pipeline/inputs/hla_variants_<inputs.variant_list_version>.txt",
         "non_hla_variants_file": "/pipeline/inputs/non_hla_variants_<inputs.variant_list_version>.txt",
+        "sequencing_provider": "<inputs.sequencing_provider>",
         "argo_api_url": "<inputs.argo_api_url>",
         "simultaneous_jobs": "<inputs.simultaneous_jobs>"
 },

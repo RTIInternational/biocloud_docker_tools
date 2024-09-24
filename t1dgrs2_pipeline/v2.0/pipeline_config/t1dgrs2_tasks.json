@@ -85,6 +85,10 @@
             "non_hla_variants_file": {
                 "type": "file"
             },
+            "sequencing_provider": {
+                "type": "str",
+                "default": "revvity"
+            },
             "argo_api_url": {
                 "type": "str",
                 "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1"
@@ -109,6 +113,8 @@
             "<inputs.hla_variants_file>",
             "--non_hla_variants_file",
             "<inputs.non_hla_variants_file>",
+            "--sequencing_provider",
+            "<inputs.sequencing_provider>",
             "--argo_api_url",
             "<inputs.argo_api_url>",
             "--simultaneous_jobs",
