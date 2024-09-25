@@ -25,7 +25,7 @@ if [ -z "$storage_capacity" ]; then
     storage_capacity=1000
 fi
 
-if ["$task" == "launch_step_1"]; then
+if [[ "$task" == "launch_step_1" ]]; then
 
     # Check parameters and set to default if not provided where applicable
     if [ -z "$parameters" ]; then
@@ -52,7 +52,7 @@ if ["$task" == "launch_step_1"]; then
         --storageCapacity $storage_capacity
 fi
 
-if ["$task" == "launch_step_2"]; then
+if [[ "$task" == "launch_step_2" ]]; then
 
     if [ -z "$step_1_output_json" ]; then
         echo "step_1_output_json not provided, exiting!"
