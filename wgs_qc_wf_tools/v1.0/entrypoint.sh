@@ -18,6 +18,10 @@ if [ -z "$aws_secret_access_key" ]; then
     echo "aws_secret_access_key not provided, exiting!"
     exit
 fi
+if [ -z "$aws_region_name" ]; then
+    echo "aws_region_name not provided, exiting!"
+    exit
+fi
 # Assign default values if parameters not provided
 if [ -z "$role_arn" ]; then
     role_arn="arn:aws:iam::515876044319:role/service-role/OmicsWorkflow-20240601210363"
@@ -49,6 +53,7 @@ if [[ "$task" == "launch_step_1" ]]; then
         --run_metadata_output_dir $run_metadata_output_dir \
         --aws_access_key_id $aws_access_key_id \
         --aws_secret_access_key $aws_secret_access_key \
+        --aws_region_name $aws_region_name \
         --workflowId $workflow_id \
         --parameters $parameters \
         --name $name \
@@ -78,6 +83,7 @@ if [[ "$task" == "launch_step_2" ]]; then
     python3 /opt/create_step_2_config.py \
         --aws_access_key_id $aws_access_key_id \
         --aws_secret_access_key $aws_secret_access_key \
+        --aws_region_name $aws_region_name \
         --step_1_output_json $step_1_output_json \
         --output_dir $step_2_config_output_dir \
         --minimum_ancestry_sample_count $minimum_ancestry_sample_count
@@ -90,6 +96,7 @@ if [[ "$task" == "launch_step_2" ]]; then
             --run_metadata_output_dir $run_metadata_output_dir \
             --aws_access_key_id $aws_access_key_id \
             --aws_secret_access_key $aws_secret_access_key \
+            --aws_region_name $aws_region_name \
             --workflowId $workflow_id \
             --parameters $step_2_config \
             --name $name \

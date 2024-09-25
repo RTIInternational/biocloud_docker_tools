@@ -25,6 +25,12 @@ parser.add_argument(
     required = True
 )
 parser.add_argument(
+    '--aws_region_name',
+    help='AWS region in which to run workflow',
+    type = str,
+    required = True
+)
+parser.add_argument(
     '--workflowId',
     help='Healthomics ID of workflow',
     type = str,
@@ -106,7 +112,7 @@ run_metadata_output_dir = args.run_metadata_output_dir if (args.run_metadata_out
 os.system("mkdir -p {}".format(run_metadata_output_dir))
 
 # Open AWS Healthomics session
-session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key)
+session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key, region_name=args.aws_region_name)
 omics = session.client('omics')
 
 # Read wf arguments

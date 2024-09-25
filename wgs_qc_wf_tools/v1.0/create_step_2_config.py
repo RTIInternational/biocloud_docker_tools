@@ -20,6 +20,12 @@ parser.add_argument(
     required = True
 )
 parser.add_argument(
+    '--aws_region_name',
+    help='AWS region in which step 1 of the workflow was run',
+    type = str,
+    required = True
+)
+parser.add_argument(
     '--step_1_outputs_json',
     help = 'S3 path to JSON file containing outputs from Step 1',
     type = str,
@@ -51,7 +57,7 @@ if result:
     step_1_output_bucket = result.group(1)
     step_1_output_json = result.group(2)
     local_step_1_output_json = '{}step_1_outputs.json'.format(output_dir)
-    session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key)
+    session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key, region_name=args.aws_region_name)
     s3 = session.resource('s3')
     my_bucket = s3.Bucket(step_1_output_bucket)
     my_bucket.download_file(step_1_output_json, local_step_1_output_json)
