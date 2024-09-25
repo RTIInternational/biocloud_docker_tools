@@ -109,8 +109,7 @@
                         "run_id": "<inputs.run_id>",
                         "t1dgrs2_results_file": "<steps.calculate_t1dgrs2.outputs.results>",
                         "missingness_summary_file": "<steps.merge_missingness_summaries.outputs.merged_file>",
-                        "remove_file": "<inputs.ref_samples>",
-                        "output_file": "<inputs.output_dir>generate_file_for_export/_for_export.csv",
+                        "remove_file": "<inputs.ref_bfile>.fam",
                         "missing_hla_threshold": "<inputs.missing_hla_threshold>",
                         "missing_non_hla_threshold": "<inputs.missing_non_hla_threshold>"
 
