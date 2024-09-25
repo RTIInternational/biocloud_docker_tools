@@ -277,7 +277,7 @@
             "ref_bfile": {
                 "type": "str"
             },
-            "sample_merge_list": {
+            "sample_bfile_merge_list": {
                 "type": "file"
             },
             "out_prefix": {
@@ -289,7 +289,7 @@
             "--bfile",
             "<inputs.ref_bfile>",
             "--merge-list",
-            "<inputs.sample_merge_list>",
+            "<inputs.sample_bfile_merge_list>",
             "--out",
             "<inputs.out_prefix>",
             "--make-bed"

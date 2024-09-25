@@ -83,4 +83,3 @@ WORKDIR /data
 RUN chown -R docker:staff /data
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
-

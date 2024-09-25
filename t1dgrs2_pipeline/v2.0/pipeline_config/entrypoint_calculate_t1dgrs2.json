@@ -2,12 +2,12 @@
     "name": "entrypoint_calculate_t1dgrs2",
     "inputs": {
         "working_dir": {
-            "type": "str",
+            "type": "dir",
             "default": "",
             "required": true
         },
         "output_dir": {
-            "type": "str",
+            "type": "dir",
             "default": "",
             "required": true
         },
