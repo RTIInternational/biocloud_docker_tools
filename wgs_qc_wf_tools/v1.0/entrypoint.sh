@@ -4,15 +4,19 @@ args_array=("$@")
 # Check for required parameters
 if [ -z "$task" ]; then
     echo "task not provided, exiting!"
-    exit 
+    exit
+fi
+if [ -z "$run_metadata_output_dir" ]; then
+    echo "run_metadata_output_dir not provided, exiting!"
+    exit
 fi
 if [ -z "$aws_access_key_id" ]; then
     echo "aws_access_key_id not provided, exiting!"
-    exit 
+    exit
 fi
 if [ -z "$aws_secret_access_key" ]; then
     echo "aws_secret_access_key not provided, exiting!"
-    exit 
+    exit
 fi
 # Assign default values if parameters not provided
 if [ -z "$role_arn" ]; then
@@ -42,6 +46,7 @@ if [[ "$task" == "launch_step_1" ]]; then
 
     # Launch Step 1
     python3 /opt/start_run.py \
+        --run_metadata_output_dir $run_metadata_output_dir \
         --aws_access_key_id $aws_access_key_id \
         --aws_secret_access_key $aws_secret_access_key \
         --workflowId $workflow_id \
@@ -82,6 +87,7 @@ if [[ "$task" == "launch_step_2" ]]; then
     for step_2_config in $(ls ${step_2_config_output_dir}*step_2_config*.json); do
         name=$(perl -ne 'if (/\"output_basename\"\: \"(.+?)\"/) { print $1; }' $step_2_config)
         python3 /opt/start_run.py \
+            --run_metadata_output_dir $run_metadata_output_dir \
             --aws_access_key_id $aws_access_key_id \
             --aws_secret_access_key $aws_secret_access_key \
             --workflowId $workflow_id \
