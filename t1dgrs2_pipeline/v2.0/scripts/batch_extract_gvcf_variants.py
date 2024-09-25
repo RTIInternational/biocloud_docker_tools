@@ -133,7 +133,7 @@ for file, path in files_to_process.items():
     if args.sequencing_provider == 'revvity':
         result = re.search(r'^\S+\-(\d+)_\d+-WGS.+\.hard-filtered.gvcf.gz$', file)
     elif args.sequencing_provider == 'genedx':
-        result = re.search(r'^(\d+).hard-filtered.gvcf.gz$', file)
+        result = re.search(r'^(\S+).hard-filtered.gvcf.gz$', file)
     if result:
         sample_id = result.group(1)
 

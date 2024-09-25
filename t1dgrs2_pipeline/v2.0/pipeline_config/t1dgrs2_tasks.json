@@ -340,7 +340,7 @@
             }
         },
         "cmd": [
-            "/opt/extract_gvcf_variants.pl",
+            "/opt/merge_file_rows.sh",
             "--merge_list",
             "<inputs.merge_list>",
             "--merge-header_row_count",
@@ -412,6 +412,9 @@
             "output_dir": {
                 "type": "dir"
             },
+            "run_id": {
+                "type": "str"
+            },
             "t1dgrs2_results_file": {
                 "type": "file"
             },
@@ -420,9 +423,6 @@
             },
             "remove_file": {
                 "type": "file"
-            },
-            "output_file": {
-                "type": "str"
             },
             "missing_hla_threshold": {
                 "type": "int",
@@ -442,7 +442,7 @@
             "--remove_file",
             "<inputs.remove_file>",
             "--output_file",
-            "<inputs.output_file>",
+            "<inputs.output_dir><inputs.run_id>_export.csv",
             "--missing_hla_threshold",
             "<inputs.missing_hla_threshold>",
             "--missing_non_hla_threshold",

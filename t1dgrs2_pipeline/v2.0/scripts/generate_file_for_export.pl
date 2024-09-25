@@ -40,10 +40,10 @@ my %remove = ();
 open(REMOVE, $remove_file);
 while(<REMOVE>) {
     chomp;
-    $remove{$_} = 1;
+    @F = split("\t");
+    $remove{$F[1]} = 1;
 }
 close REMOVE;
-
 
 # Open output file for writing
 open(OUTPUT_FILE, ">".$output_file);

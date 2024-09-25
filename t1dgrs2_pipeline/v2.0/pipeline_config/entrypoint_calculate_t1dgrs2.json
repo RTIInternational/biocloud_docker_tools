@@ -11,6 +11,11 @@
             "default": "",
             "required": true
         },
+        "run_id": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
         "ref_bfile": {
             "type": "str",
             "default": "",
@@ -105,10 +110,11 @@
                     "inputs": {
                         "working_dir": "<inputs.working_dir>generate_file_for_export",
                         "output_dir": "<inputs.output_dir>generate_file_for_export",
+                        "run_id": "<inputs.run_id>",
                         "t1dgrs2_results_file": "<steps.calculate_t1dgrs2.outputs.results>",
                         "missingness_summary_file": "<steps.merge_missingness_summaries.outputs.merged_file>",
-                        "remove_file": "<inputs.control_samples>",
-                        "output_file": "<inputs.output_dir><inputs.sample_id>_for_export.csv",
+                        "remove_file": "<inputs.ref_samples>",
+                        "output_file": "<inputs.output_dir>generate_file_for_export/_for_export.csv",
                         "missing_hla_threshold": "<inputs.missing_hla_threshold>",
                         "missing_non_hla_threshold": "<inputs.missing_non_hla_threshold>"
 
