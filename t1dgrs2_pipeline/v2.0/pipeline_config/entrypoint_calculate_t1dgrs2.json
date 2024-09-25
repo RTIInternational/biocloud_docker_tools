@@ -89,7 +89,7 @@
                         "working_dir": "<inputs.working_dir>merge_missingness_summaries",
                         "output_dir": "<inputs.output_dir>merge_missingness_summaries",
                         "merge_list": "<inputs.sample_missingness_summary_merge_list>",
-                        "header_row_count": 1,
+                        "header_row_count": "1",
                         "out_file": "<inputs.output_dir>merge_missingness_summaries/missingness_summary.tsv"
                     }
                 },
