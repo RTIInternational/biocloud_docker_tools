@@ -370,6 +370,9 @@
             "bfile": {
                 "type": "str"
             },
+            "yml": {
+                "type": "file"
+            },
             "out_prefix": {
                 "type": "str"
             }
@@ -381,7 +384,7 @@
             "-b",
             "<inputs.bfile>",
             "-c",
-            "/pipeline/config/t1dgrs2_settings.yml",
+            "<inputs.yml>",
             "-o",
             "<inputs.out_prefix>"
         ],

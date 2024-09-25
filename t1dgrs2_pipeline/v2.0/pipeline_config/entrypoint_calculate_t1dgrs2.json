@@ -31,11 +31,6 @@
             "default": "",
             "required": true
         },
-        "control_samples": {
-            "type": "file",
-            "default": "",
-            "required": true
-        },
         "variant_list_version": {
             "type": "str",
             "default": "mod001",
@@ -76,6 +71,7 @@
                         "working_dir": "<inputs.working_dir>calculate_t1dgrs2",
                         "output_dir": "<inputs.output_dir>calculate_t1dgrs2",
                         "bfile": "<steps.merge_sample_bfiles_and_controls.bfile>",
+                        "yml": "/pipeline/config/t1dgrs2_settings_<inputs.variant_list_version>.yml",
                         "out_prefix": "<inputs.output_dir>calculate_t1dgrs2/samples_with_controls"
                     }
                 },
