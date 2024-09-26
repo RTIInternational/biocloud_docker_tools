@@ -177,7 +177,7 @@ close OUT_MISSING;
 # Write missingness summary
 my $missing_hla_count = 0;
 my $missing_non_hla_count = 0;
-if (@missing) {
+if (@missing > 0) {
     # Read HLA variants
     my %hla_variants = ();
     open(HLA, $hla_variants_file);
