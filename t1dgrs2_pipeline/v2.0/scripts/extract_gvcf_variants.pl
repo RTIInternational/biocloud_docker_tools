@@ -54,9 +54,9 @@ sub flip {
     return $alleleComplement;
 }
 
-my %variantIds = ();
-my %refAlleles = ();
-my %altAlleles = ();
+my %variant_ids = ();
+my %ref_alleles = ();
+my %alt_alleles = ();
 my @F = ();
 
 # Read extract file
@@ -68,9 +68,9 @@ if ($variant_list =~ /gz$/) {
 while (<EXTRACT>) {
     chomp;
     @F = split();
-    $variantIds{$F[0]} = $F[1] ? $F[1] : (join(":", $F[0], $F[2], $F[3]));
-    $refAlleles{$F[0]} = $F[2];
-    $altAlleles{$F[0]} = $F[3];
+    $variant_ids{$F[0]} = $F[1] ? $F[1] : (join(":", $F[0], $F[2], $F[3]));
+    $ref_alleles{$F[0]} = $F[2];
+    $alt_alleles{$F[0]} = $F[3];
 }
 close EXTRACT;
 
@@ -81,7 +81,7 @@ if ($gvcf =~ /gz$/) {
 } else {
     open(GVCF, $gvcf);
 }
-print "Extracting " . keys(%variantIds). " variants from $gvcf...\n";
+print "Extracting " . keys(%variant_ids). " variants from $gvcf...\n";
 while(<GVCF>){
     if (/^#/) {
         if (/^#CHROM/) {
@@ -122,14 +122,14 @@ while(<GVCF>){
                         my $end = $1;
                         for (my $i=$F[1]; $i<=$end; $i++) {
                             my $chrPos = $chr.":".$i;
-                            if (exists($refAlleles{$chrPos})) {
-                                print OUT_VCF join("\t", $chr, $i, $variantIds{$chrPos}, $refAlleles{$chrPos}, $altAlleles{$chrPos}, @F[5..6], ".", $F[8], $F[9])."\n";
-                                delete($refAlleles{$chrPos});
+                            if (exists($ref_alleles{$chrPos})) {
+                                print OUT_VCF join("\t", $chr, $i, $variant_ids{$chrPos}, $ref_alleles{$chrPos}, $alt_alleles{$chrPos}, @F[5..6], ".", $F[8], $F[9])."\n";
+                                delete($ref_alleles{$chrPos});
                             }
                         }
                     } else {
                         my $chrPos = $chr.":".$F[1];
-                        if (exists($refAlleles{$chrPos}) && $F[3] eq $refAlleles{$chrPos}) {
+                        if (exists($ref_alleles{$chrPos}) && $F[3] eq $ref_alleles{$chrPos}) {
                             my %sampleAlleles = ();
                             $sampleAlleles{'0'} = 1;
                             $sampleAlleles{$sampleA1Index} = 1;
@@ -146,9 +146,9 @@ while(<GVCF>){
                                         $F[4] = $alleles[$sampleA1Index];
                                     }
                                 }
-                                if ($F[4] eq $altAlleles{$chrPos}) {
-                                    print OUT_VCF join("\t", $chr, $F[1], $variantIds{$chrPos}, @F[3..9])."\n";
-                                    delete($refAlleles{$chrPos});
+                                if ($F[4] eq $alt_alleles{$chrPos}) {
+                                    print OUT_VCF join("\t", $chr, $F[1], $variant_ids{$chrPos}, @F[3..9])."\n";
+                                    delete($ref_alleles{$chrPos});
                                 }
                             }
                         }
@@ -162,48 +162,44 @@ while(<GVCF>){
 close GVCF;
 close OUT_VCF;
 
-# Write list of missing positions
-my @missing = sort(keys(%refAlleles));
+## Read HLA variants
+my %hla_variants = ();
+open(HLA, $hla_variants_file);
+while (<HLA>) {
+    chomp;
+    $hla_variants{$_} = 1;
+}
+close HLA;
+
+## Read non-HLA variants
+my %non_hla_variants = ();
+open(NON_HLA, $non_hla_variants_file);
+while (<NON_HLA>) {
+    chomp;
+    $non_hla_variants{$_} = 1;
+}
+close NON_HLA;
+
+# Write list of missing variants and count
+my @missing = sort(keys(%ref_alleles));
+my $missing_hla_count = 0;
+my $missing_non_hla_count = 0;
+open(OUT_MISSING, "> ".$out_prefix."_missing.txt");
 if (@missing > 0) {
     print "Missing variants:\n"
 }
-open(OUT_MISSING, "> ".$out_prefix."_missing.txt");
-foreach my $position (@missing) {
-    print OUT_MISSING $variantIds{$position}."\n";
-    print $variantIds{$position}."\n";
+foreach my $missing_variant (@missing) {
+    print OUT_MISSING $variant_ids{$missing_variant}."\n";
+    print $variant_ids{$missing_variant}."\n";
+    if (exists($hla_variants{$variant_ids{$missing_variant}})) {
+        $missing_hla_count++;
+    } elsif (exists($non_hla_variants{$variant_ids{$missing_variant}})) {
+        $missing_non_hla_count++;
+    }
 }
 close OUT_MISSING;
 
 # Write missingness summary
-my $missing_hla_count = 0;
-my $missing_non_hla_count = 0;
-if (@missing > 0) {
-    # Read HLA variants
-    my %hla_variants = ();
-    open(HLA, $hla_variants_file);
-    while (<HLA>) {
-        chomp;
-        $hla_variants{$_} = 1;
-    }
-    close HLA;
-
-    # Read non-HLA variants
-    my %non_hla_variants = ();
-    open(NON_HLA, $non_hla_variants_file);
-    while (<NON_HLA>) {
-        chomp;
-        $non_hla_variants{$_} = 1;
-    }
-    close NON_HLA;
-
-    foreach my $missing_variant (@missing) {
-        if (exists($hla_variants{$missing_variant})) {
-            $missing_hla_count++;
-        } elsif (exists($non_hla_variants{$missing_variant})) {
-            $missing_non_hla_count++;
-        }
-    }
-}
 open(OUT_MISSING_SUMMARY, "> ".$out_prefix."_missing_summary.tsv");
 print OUT_MISSING_SUMMARY join("\t", "SAMPLE_ID", "MISSING_HLA_COUNT", "MISSING_NON_HLA_COUNT")."\n";
 print OUT_MISSING_SUMMARY join("\t", $sample_id, $missing_hla_count, $missing_non_hla_count)."\n";
