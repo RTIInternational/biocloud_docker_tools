@@ -15,7 +15,7 @@ GetOptions (
     't1dgrs2_results_file=s' => \$t1dgrs2_results_file,
     'missingness_summary_file=s' => \$missingness_summary_file,
     'remove_file=s' => \$remove_file,
-    'output_file=s' => \$output_file
+    'output_file=s' => \$output_file,
     'missing_hla_threshold:i' => \$missing_hla_threshold,
     'missing_non_hla_threshold:i' => \$missing_non_hla_threshold,
 ) or die("Invalid options");
