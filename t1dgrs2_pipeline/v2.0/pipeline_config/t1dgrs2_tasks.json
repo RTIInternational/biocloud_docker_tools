@@ -454,7 +454,7 @@
         "outputs": {
             "file_for_export": {
                 "type": "file",
-                "value": "<inputs.output_file>"
+                "value": "<inputs.output_dir><inputs.run_id>_export.csv"
             },
             "log": {
                 "type": "file",
