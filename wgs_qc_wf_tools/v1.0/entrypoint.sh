@@ -64,8 +64,8 @@ fi
 
 if [[ "$task" == "launch_step_2" ]]; then
 
-    if [ -z "$step_1_output_json" ]; then
-        echo "step_1_output_json not provided, exiting!"
+    if [ -z "$step_1_run_metadata_json" ]; then
+        echo "step_1_run_metadata_json not provided, exiting!"
         exit 
     fi
     if [ -z "$step_2_config_output_dir" ]; then
@@ -76,7 +76,7 @@ if [[ "$task" == "launch_step_2" ]]; then
         minimum_ancestry_sample_count=50
     fi
     if [ -z "$workflow_id" ]; then
-        workflow_id="5499609"
+        workflow_id="4708363"
     fi
     
     # Create Step 2 config files
@@ -84,7 +84,7 @@ if [[ "$task" == "launch_step_2" ]]; then
         --aws_access_key_id $aws_access_key_id \
         --aws_secret_access_key $aws_secret_access_key \
         --aws_region_name $aws_region_name \
-        --step_1_output_json $step_1_output_json \
+        --step_1_run_metadata_json $step_1_run_metadata_json \
         --output_dir $step_2_config_output_dir \
         --minimum_ancestry_sample_count $minimum_ancestry_sample_count
     

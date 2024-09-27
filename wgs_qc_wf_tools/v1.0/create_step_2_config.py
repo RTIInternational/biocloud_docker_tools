@@ -26,8 +26,8 @@ parser.add_argument(
     required = True
 )
 parser.add_argument(
-    '--step_1_outputs_json',
-    help = 'S3 path to JSON file containing outputs from Step 1',
+    '--step_1_run_metadata_json',
+    help = 'Path to JSON file containing run metadata for step 1',
     type = str,
     required = True
 )
@@ -51,8 +51,13 @@ args = parser.parse_args()
 output_dir = args.output_dir if (args.output_dir[-1] == "/") else (args.output_dir + "/")
 os.system("mkdir -p {}".format(output_dir))
 
+# Read step 1 run metadata json
+with open(args.step_1_run_metadata_json) as f:
+    step_1_run_metadata = json.load(f)
+
 # Retrieve Step 1 outputs json from S3
-result = re.search('s3://(.+?)/(.+)', args.step_1_output_json)
+step_1_outputs_json = "{}/logs/outputs.json".format(step_1_run_metadata['runOutputUri'])
+result = re.search('s3://(.+?)/(.+)', step_1_outputs_json)
 if result:
     step_1_output_bucket = result.group(1)
     step_1_output_json = result.group(2)

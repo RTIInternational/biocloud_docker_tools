@@ -22,7 +22,7 @@ docker run -ti \
     -e task=launch_step_2 \
     -e aws_access_key_id=<AWS_ACCESS_KEY_ID> \
     -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
-    -e step_1_output_json=<STEP_1_OUTPUT_JSON> \
+    -e step_1_run_metadata_json=<STEP_1_RUN_METADATA_JSON> \
     -e step_2_config_output_dir=<STEP_2_CONFIG_OUTPUT_DIR> \
     -e role_arn=<ROLE_ARN> \  # Optional - default arn:aws:iam::515876044319:role/service-role/OmicsWorkflow-20240601210363
     -e output_uri=<OUTPUT_URI> \  # Optional - default s3://rti-nida-iomics-oa-healthomics-output/
