@@ -103,7 +103,7 @@ if [[ "$task" == "launch_step_2" ]]; then
             --roleArn $role_arn \
             --outputUri $output_uri \
             --storageCapacity $storage_capacity
-        sleep 30s
+        sleep 5s
     done
 
 fi
