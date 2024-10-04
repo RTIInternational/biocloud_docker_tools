@@ -1,0 +1,129 @@
+#!/bin/bash
+args_array=("$@")
+
+# Check for required parameters
+if [ -z "$task" ]; then
+    echo "--task not provided, exiting!"
+    exit
+fi
+if [ -z "$aws_access_key_id" ]; then
+    echo "--aws_access_key_id not provided, exiting!"
+    exit
+fi
+if [ -z "$aws_secret_access_key" ]; then
+    echo "--aws_secret_access_key not provided, exiting!"
+    exit
+fi
+if [ -z "$aws_region_name" ]; then
+    echo "--aws_region_name not provided, exiting!"
+    exit
+fi
+if [ -z "$name" ]; then
+    echo "--name not provided, exiting!"
+    exit 
+fi
+# Assign default values if parameters not provided
+if [ -z "$storage_capacity" ]; then
+    storage_capacity=2000
+fi
+
+if [[ "$task" == "create_wf" ]]; then
+
+    # Check parameters and set to default if not provided where applicable
+    if [ -z "$repo_dir" ]; then
+        echo "--repo_dir not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$main" ]; then
+        echo "--main not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$parameter_template" ]; then
+        echo "--parameter_template not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$description" ]; then
+        echo "--description not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$engine" ]; then
+        workflow_id="WDL"
+    fi
+
+    # Launch Step 1
+    python3 /opt/create_wf.py \
+        --aws_access_key_id $aws_access_key_id \
+        --aws_secret_access_key $aws_secret_access_key \
+        --aws_region_name $aws_region_name \
+        --repo_dir $repo_dir \
+        --main $main \
+        --parameter_template $parameter_template \
+        --name $name \
+        --description $description \
+        --engine $engine \
+        --storage_capacity $storage_capacity
+
+fi
+
+if [[ "$task" == "start_run" ]]; then
+
+    # Check parameters and set to default if not provided where applicable
+    if [ -z "$charge_code" ]; then
+        echo "--charge_code not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$role_arn" ]; then
+        echo "--role_arn not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$workflow_id" ]; then
+        echo "--workflow_id not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$parameters" ]; then
+        echo "--parameters not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$output_uri" ]; then
+        echo "--output_uri not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$run_metadata_output_dir" ]; then
+        echo "--run_metadata_output_dir not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$workflow_type" ]; then
+        workflow_type="PUBLIC"
+    fi
+    if [ -z "$priority" ]; then
+        priority=100
+    fi
+    if [ -z "$storage_type" ]; then
+        storage_type="STATIC"
+    fi
+    if [ -z "$log_level" ]; then
+        log_level="ALL"
+    fi
+    if [ -z "$retention_mode" ]; then
+        retention_mode="RETAIN"
+    fi
+    
+    python3 /opt/start_run.py \
+        --charge_code $charge_code \
+        --aws_access_key_id $aws_access_key_id \
+        --aws_secret_access_key $aws_secret_access_key \
+        --aws_region_name $aws_region_name \
+        --role_arn $role_arn \
+        --workflow_id $workflow_id \
+        --parameters $parameters \
+        --name $name \
+        --output_uri $output_uri \
+        --run_metadata_output_dir $run_metadata_output_dir \
+        --workflow_type $workflow_type \
+        --priority $priority \
+        --storage_type $storage_type \
+        --storage_capacity $storage_capacity \
+        --log_level $log_level \
+        --retention_mode $retention_mode
+
+fi
