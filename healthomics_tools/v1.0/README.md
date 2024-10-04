@@ -50,7 +50,6 @@ docker run -ti \
     -e aws_access_key_id=<AWS_ACCESS_KEY_ID> \
     -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
     -e aws_region_name=<AWS_REGION_NAME> \
-    -e role_arn=<ROLE_ARN> \
     -e workflow_id=<WORKFLOW_ID> \ 
     -e parameters=<PARAMETERS> \
     -e name=<NAME> \
@@ -72,13 +71,12 @@ docker run -ti \
 | aws_access_key_id | AWS access key ID |  | Yes |
 | aws_secret_access_key | AWS secret access key |  | Yes |
 | aws_region_name | AWS region |  | Yes |
-| role_arn | AWS role ARN |  | Yes |
 | workflow_id | string |  | Yes |
 | parameters | /path/to/parameters_json |  | Yes |
 | name | string |  | Yes |
 | output_uri | /S3/path |  | Yes |
 | run_metadata_output_dir | /path/to/run_metadata_output |  | Yes |
-| workflow_type | `PRIVATE`, `PUBLIC` | `PUBLIC` | No |
+| workflow_type | `PRIVATE`, `READY2RUN` | `PRIVATE` | No |
 | priority | `1-100000` | `100` | No |
 | storage_type | `STATIC`, `DYNAMIC` | `STATIC` | No |
 | storage_capacity | `1-10000` (GB) | `2000` | No |

@@ -31,12 +31,6 @@ parser.add_argument(
     required = True
 )
 parser.add_argument(
-    '--role_arn',
-    help='Service role for the run',
-    type = str,
-    required = True
-)
-parser.add_argument(
     '--workflow_id',
     help='Healthomics ID of workflow',
     type = str,
@@ -117,10 +111,6 @@ args = parser.parse_args()
 run_metadata_output_dir = args.run_metadata_output_dir if (args.run_metadata_output_dir[-1] == "/") else (args.run_metadata_output_dir + "/")
 os.system("mkdir -p {}".format(run_metadata_output_dir))
 
-# Open AWS Healthomics session
-session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key, region_name=args.aws_region_name)
-omics = session.client('omics')
-
 # Read wf arguments
 with open(args.parameters) as f:
     parameters = json.load(f)
@@ -128,9 +118,19 @@ with open(args.parameters) as f:
 # Create tags for run
 tags = { "project-number": args.charge_code}
 
+# Open AWS Healthomics session
+session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key, region_name=args.aws_region_name)
+
+# Get role ARN
+client = session.client("sts")
+account_id = client.get_caller_identity()["Account"]
+role_arn = "arn:aws:iam::{}:role/OmicsWorkflow".format(account_id)
+
+# Start run
+omics = session.client('omics')
 request_id = "{}_{}".format(args.name, str(datetime.now().timestamp()))
 response = omics.start_run(
-    roleArn=args.role_arn,
+    roleArn=role_arn,
     workflowId=args.workflow_id,
     parameters=parameters,
     name=args.name,

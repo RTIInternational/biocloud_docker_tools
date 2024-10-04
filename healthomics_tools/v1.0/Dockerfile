@@ -8,6 +8,7 @@ LABEL description="Tools for launching WGS QC workflow"
 # Install System Dependencies
 RUN apt-get update && apt-get install -y \
     less \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container

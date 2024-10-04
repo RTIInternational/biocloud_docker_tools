@@ -47,20 +47,23 @@ if [[ "$task" == "create_wf" ]]; then
         exit 
     fi
     if [ -z "$engine" ]; then
-        workflow_id="WDL"
+        engine="WDL"
     fi
 
-    # Launch Step 1
+    # Add repo to list of safe directories
+    git config --global --add safe.directory "$repo_dir"
+
+    # Create workflow
     python3 /opt/create_wf.py \
-        --aws_access_key_id $aws_access_key_id \
-        --aws_secret_access_key $aws_secret_access_key \
-        --aws_region_name $aws_region_name \
-        --repo_dir $repo_dir \
-        --main $main \
-        --parameter_template $parameter_template \
-        --name $name \
-        --description $description \
-        --engine $engine \
+        --aws_access_key_id "$aws_access_key_id" \
+        --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_region_name "$aws_region_name" \
+        --repo_dir "$repo_dir" \
+        --main "$main" \
+        --parameter_template "$parameter_template" \
+        --name "$name" \
+        --description "$description" \
+        --engine "$engine" \
         --storage_capacity $storage_capacity
 
 fi
@@ -70,10 +73,6 @@ if [[ "$task" == "start_run" ]]; then
     # Check parameters and set to default if not provided where applicable
     if [ -z "$charge_code" ]; then
         echo "--charge_code not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$role_arn" ]; then
-        echo "--role_arn not provided, exiting!"
         exit 
     fi
     if [ -z "$workflow_id" ]; then
@@ -93,7 +92,7 @@ if [[ "$task" == "start_run" ]]; then
         exit 
     fi
     if [ -z "$workflow_type" ]; then
-        workflow_type="PUBLIC"
+        workflow_type="PRIVATE"
     fi
     if [ -z "$priority" ]; then
         priority=100
@@ -108,22 +107,22 @@ if [[ "$task" == "start_run" ]]; then
         retention_mode="RETAIN"
     fi
     
+    # Start run
     python3 /opt/start_run.py \
-        --charge_code $charge_code \
-        --aws_access_key_id $aws_access_key_id \
-        --aws_secret_access_key $aws_secret_access_key \
-        --aws_region_name $aws_region_name \
-        --role_arn $role_arn \
-        --workflow_id $workflow_id \
-        --parameters $parameters \
-        --name $name \
-        --output_uri $output_uri \
-        --run_metadata_output_dir $run_metadata_output_dir \
-        --workflow_type $workflow_type \
+        --charge_code "$charge_code" \
+        --aws_access_key_id "$aws_access_key_id" \
+        --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_region_name "$aws_region_name" \
+        --workflow_id "$workflow_id" \
+        --parameters "$parameters" \
+        --name "$name" \
+        --output_uri "$output_uri" \
+        --run_metadata_output_dir "$run_metadata_output_dir" \
+        --workflow_type "$workflow_type" \
         --priority $priority \
-        --storage_type $storage_type \
+        --storage_type "$storage_type" \
         --storage_capacity $storage_capacity \
-        --log_level $log_level \
-        --retention_mode $retention_mode
+        --log_level "$log_level" \
+        --retention_mode "$retention_mode"
 
 fi
