@@ -105,6 +105,12 @@ main_wdl = os.path.basename(args.main)
 repo = Repo(repo_dir)
 git_hash = repo.git.rev_parse(repo.head, short=6)
 
+# Create tags
+tags = {
+    "git-repo-name": os.path.basename(os.path.normpath(repo_dir)),
+    "git-repo-hash": git_hash
+}
+
 # Create zip object for wf files
 dependencies = get_wf_dependencies(repo_dir, main_wdl_repo_path)
 dependencies.append("{}{}".format(repo_dir, main_wdl_repo_path))
@@ -123,7 +129,7 @@ session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_acc
 omics = session.client('omics')
 request_id = args.name + str(datetime.now().timestamp())
 response = omics.create_workflow(
-    name="{}_{}".format(args.name, git_hash),
+    name=args.name,
     description=args.description,
     engine=args.engine,
     definitionZip=wf_def,

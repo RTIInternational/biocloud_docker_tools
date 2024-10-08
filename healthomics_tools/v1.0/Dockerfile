@@ -30,3 +30,4 @@ RUN chmod 755 /opt/start_run.py
 
 # Set the entry point command
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
+
