@@ -136,5 +136,6 @@ response = omics.create_workflow(
     main=main_wdl,
     parameterTemplate=wf_params,
     storageCapacity=args.storage_capacity,
-    requestId=request_id
+    requestId=request_id,
+    tags=tags
 )
