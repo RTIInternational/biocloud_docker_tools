@@ -16,7 +16,6 @@ docker run -ti \
     -e aws_region_name=<AWS_REGION_NAME> \
     -e repo_dir=<REPO_DIR> \
     -e main=<MAIN_WDL> \
-    -e parameter_template=<PARAMETER_TEMPLATE> \
     -e name=<NAME> \
     -e description=<DESCRIPTION> \
     -e engine=<ENGINE> \
@@ -32,12 +31,13 @@ docker run -ti \
 | aws_region_name | AWS region |  | Yes |
 | repo_dir | /path/to/repo |  | Yes |
 | main | /path/to/wf_wdl |  | Yes |
-| parameter_template | /path/to/parameter_json |  | Yes |
 | name | string |  | Yes |
 | description | string |  | Yes |
 | engine | `WDL`, `NEXTFLOW`, `CWL`  | `WDL` | No |
 | storage_capacity | `1-10000` (GB) | `2000` | No |
 
+### Notes
+- For the WDL workflow file specified with `main`, there must be accompanying dependencies and parameters json files with specific naming conventions. For example, if the WDL file specified with `main` is `example_wf.wdl`, there must be a `example_wf_dependencies.json` and `example_wf_parameters.json` file in the same directory.
 
 ## Start Run
 

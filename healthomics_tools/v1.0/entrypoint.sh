@@ -38,10 +38,6 @@ if [[ "$task" == "create_wf" ]]; then
         echo "--main not provided, exiting!"
         exit 
     fi
-    if [ -z "$parameter_template" ]; then
-        echo "--parameter_template not provided, exiting!"
-        exit 
-    fi
     if [ -z "$description" ]; then
         echo "--description not provided, exiting!"
         exit 
@@ -60,7 +56,6 @@ if [[ "$task" == "create_wf" ]]; then
         --aws_region_name "$aws_region_name" \
         --repo_dir "$repo_dir" \
         --main "$main" \
-        --parameter_template "$parameter_template" \
         --name "$name" \
         --description "$description" \
         --engine "$engine" \

@@ -42,12 +42,6 @@ parser.add_argument(
     required = True
 )
 parser.add_argument(
-    '--parameter_template',
-    help = 'JSON containing workflow parameters',
-    type = str,
-    required = True
-)
-parser.add_argument(
     '--name',
     help = 'Name of wf to be created',
     type = str,
@@ -96,20 +90,17 @@ def get_wf_dependencies(repo_dir, wf_path):
     dependencies = list(set(dependencies))
     return dependencies
 
+def get_wf_parameters(repo_dir, wf_path):
+    parameters = {}
+    wf_parameters_file = "{}{}".format(repo_dir, wf_path).replace(".wdl", "_parameters.json")
+    with open(wf_parameters_file) as f:
+        parameters = json.load(f)
+    return parameters
+
 
 repo_dir = args.repo_dir if (args.repo_dir[-1] == "/") else (args.repo_dir + "/")
 main_wdl_repo_path = args.main.replace(repo_dir, '')
 main_wdl = os.path.basename(args.main)
-
-# Get repo hash
-repo = Repo(repo_dir)
-git_hash = repo.git.rev_parse(repo.head, short=6)
-
-# Create tags
-tags = {
-    "git-repo-name": os.path.basename(os.path.normpath(repo_dir)),
-    "git-repo-hash": git_hash
-}
 
 # Create zip object for wf files
 dependencies = get_wf_dependencies(repo_dir, main_wdl_repo_path)
@@ -120,9 +111,18 @@ with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         zip_file.write(file, os.path.basename(file))
 wf_def = zip_buffer.getvalue()
 
-# Read parameter template
-with open(args.parameter_template) as f:
-    wf_params = json.load(f)
+# Get workflow parameters
+wf_params = get_wf_parameters(repo_dir, main_wdl_repo_path)
+
+# Get git repo hash
+repo = Repo(repo_dir)
+git_hash = repo.git.rev_parse(repo.head, short=6)
+
+# Create tags
+tags = {
+    "git-repo-name": os.path.basename(os.path.normpath(repo_dir)),
+    "git-repo-hash": git_hash
+}
 
 # Create Healthomics session and create wf
 session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key, region_name=args.aws_region_name)
