@@ -16,6 +16,11 @@ parser.add_argument(
     type = int
 )
 parser.add_argument(
+    "--in_header_as_text",
+    help="Read header as text rather than splitting into columns",
+    action = 'store_true'
+)
+parser.add_argument(
     "--in_sep",
     help="Separator used in input file",
     type = str.lower,
@@ -180,27 +185,26 @@ def flip(allele, missingAllele, deletionAllele):
 
 # Read input file header and write to output file
 if args.in_header != 0:
-    header = pd.read_csv(
-        args.in_file,
-        sep=sep, header=None,
-        nrows=args.in_header
-    )
-    header.to_csv(
-        args.out_file,
-        index = False,
-        compression=args.out_compression,
-        sep = sep,
-        header = False,
-        mode = 'w'
-    )
-    # header = ''
-    # with open(args.in_file) as inFile:
-    #     for x in range(args.in_header):
-    #         header += next(inFile)
-    # inFile.close()
-    # outFile = open(args.out_file, "w")
-    # n = outFile.write(header)
-    # outFile.close()
+    if args.in_header_as_text:
+        out_file = open(args.out_file, "w")
+        with open(args.in_file) as in_file:
+            for x in range(args.in_header):
+                out_file.write(next(in_file))
+        out_file.close()
+    else:
+        header = pd.read_csv(
+            args.in_file,
+            sep=sep, header=None,
+            nrows=args.in_header
+        )
+        header.to_csv(
+            args.out_file,
+            index = False,
+            compression=args.out_compression,
+            sep = sep,
+            header = False,
+            mode = 'w'
+        )
 
 # Create iterator for ref
 ref = pd.read_csv(
