@@ -229,7 +229,7 @@ for dfIn in pd.read_csv(args.in_file, sep=sep, header=None, skiprows=args.in_hea
     inChunkCount += 1
 
     # Filter out variants in input file that are outside the chunk
-    dfIn.iloc[:, chrCol] = dfIn.iloc[:, chrCol].astype(str)
+    dfIn[[chrCol]] = dfIn[[chrCol]].astype(str)
     dfIn = dfIn[dfIn.iloc[:, chrCol].isin(filterChrs)]
 
     if len(dfIn.index) > 0:
@@ -262,10 +262,10 @@ for dfIn in pd.read_csv(args.in_file, sep=sep, header=None, skiprows=args.in_hea
             (dfIn["___a2_rc___"] <= dfIn.iloc[:, a1Col]) & (dfIn["___a2_rc___"] <= dfIn.iloc[:, a2Col]) & (dfIn["___a2_rc___"] <= dfIn["___a1_rc___"]),
         ]
         choices = [
-            dfIn.iloc[:, posCol].astype(str) + "_" + dfIn.iloc[:, a1Col] + "_" + dfIn.iloc[:, a2Col],
-            dfIn.iloc[:, posCol].astype(str) + "_" + dfIn.iloc[:, a2Col] + "_" + dfIn.iloc[:, a1Col],
-            dfIn.iloc[:, posCol].astype(str) + "_" + dfIn["___a1_rc___"] + "_" + dfIn["___a2_rc___"],
-            dfIn.iloc[:, posCol].astype(str) + "_" + dfIn["___a2_rc___"] + "_" + dfIn["___a1_rc___"]
+            dfIn[[posCol]].astype(str) + "_" + dfIn.iloc[:, a1Col] + "_" + dfIn.iloc[:, a2Col],
+            dfIn[[posCol]].astype(str) + "_" + dfIn.iloc[:, a2Col] + "_" + dfIn.iloc[:, a1Col],
+            dfIn[[posCol]].astype(str) + "_" + dfIn["___a1_rc___"] + "_" + dfIn["___a2_rc___"],
+            dfIn[[posCol]].astype(str) + "_" + dfIn["___a2_rc___"] + "_" + dfIn["___a1_rc___"]
         ]
         dfIn.iloc[:, idCol] = np.select(conditions, choices)
         idChr = chrom
