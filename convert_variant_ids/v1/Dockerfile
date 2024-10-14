@@ -1,4 +1,4 @@
-FROM python:3.7.6-slim-stretch
+FROM python:3.13.0-slim-bullseye
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
