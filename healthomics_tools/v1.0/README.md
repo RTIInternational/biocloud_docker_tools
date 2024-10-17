@@ -50,7 +50,7 @@ docker run -ti \
     -e aws_access_key_id=<AWS_ACCESS_KEY_ID> \
     -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
     -e aws_region_name=<AWS_REGION_NAME> \
-    -e workflow_id=<WORKFLOW_ID> \ 
+    -e workflow_id=<WORKFLOW_ID> \
     -e parameters=<PARAMETERS> \
     -e name=<NAME> \
     -e output_uri=<OUTPUT_URI> \
