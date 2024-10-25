@@ -58,7 +58,7 @@ def set_wf_inputs (wf_def, wf_args):
         if wf_def['inputs'][input]['type'] == 'dir':
             wf_vars[key] = initialize_dir(wf_vars[key])
         elif wf_def['inputs'][input]['type'] == 'file':
-            if !os.path.isfile(wf_vars[key]):
+            if not os.path.isfile(wf_vars[key]):
                 sys.exit("Input file does not exist: {}".format(wf_vars[key]))
 
     return wf_vars
