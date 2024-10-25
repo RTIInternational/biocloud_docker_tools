@@ -23,12 +23,12 @@
         },
         "hladq_variants_file": {
             "type": "file",
-            "default": "/pipeline/inputs/t1dgrs2_hg19_variants.tsv",
+            "default": "/pipeline/inputs/hla_dq_variants.txt",
             "required": false
         },
         "non_hladq_variants_file": {
             "type": "file",
-            "default": "/pipeline/inputs/t1dgrs2_hg19_variants.tsv",
+            "default": "/pipeline/inputs/non_hla_dq_variants.txt",
             "required": false
         },
         "sequencing_provider": {
