@@ -163,27 +163,27 @@ close GVCF;
 close OUT_VCF;
 
 ## Read HLA-DQ variants
-my %hla_variants = ();
+my %hladq_variants = ();
 open(HLA, $hladq_variants_file);
 while (<HLA>) {
     chomp;
-    $hla_variants{$_} = 1;
+    $hladq_variants{$_} = 1;
 }
 close HLA;
 
 ## Read non-HLA-DQ variants
-my %non_hla_variants = ();
+my %non_hladq_variants = ();
 open(NON_HLA, $non_hladq_variants_file);
 while (<NON_HLA>) {
     chomp;
-    $non_hla_variants{$_} = 1;
+    $non_hladq_variants{$_} = 1;
 }
 close NON_HLA;
 
 # Write list of missing variants and count
 my @missing = sort(keys(%ref_alleles));
-my $missing_hla_count = 0;
-my $missing_non_hla_count = 0;
+my $missing_hladq_count = 0;
+my $missing_non_hladq_count = 0;
 open(OUT_MISSING, "> ".$out_prefix."_missing.txt");
 if (@missing > 0) {
     print "Missing variants:\n"
@@ -191,18 +191,18 @@ if (@missing > 0) {
 foreach my $missing_variant (@missing) {
     print OUT_MISSING $variant_ids{$missing_variant}."\n";
     print $variant_ids{$missing_variant}."\n";
-    if (exists($hla_variants{$variant_ids{$missing_variant}})) {
-        $missing_hla_count++;
-    } elsif (exists($non_hla_variants{$variant_ids{$missing_variant}})) {
-        $missing_non_hla_count++;
+    if (exists($hladq_variants{$variant_ids{$missing_variant}})) {
+        $missing_hladq_count++;
+    } elsif (exists($non_hladq_variants{$variant_ids{$missing_variant}})) {
+        $missing_non_hladq_count++;
     }
 }
 close OUT_MISSING;
 
 # Write missingness summary
 open(OUT_MISSING_SUMMARY, "> ".$out_prefix."_missing_summary.tsv");
-print OUT_MISSING_SUMMARY join("\t", "SAMPLE_ID", "MISSING_HLA_COUNT", "MISSING_NON_HLA_COUNT")."\n";
-print OUT_MISSING_SUMMARY join("\t", $sample_id, $missing_hla_count, $missing_non_hla_count)."\n";
+print OUT_MISSING_SUMMARY join("\t", "SAMPLE_ID", "MISSING_HLADQ_COUNT", "MISSING_NON_HLADQ_COUNT")."\n";
+print OUT_MISSING_SUMMARY join("\t", $sample_id, $missing_hladq_count, $missing_non_hladq_count)."\n";
 close OUT_MISSING_SUMMARY;
 
 print "\nExtraction complete\n"
