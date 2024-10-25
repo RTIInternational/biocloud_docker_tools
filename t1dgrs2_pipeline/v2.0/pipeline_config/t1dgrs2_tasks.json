@@ -130,6 +130,8 @@
             "<inputs.output_dir>",
             "--gvcf_dir",
             "<inputs.gvcf_dir>",
+            "--control_gvcf_dir",
+            "<inputs.control_gvcf_dir>",
             "--variant_list",
             "<inputs.variant_list>",
             "--hladq_variants_file",
