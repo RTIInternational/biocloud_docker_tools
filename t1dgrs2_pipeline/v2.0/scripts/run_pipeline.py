@@ -57,6 +57,9 @@ def set_wf_inputs (wf_def, wf_args):
         key = "inputs.{}".format(input)
         if wf_def['inputs'][input]['type'] == 'dir':
             wf_vars[key] = initialize_dir(wf_vars[key])
+        elif wf_def['inputs'][input]['type'] == 'file':
+            if !os.path.isfile(wf_vars[key]):
+                sys.exit("Input file does not exist: {}".format(wf_vars[key]))
 
     return wf_vars
 
@@ -84,6 +87,9 @@ def set_task_inputs (wf_vars, task_def, step_inputs, base_key):
         key = "{}.inputs.{}".format(base_key, parameter)
         if task_def['inputs'][parameter]['type'] == 'dir':
             wf_vars[key] = initialize_dir(wf_vars[key])
+        elif task_def['inputs'][parameter]['type'] == 'file':
+            if !os.path.isfile(wf_vars[key]):
+                sys.exit("Input file does not exist: {}".format(wf_vars[key]))
 
 
 def prepare_task_cmd (cmd_template, wf_vars, base_key):
@@ -163,13 +169,13 @@ with open(args.wf_arguments) as f:
 
 # Set wf input vars from wf definition and arguments
 wf_vars = set_wf_inputs(wf_def, wf_args)
-wf_vars['inputs.working_dir'] = wf_vars['inputs.working_dir'] if (wf_vars['inputs.working_dir'][-1] == "/") else (wf_vars['inputs.working_dir'] + "/")
+wf_vars['inputs.output_dir'] = wf_vars['inputs.output_dir'] if (wf_vars['inputs.output_dir'][-1] == "/") else (wf_vars['inputs.output_dir'] + "/")
 
 # Create working dir if it doesn't exist
-os.system("mkdir -p {}".format(wf_vars['inputs.working_dir']))
+os.system("mkdir -p {}".format(wf_vars['inputs.output_dir']))
 
 # Open log for wf
-wf_log = "{}{}.log".format(wf_vars['inputs.working_dir'], wf_def['name'])
+wf_log = "{}{}.log".format(wf_vars['inputs.output_dir'], wf_def['name'])
 wf_logger = setup_logger('wf_logger', wf_log)
 wf_logger.info("Initializing workflow {}".format(wf_def['name']))
 
@@ -180,7 +186,7 @@ next_step = {
 }
 while next_step['step'] != 'exit' and next_step['step'] != 'error':
     # Create directory for step
-    step_dir = "{}{}".format(wf_vars['inputs.working_dir'], next_step['step'])
+    step_dir = "{}{}".format(wf_vars['inputs.output_dir'], next_step['step'])
     os.system("mkdir -p {}".format(step_dir))
     # Set task inputs
     base_key = "steps.{}".format(next_step['step'])

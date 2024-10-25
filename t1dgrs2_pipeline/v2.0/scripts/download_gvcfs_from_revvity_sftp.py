@@ -174,24 +174,21 @@ with open(args.downloaded_samples, 'w') as f:
 
 # Save the list of samples successfully downloaded
 print("{} samples downloaded.".format(len(successful_downloads)))
-if len(successful_downloads) > 0:
-    successful_downloads_json = "{}successful_downloads.json".format(target_dir)
-    print("See {} for details".format(successful_downloads_json))
-    with open(successful_downloads_json, 'w') as f:
-        json.dump(successful_downloads, f)
+successful_downloads_json = "{}successful_downloads.json".format(target_dir)
+print("See {} for details".format(successful_downloads_json))
+with open(successful_downloads_json, 'w') as f:
+    json.dump(successful_downloads, f)
 
 # Save the list of samples failing download
 print("{} samples failed to download.".format(len(failed_downloads)))
-if len(failed_downloads) > 0:
-    failed_downloads_json = "{}failed_downloads.json".format(target_dir)
-    print("See {} for details".format(failed_downloads_json))
-    with open(failed_downloads_json, 'w') as f:
-        json.dump(failed_downloads, f)
+failed_downloads_json = "{}failed_downloads.json".format(target_dir)
+print("See {} for details".format(failed_downloads_json))
+with open(failed_downloads_json, 'w') as f:
+    json.dump(failed_downloads, f)
 
 # Save the list of samples failing checksum
 print("{} samples failed the checksum test.".format(len(failed_downloads)))
-if len(failed_checksums) > 0:
-    failed_checksums_json = "{}failed_checksums.json".format(target_dir)
-    print("See {} for details".format(failed_checksums_json))
-    with open(failed_checksums_json, 'w') as f:
-        json.dump(failed_checksums, f)
+failed_checksums_json = "{}failed_checksums.json".format(target_dir)
+print("See {} for details".format(failed_checksums_json))
+with open(failed_checksums_json, 'w') as f:
+    json.dump(failed_checksums, f)

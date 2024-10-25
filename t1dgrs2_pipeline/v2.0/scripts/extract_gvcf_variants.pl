@@ -12,8 +12,8 @@ select((select(STDOUT), $|=1)[0]);
 my $sample_id = '';
 my $gvcf = '';
 my $variant_list = '';
-my $hla_variants_file = '';
-my $non_hla_variants_file = '';
+my $hladq_variants_file = '';
+my $non_hladq_variants_file = '';
 my $out_prefix;
 my $pass_only = 0;
 my $filter_by_gq = 0;
@@ -24,8 +24,8 @@ GetOptions (
     'sample_id=s' => \$sample_id,
     'gvcf=s' => \$gvcf,
     'variant_list=s' => \$variant_list,
-    'hla_variants_file=s' => \$hla_variants_file,
-    'non_hla_variants_file=s' => \$non_hla_variants_file,
+    'hladq_variants_file=s' => \$hladq_variants_file,
+    'non_hladq_variants_file=s' => \$non_hladq_variants_file,
     'out_prefix=s' => \$out_prefix,
     'pass_only:i' => \$pass_only,
     'filter_by_gq:i' => \$filter_by_gq,
@@ -162,18 +162,18 @@ while(<GVCF>){
 close GVCF;
 close OUT_VCF;
 
-## Read HLA variants
+## Read HLA-DQ variants
 my %hla_variants = ();
-open(HLA, $hla_variants_file);
+open(HLA, $hladq_variants_file);
 while (<HLA>) {
     chomp;
     $hla_variants{$_} = 1;
 }
 close HLA;
 
-## Read non-HLA variants
+## Read non-HLA-DQ variants
 my %non_hla_variants = ();
-open(NON_HLA, $non_hla_variants_file);
+open(NON_HLA, $non_hladq_variants_file);
 while (<NON_HLA>) {
     chomp;
     $non_hla_variants{$_} = 1;

@@ -1,11 +1,6 @@
 {
     "name": "entrypoint_calculate_t1dgrs2",
     "inputs": {
-        "working_dir": {
-            "type": "dir",
-            "default": "",
-            "required": true
-        },
         "output_dir": {
             "type": "dir",
             "default": "",
@@ -16,7 +11,7 @@
             "default": "",
             "required": true
         },
-        "ref_bfile": {
+        "control_bfile": {
             "type": "str",
             "default": "",
             "required": true
@@ -31,9 +26,9 @@
             "default": "",
             "required": true
         },
-        "variant_list_version": {
-            "type": "str",
-            "default": "mod001",
+        "t1dgrs2_yml": {
+            "type": "file",
+            "default": "/pipeline/config/t1dgrs2_settings.yml",
             "required": false
         },
         "missing_hla_threshold": {
@@ -50,14 +45,13 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>entrypoint_calculate_t1dgrs2.log"
+            "value": "<inputs.output_dir>entrypoint_calculate_t1dgrs2.log"
         }
     },
     "entry_point": "merge_sample_bfiles_and_controls",
     "entry_point_inputs": {
-        "working_dir": "<inputs.working_dir>merge_sample_bfiles_and_controls",
         "output_dir": "<inputs.output_dir>merge_sample_bfiles_and_controls",
-        "ref_bfile": "<inputs.ref_bfile>",
+        "control_bfile": "<inputs.control_bfile>",
         "sample_bfile_merge_list": "<inputs.sample_bfile_merge_list>",
         "out_prefix": "<inputs.output_dir>merge_sample_bfiles_and_controls/samples_with_controls"
     },
@@ -68,10 +62,9 @@
                 "returncode_0": {
                     "step": "calculate_t1dgrs2",
                     "inputs": {
-                        "working_dir": "<inputs.working_dir>calculate_t1dgrs2",
                         "output_dir": "<inputs.output_dir>calculate_t1dgrs2",
                         "bfile": "<steps.merge_sample_bfiles_and_controls.outputs.bfile>",
-                        "yml": "/pipeline/config/t1dgrs2_settings_<inputs.variant_list_version>.yml",
+                        "yml": "<inputs.t1dgrs2_yml>",
                         "out_prefix": "<inputs.output_dir>calculate_t1dgrs2/samples_with_controls"
                     }
                 },
@@ -86,7 +79,6 @@
                 "returncode_0": {
                     "step": "merge_missingness_summaries",
                     "inputs": {
-                        "working_dir": "<inputs.working_dir>merge_missingness_summaries",
                         "output_dir": "<inputs.output_dir>merge_missingness_summaries",
                         "merge_list": "<inputs.sample_missingness_summary_merge_list>",
                         "header_row_count": "1",
@@ -104,12 +96,11 @@
                 "returncode_0": {
                     "step": "generate_file_for_export",
                     "inputs": {
-                        "working_dir": "<inputs.working_dir>generate_file_for_export",
                         "output_dir": "<inputs.output_dir>generate_file_for_export",
                         "run_id": "<inputs.run_id>",
                         "t1dgrs2_results_file": "<steps.calculate_t1dgrs2.outputs.results>",
                         "missingness_summary_file": "<steps.merge_missingness_summaries.outputs.merged_file>",
-                        "remove_file": "<inputs.ref_bfile>.fam",
+                        "remove_file": "<inputs.control_bfile>.fam",
                         "missing_hla_threshold": "<inputs.missing_hla_threshold>",
                         "missing_non_hla_threshold": "<inputs.missing_non_hla_threshold>"
 

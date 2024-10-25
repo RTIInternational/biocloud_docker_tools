@@ -127,9 +127,9 @@ refDelAllele = args.ref_deletion_allele
 chrom = args.chr
 inChunkSize = args.in_chunk_size
 refChunkSize = args.ref_chunk_size
-filterChrs = {}
+filter_chrs = {}
 if chrom == "23" or chrom == "X":
-    filterChrs = {
+    filter_chrs = {
         "23",
         "25",
         "X",
@@ -144,14 +144,14 @@ if chrom == "23" or chrom == "X":
         "PAR2"
     }
 elif chrom == "24" or chrom == "Y":
-    filterChrs = {
+    filter_chrs = {
         "24",
         "Y"
         "chr24",
         "chrY"
     }
 else:
-    filterChrs = {
+    filter_chrs = {
         chrom,
         "chr" + chrom
     }
@@ -224,13 +224,14 @@ refChunkCount += 1
 # Read input file
 inChunkCount = 1
 mode = 'w'
-for dfIn in pd.read_csv(args.in_file, sep=sep, header=None, skiprows=args.in_header, chunksize=inChunkSize):
+for dfIn in pd.read_csv(args.in_file, sep=sep, header=None, dtype=str, skiprows=args.in_header, chunksize=inChunkSize):
     print("Reading input file chunk {0} ({1} records) of chr{2}...".format(inChunkCount, inChunkSize, chrom))
     inChunkCount += 1
 
+    dfIn[[posCol]] = dfIn[[posCol]].astype(str)
+
     # Filter out variants in input file that are outside the chunk
-    dfIn[[chrCol]] = dfIn[[chrCol]].astype(str)
-    dfIn = dfIn[dfIn.iloc[:, chrCol].isin(filterChrs)]
+    dfIn = dfIn[dfIn.iloc[:, chrCol].isin(filter_chrs)]
 
     if len(dfIn.index) > 0:
         # Create table for output
@@ -259,13 +260,13 @@ for dfIn in pd.read_csv(args.in_file, sep=sep, header=None, skiprows=args.in_hea
             (dfIn.iloc[:, a1Col] <= dfIn.iloc[:, a2Col]) & (dfIn.iloc[:, a1Col] <= dfIn["___a1_rc___"]) & (dfIn.iloc[:, a1Col] <= dfIn["___a2_rc___"]),
             (dfIn.iloc[:, a2Col] <= dfIn.iloc[:, a1Col]) & (dfIn.iloc[:, a2Col] <= dfIn["___a1_rc___"]) & (dfIn.iloc[:, a2Col] <= dfIn["___a2_rc___"]),
             (dfIn["___a1_rc___"] <= dfIn.iloc[:, a1Col]) & (dfIn["___a1_rc___"] <= dfIn.iloc[:, a2Col]) & (dfIn["___a1_rc___"] <= dfIn["___a2_rc___"]),
-            (dfIn["___a2_rc___"] <= dfIn.iloc[:, a1Col]) & (dfIn["___a2_rc___"] <= dfIn.iloc[:, a2Col]) & (dfIn["___a2_rc___"] <= dfIn["___a1_rc___"]),
+            (dfIn["___a2_rc___"] <= dfIn.iloc[:, a1Col]) & (dfIn["___a2_rc___"] <= dfIn.iloc[:, a2Col]) & (dfIn["___a2_rc___"] <= dfIn["___a1_rc___"])
         ]
         choices = [
-            dfIn[[posCol]].astype(str) + "_" + dfIn.iloc[:, a1Col] + "_" + dfIn.iloc[:, a2Col],
-            dfIn[[posCol]].astype(str) + "_" + dfIn.iloc[:, a2Col] + "_" + dfIn.iloc[:, a1Col],
-            dfIn[[posCol]].astype(str) + "_" + dfIn["___a1_rc___"] + "_" + dfIn["___a2_rc___"],
-            dfIn[[posCol]].astype(str) + "_" + dfIn["___a2_rc___"] + "_" + dfIn["___a1_rc___"]
+            "{}_{}_{}".format(dfIn.iloc[:, posCol].astype(str), dfIn.iloc[:, a1Col], dfIn.iloc[:, a2Col]),
+            "{}_{}_{}".format(dfIn.iloc[:, posCol].astype(str), dfIn.iloc[:, a2Col], dfIn.iloc[:, a1Col]),
+            "{}_{}_{}".format(dfIn.iloc[:, posCol].astype(str), dfIn["___a1_rc___"], dfIn["___a2_rc___"]),
+            "{}_{}_{}".format(dfIn.iloc[:, posCol].astype(str), dfIn["___a2_rc___"], dfIn["___a1_rc___"])
         ]
         dfIn.iloc[:, idCol] = np.select(conditions, choices)
         idChr = chrom

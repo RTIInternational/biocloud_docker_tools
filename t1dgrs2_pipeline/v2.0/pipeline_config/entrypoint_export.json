@@ -1,28 +1,8 @@
 {
     "name": "entrypoint_export",
     "inputs": {
-        "working_dir": {
-            "type": "dir",
-            "default": "",
-            "required": true
-        },
         "output_dir": {
             "type": "dir",
-            "default": "",
-            "required": true
-        },
-        "results_dir": {
-            "type": "dir",
-            "default": "",
-            "required": true
-        },
-        "output_result_file": {
-            "type": "string",
-            "default": "",
-            "required": true
-        },
-        "output_control_file": {
-            "type": "string",
             "default": "",
             "required": true
         },
@@ -41,6 +21,11 @@
             "default": "",
             "required": true
         },
+        "output_result_file": {
+            "type": "string",
+            "default": "",
+            "required": true
+        },
         "target_dir": {
             "type": "str",
             "default": "/T1DRESULTS/",
@@ -50,7 +35,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.working_dir>/entrypoint_export.log"
+            "value": "<inputs.output_dir>/entrypoint_export.log"
         }
     },
     "entry_point": "sftp_results",
