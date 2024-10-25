@@ -58,7 +58,7 @@ def set_wf_inputs (wf_def, wf_args):
         if wf_def['inputs'][input]['type'] == 'dir':
             wf_vars[key] = initialize_dir(wf_vars[key])
         elif wf_def['inputs'][input]['type'] == 'file':
-            if not os.path.isfile(wf_vars[key]):
+            if wf_vars[key] != '' and not os.path.isfile(wf_vars[key]):
                 sys.exit("Input file does not exist: {}".format(wf_vars[key]))
 
     return wf_vars
@@ -88,7 +88,7 @@ def set_task_inputs (wf_vars, task_def, step_inputs, base_key):
         if task_def['inputs'][parameter]['type'] == 'dir':
             wf_vars[key] = initialize_dir(wf_vars[key])
         elif task_def['inputs'][parameter]['type'] == 'file':
-            if not os.path.isfile(wf_vars[key]):
+            if wf_vars[key] != '' not os.path.isfile(wf_vars[key]):
                 sys.exit("Input file does not exist: {}".format(wf_vars[key]))
 
 
