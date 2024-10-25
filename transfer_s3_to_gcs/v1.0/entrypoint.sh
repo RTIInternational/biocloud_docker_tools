@@ -40,7 +40,7 @@ JOB_NAME=$(gcloud transfer jobs list --job-names="$S3_BUCKET" --format="value(na
 echo "JOB_NAME: {{{ $JOB_NAME }}}"
 
 if [ -z "$JOB_NAME" ]; then
-    echo "Job does not exist."
+    echo "<< Job does not exist. >>"
     echo "[[ Initiate transfer from s3://$S3_BUCKET to gs://$GCS_BUCKET ]]"
     gcloud transfer jobs create s3://"$S3_BUCKET" gs://"$GCS_BUCKET" \
     --name "$S3_BUCKET" \
@@ -51,14 +51,14 @@ if [ -z "$JOB_NAME" ]; then
     --delete-from 'destination-if-unique' \
     --no-enable-posix-transfer-logs
 
-    echo "Waiting for the transfer job to be fully registered (30s)..."
+    echo "<< Waiting for the transfer job to be fully registered (30s) >>"
     sleep 30  # Adjust this time if needed based on your observations
-    
+
     TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(latestOperationName)" | awk -F'/' '{print $2}')
     echo "***TRANSFER_JOB_ID: {{{ $TRANSFER_JOB_ID }}}"
 
 else
-    echo "Job exists."
+    echo "<< Job found. >>"
     gcloud transfer jobs update "$S3_BUCKET" \
         --clear-source-creds-file \
         --source="s3://$S3_BUCKET" \
@@ -66,7 +66,7 @@ else
         --delete-from destination-if-unique \
         --overwrite-when different 
 
-    echo "Waiting for the transfer job to be fully registered (30s)..."
+    echo "<< Waiting for the transfer job to be fully registered (30s) >>"
     sleep 30  # Adjust this time if needed based on your observations
 
     TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(latestOperationName)" | awk -F'/' '{print $2}')
