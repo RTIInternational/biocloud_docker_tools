@@ -58,15 +58,15 @@
             },
             "successful_downloads": {
                 "type": "file",
-                "value": "<inputs.target_dir>successful_downloads.json"
+                "value": "<inputs.output_dir>successful_downloads.json"
             },
             "failed_downloads": {
                 "type": "file",
-                "value": "<inputs.target_dir>failed_downloads.json"
+                "value": "<inputs.output_dir>failed_downloads.json"
             },
             "failed_checksums": {
                 "type": "file",
-                "value": "<inputs.target_dir>failed_checksums.json"
+                "value": "<inputs.output_dir>failed_checksums.json"
             },
             "log": {
                 "type": "file",
