@@ -2,6 +2,16 @@
 
 set -e 
 
+# If test-bucket, then GCS bucket is 
+if [ "$S3_BUCKET" == "nih-nhlbi-rti-test-gcp-bucket" ]; then
+    GCS_BUCKET="nih-nhlbi-bdc-manifest-gen-ftre-testing"
+else
+    GCS_BUCKET="$S3_BUCKET"
+fi
+
+echo "[[ S3_BUCKET: $S3_BUCKET ]]"
+echo "[[ GCS_BUCKET: $GCS_BUCKET ]]"
+
 # Activate the Google Cloud service account with the credentials file
 # Check if file or json environment variables exist
 if [ -n "$GC_ADC_FILE" ]; then
@@ -31,27 +41,31 @@ echo "JOB_NAME: {{{ $JOB_NAME }}}"
 
 if [ -z "$JOB_NAME" ]; then
     echo "Job does not exist."
-    echo "[[ Initiate transfer from s3:// to gs://$S3_BUCKET ]]"
-    TRANSFER_JOB_ID=$(gcloud transfer jobs create s3://"$S3_BUCKET" gs://"$S3_BUCKET" \
+    echo "[[ Initiate transfer from s3://$S3_BUCKET to gs://$GCS_BUCKET ]]"
+    TRANSFER_JOB_ID=$(gcloud transfer jobs create s3://"$S3_BUCKET" gs://"$GCS_BUCKET" \
     --name "$S3_BUCKET" \
-    --description "$S3_BUCKET" \
+    --description "s3://$S3_BUCKET to gs://GCS_BUCKET" \
     --source-creds-file "/opt/AWScreds.txt" \
     --project "$GC_PROJECT" \
     --overwrite-when 'different' \
     --delete-from 'destination-if-unique' \
     --no-enable-posix-transfer-logs \
     --format="value(name)")
+    echo "Waiting for the transfer job to be fully registered..."
+    sleep 15  # Adjust this time if needed based on your observations
+    echo "***TRANSFER_JOB_ID: {{{ $TRANSFER_JOB_ID }}}"
 
 else
     echo "Job exists."
     gcloud transfer jobs update "$S3_BUCKET" \
         --clear-source-creds-file \
         --source="s3://$S3_BUCKET" \
-        --destination="gs://$S3_BUCKET" \
+        --destination="gs://$GCS_BUCKET" \
         --delete-from destination-if-unique \
         --overwrite-when different 
 
     TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(latestOperationName)")
+    echo "***TRANSFER_JOB_ID: {{{ $TRANSFER_JOB_ID }}}"
 
     if ! gcloud transfer jobs run "$S3_BUCKET" --project "$GC_PROJECT"; then
         echo "Error: Failed to run transfer job for $S3_BUCKET"
@@ -59,7 +73,7 @@ else
     fi
 fi
 
-echo "***TRANSFER_JOB_ID: {{{ $TRANSFER_JOB_ID }}}"
+
 
 echo "[[ Cleanup AWScreds.txt file ]]"
 rm /opt/AWScreds.txt
