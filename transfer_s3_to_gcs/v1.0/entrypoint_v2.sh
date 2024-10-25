@@ -64,7 +64,7 @@ else
         --delete-from destination-if-unique \
         --overwrite-when different 
 
-    TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(latestOperationName)")
+    TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(name)")
     echo "***TRANSFER_JOB_ID: {{{ $TRANSFER_JOB_ID }}}"
 
     if ! gcloud transfer jobs run "$S3_BUCKET" --project "$GC_PROJECT"; then
