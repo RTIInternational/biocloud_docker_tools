@@ -40,8 +40,7 @@ my %remove = ();
 open(REMOVE, $remove_file);
 while(<REMOVE>) {
     chomp;
-    @F = split("\t");
-    $remove{$F[1]} = 1;
+    $remove{$_} = 1;
 }
 close REMOVE;
 

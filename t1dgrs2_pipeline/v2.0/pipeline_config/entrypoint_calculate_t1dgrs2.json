@@ -26,6 +26,11 @@
             "default": "",
             "required": true
         },
+        "control_remove_file": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
         "t1dgrs2_yml": {
             "type": "file",
             "default": "/pipeline/config/t1dgrs2_settings.yml",
