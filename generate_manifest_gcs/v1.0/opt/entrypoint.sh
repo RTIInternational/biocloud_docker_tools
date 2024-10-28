@@ -11,6 +11,12 @@ else
     GCS_BUCKET="$S3_BUCKET"
 fi
 
+# Get latest manifest file from S3
+echo "[[ aws s3 - get most recently generated manifest .tsv from s3://$S3_BUCKET]]"
+TSV_FILENAME=$(aws s3 ls s3://$S3_BUCKET | grep ".*manifest.*tsv" | sort | tail -n 1 | awk '{print $4}')
+aws s3 cp "s3://$S3_BUCKET/$TSV_FILENAME" "/opt/$TSV_FILENAME"
+echo "Pulled {$TSV_FILENAME}"
+
 # Activate the Google Cloud service account with the credentials file
 # Check if file or json environment variables exist
 if [ -n "$GC_ADC_FILE" ]; then
@@ -28,11 +34,18 @@ else
     exit 1
 fi
 
+echo "[[ Set GAC credentials ]]"
+export GOOGLE_APPLICATION_CREDENTIALS="/opt/adc.json"
+
+echo "[[ Set Google Cloud project ]]"
+gcloud config set project $GC_PROJECT
+
+
 echo "[[ Create temporary AWScreds.txt file ]]"
 echo "{ \"accessKeyId\": \"$AWS_ACCESS_KEY_ID\", \"secretAccessKey\": \"$AWS_SECRET_ACCESS_KEY\" }" > /opt/AWScreds.txt
 
 echo "[[ Cleanup gs://$GCS_BUCKET of manifest files ]]"
-gsutil -m rm "gs://$GCS_BUCKET/*manifest*tsv"
+gsutil rm -a "gs://$GCS_BUCKET/*manifest*tsv"
 
 echo "[[ Generate manifest for gs://$GCS_BUCKET ]]"
 python3.9 /opt/generate_manifest_for_gcloud.py \
