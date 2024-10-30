@@ -101,7 +101,7 @@ gvcf_dir = args.gvcf_dir if (args.gvcf_dir[-1] == "/") else (args.gvcf_dir + "/"
 os.system("mkdir -p {}".format(gvcf_dir))
 output_dir = args.output_dir if (args.output_dir[-1] == "/") else (args.output_dir + "/")
 os.system("mkdir -p {}".format(output_dir))
-if args.control_gvcf_dir is None:
+if args.control_gvcf_dir is None or args.control_gvcf_dir == '':
     control_gvcf_dir = None
 else:
     control_gvcf_dir = args.control_gvcf_dir if (args.control_gvcf_dir[-1] == "/") else (args.control_gvcf_dir + "/")
@@ -170,7 +170,7 @@ for file, path in files_to_process.items():
             json.dump(wf_arguments, f)
         
         # Submit the workflow for the current file
-        generate_name = sample_id + "-"
+        generate_name = sample_id.replace('_', '') + "-"
         workflow = {
             "namespace": "early-check-rs-1",
             "serverDryRun": False,
