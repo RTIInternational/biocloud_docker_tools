@@ -119,9 +119,9 @@ if control_gvcf_dir is not None:
     files = os.listdir(control_gvcf_dir)
     files_with_paths = [control_gvcf_dir + file for file in files]
     control_files_to_process = dict(zip(files, files_with_paths))
-
-# Merge gvcf lists
-files_to_process = sample_files_to_process | control_files_to_process
+    files_to_process = sample_files_to_process | control_files_to_process
+else:
+    files_to_process = sample_files_to_process.copy()
 
 # Loop over all files
 file_plink_merge_list = "{}plink_merge_list.txt".format(output_dir)
@@ -132,7 +132,7 @@ for file, path in files_to_process.items():
     if "md5" in file or "tbi" in file:
         continue
 
-    if control_gvcf_dir in path:
+    if control_gvcf_dir is not None and control_gvcf_dir in path:
         result = re.search(r'^(\S+).hard-filtered.gvcf.gz$', file)
     else:
         if args.sequencing_provider == 'revvity':
