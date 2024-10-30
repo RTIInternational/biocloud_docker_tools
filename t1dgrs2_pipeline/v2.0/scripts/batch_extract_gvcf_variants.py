@@ -170,7 +170,7 @@ for file, path in files_to_process.items():
             json.dump(wf_arguments, f)
         
         # Submit the workflow for the current file
-        generate_name = sample_id.replace('_', '') + "-"
+        generate_name = sample_id.lower().replace('_', '') + "-"
         workflow = {
             "namespace": "early-check-rs-1",
             "serverDryRun": False,
