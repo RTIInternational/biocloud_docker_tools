@@ -40,6 +40,7 @@
     },
     "entry_point": "sftp_results",
     "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>",
         "sftp_server": "<inputs.sftp_server>",
         "username": "<inputs.username>",
         "password": "<inputs.password>",

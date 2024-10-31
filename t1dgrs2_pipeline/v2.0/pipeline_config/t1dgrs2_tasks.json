@@ -479,6 +479,9 @@
     },
     "sftp_results": {
         "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
             "sftp_server": {
                 "type": "str"
             },
