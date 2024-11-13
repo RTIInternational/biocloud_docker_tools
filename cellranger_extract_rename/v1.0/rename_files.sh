@@ -110,38 +110,21 @@ if [[ ! -f ${zip_file} ]]; then
   exit 1
 fi
 
-# Extracting basename from ZIP file name
-zip_file_name=$(basename -- "$zip_file")
-zip_file_name="${zip_file_name%.*}"
-echo_verbose "ZIP file name extracted: $zip_file_name"
-
-# If there is no output_dir supplied, then set to current working directory
-if [[ ${#output_dir} == 0 ]]; then
-  output_dir="./${linker}_${zip_file_name}"
-fi
-
-echo_verbose "Here is the directory to write to: ${output_dir}"
-
-if [[ ! -d ${output_dir} ]]; then
-  echo_verbose "Output directory '$output_dir' not found, creating..."
-  mkdir -p $output_dir
-fi
-
 # Defining regex matches for each part of linker
-linker_array[0]="RMIP"
-linker_array[1]="[[:digit:]]{3}"
-linker_array[2]="[[:digit:]]{3}"
-linker_array[3]="[[:alpha:]]"
-linker_array[4]="[[:digit:]]{3}"
-linker_array[5]="[[:alpha:]]"
+linker_array[0]="RMIP" # RMIP identifier
+linker_array[1]="[[:digit:]]{3}" # Project ID
+linker_array[2]="^[[:alnum:]]+$" # Participant ID (alphanumeric, no length restrictions)
+linker_array[3]="[[:alpha:]]" # Discriminator
+linker_array[4]="[[:digit:]]{3}" # Identifier
+linker_array[5]="[[:alpha:]]" # Vial identifier
 
 # Defining length restrictions for each part of linker
-linker_piece_length_array[0]=4
-linker_piece_length_array[1]=3
-linker_piece_length_array[2]=3
-linker_piece_length_array[3]=1
-linker_piece_length_array[4]=3
-linker_piece_length_array[5]=1
+linker_piece_length_array[0]=4 # RMIP identifier
+linker_piece_length_array[1]=3 # Project ID
+linker_piece_length_array[2]=0 # Participant ID (alphanumeric, no length restrictions)
+linker_piece_length_array[3]=1 # Discriminator
+linker_piece_length_array[4]=3 # Identifier
+linker_piece_length_array[5]=1 # Vial identifier
 
 
 # Creating, splitting, and validating input linker
@@ -154,7 +137,7 @@ j=0
 for i in "${linker_split[@]}"; do
     echo_verbose "Linker part $j: $i"
     echo_verbose "Linker regexp: ${linker_array[$j]}"
-    if [[ "$i" =~ ${linker_array[$j]} && ${#i} == ${linker_piece_length_array[$j]} ]]; then
+    if [[ "$i" =~ ${linker_array[$j]} && (${#i} == ${linker_piece_length_array[$j]} || ${linker_piece_length_array[$j]} == 0) ]]; then
         echo_verbose "Regexp match!"
     else
         echo_verbose "Regexp not match"
@@ -172,6 +155,23 @@ if [[ $j -gt ${#linker_array[@]} || $j -lt 5 ]]; then
     echo "Expected length 5 or 6"
     usage
     exit 1
+fi
+
+# Extracting basename from ZIP file name
+zip_file_name=$(basename -- "$zip_file")
+zip_file_name="${zip_file_name%.*}"
+echo_verbose "ZIP file name extracted: $zip_file_name"
+
+# If there is no output_dir supplied, then set to current working directory
+if [[ ${#output_dir} == 0 ]]; then
+  output_dir="./${linker}_${zip_file_name}"
+fi
+
+echo_verbose "Here is the directory to write to: ${output_dir}"
+
+if [[ ! -d ${output_dir} ]]; then
+  echo_verbose "Output directory '$output_dir' not found, creating..."
+  mkdir -p $output_dir
 fi
 
 file_list=($zip_file_name/web_summary.html $zip_file_name/metrics_summary.csv $zip_file_name/raw_feature_bc_matrix.h5 $zip_file_name/possorted_genome_bam.bam $zip_file_name/possorted_genome_bam.bam.bai $zip_file_name/filtered_feature_bc_matrix.h5)
