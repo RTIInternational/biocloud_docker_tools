@@ -28,12 +28,12 @@ This script is used to extract results from the output of a Cell Ranger run.
 
 Build
 ```
-docker build -t cellranger_extract_rename:v1 .
+docker build -t cellranger_extract_rename:v1.1 .
 ```
 
 Run
 ```
-docker run -it -v $PWD:/data cellranger_extract_rename:v1 rename_files.sh
+docker run -it -v $PWD:/data cellranger_extract_rename:v1.1 rename_files.sh
 ```
 
 Usage info:
