@@ -181,7 +181,7 @@ else
   exit 1
 fi
 
-# If there is no OUTPUT_DIR supplied, then set to current working directory
+# If there is no OUTPUT_DIR supplied, then set to directory named by linker and input within current working directory
 if [[ ${#OUTPUT_DIR} == 0 ]]; then
   echo_verbose "WARNING: OUTPUT_DIR not specified!"
   OUTPUT_DIR="./${LINKER}_${INPUT_NAME}"
@@ -192,6 +192,18 @@ echo_verbose "Writing files to ${OUTPUT_DIR}"
 if [[ ! -d ${OUTPUT_DIR} ]]; then
   echo_verbose "Output directory '$OUTPUT_DIR' not found, creating..."
   mkdir -p $OUTPUT_DIR
+fi
+
+# Creating a temporary output directory so files in 'outs' don't get overwritten by mistake
+TMP_OUTPUT_DIR=tmp_output_dir
+TMP_OUTPUT_DIR_EXISTS=false
+if [[ (-d ${TMP_OUTPUT_DIR}) && (${COMPRESSED_INPUT} == true) ]]; then
+  echo_verbose "WARNING: temporary output directory for file copying already exists"
+  echo_verbose "Files will be copied here from input ZIP file"
+  TMP_OUTPUT_DIR_EXISTS=true
+else
+  echo_verbose "Creating TMP_OUTPUT_DIR"
+  mkdir -p ${TMP_OUTPUT_DIR}
 fi
 
 echo_verbose ""
@@ -216,20 +228,20 @@ for FILE in ${FILE_LIST[@]}; do
 
     unzip -l $INPUT | grep -q $FILE;
     if [[ "$?" == "0" ]]; then
-      unzip -p $INPUT $FILE >$OUTPUT_DIR/$FILE_NAME_COMB;
+      unzip -p $INPUT $FILE >${TMP_OUTPUT_DIR}/$FILE_NAME_COMB;
       
       # Removing "_bam" from filename
       if [[ $FILE_NAME_COMB == *"_bam"* ]]; then
         echo_verbose "Found '_bam' in $FILE_NAME_COMB"
         NEW_FILE=${FILE_NAME_COMB//"_bam"/}
         echo_verbose "Removed '_bam': $NEW_FILE"
-        echo_verbose "Moving '$OUTPUT_DIR/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${NEW_FILE}'";
+        echo_verbose "Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${NEW_FILE}'";
         echo_verbose ""
-        mv $OUTPUT_DIR/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${NEW_FILE};
+        mv ${TMP_OUTPUT_DIR}/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${NEW_FILE};
       else
-        echo_verbose "Moving '$OUTPUT_DIR/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB}'";
+        echo_verbose "Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB}'";
         echo_verbose ""
-        mv $OUTPUT_DIR/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB};
+        mv ${TMP_OUTPUT_DIR}/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB};
       fi
     else
       echo "File $FILE not found in ZIP file. Skipping"
@@ -257,5 +269,10 @@ done
 
 [[ ${COMPRESSED_INPUT} == true ]] && echo_verbose "Copying ZIP file to output directory: $INPUT -> ${OUTPUT_DIR}/${LINKER}_${INPUT}"
 [[ ${COMPRESSED_INPUT} == true ]] && cp $INPUT ${OUTPUT_DIR}/${LINKER}_${INPUT_NAME}.zip
+
+if [[ ${TMP_OUTPUT_DIR_EXISTS} == true ]]; then
+  echo_verbose "Removing TMP_OUTPUT_DIR"
+  rm -rf ${TMP_OUTPUT_DIR}
+fi
 
 echo_verbose "Reached end of script"
