@@ -1,6 +1,10 @@
 # MAGMA
 [MAGMA](https://ctg.cncr.nl/software/magma) is a tool for gene analysis and generalized gene-set analysis of GWAS data. It can be used to analyse both raw genotype data as well as summary SNP p-values from a previous GWAS or meta-analysis.
 
+* [MAGMA manual (version 1.10) ](https://vu.data.surfsara.nl/index.php/s/MUiv3y1SFRePnyG)
+
+<br>
+
 ## Example code
 Data must be converted to build37, unless you have PLINK formatted genotype data in build 38.
 
@@ -102,3 +106,12 @@ awk 'FNR==NR{map[$1] = $6; next}
   
 ```  
 </details>  
+
+---
+
+<br><br>
+
+## MAGMA CLI Tool
+We created a CLI tool based on this Docker image which automates the process of preparing SNP-location files, annotating SNPs to genes, and performing gene-level analyses using the MAGMA software.
+It is stored on GitHub Enterprise.
+Contact Jesse (jmarks@rti.org) if you would like access: https://github.com/rti-international/mapoa-auxiliary-tools/tree/main/magma-cli

@@ -1,7 +1,7 @@
 # Base image
 FROM rocker/tidyverse:4.4.1
 
-# Maintainer and author
+# Maintainer and author 
 LABEL maintainer="Caryn Willis <cdwillis@rti.org>"
 LABEL description="An R script using Seven Bridges API to tag files with RMIP file formatting."
 LABEL software-website="https://doi.org/10.32614/CRAN.package.sevenbridges2"

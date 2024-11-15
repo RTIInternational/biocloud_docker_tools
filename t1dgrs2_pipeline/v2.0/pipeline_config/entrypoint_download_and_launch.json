@@ -1,0 +1,162 @@
+{
+    "name": "entrypoint_download_and_launch",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "sftp_server": {
+            "type": "str",
+            "default": "jumpgate.revvity.com",
+            "required": false
+        },
+        "sftp_username": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "sftp_password": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "source_sftp_dir": {
+            "type": "str",
+            "default": "rti_early_check/Ready_to_download/gVCFs/",
+            "required": false
+        },
+        "manifest_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "downloaded_samples": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "download_limit": {
+            "type": "int",
+            "default": 1000,
+            "required": false
+        },
+        "samples_to_download": {
+            "type": "file",
+            "default": "",
+            "required": false
+        },
+        "control_dir": {
+            "type": "dir",
+            "default": "/home/merge-shared-folder/t1dgrs2-pipeline-runs-revvity/pipeline_inputs/controls",
+            "required": false
+        },
+        "variant_list": {
+            "type": "file",
+            "default": "/pipeline/inputs/t1dgrs2_hg19_variants.tsv",
+            "required": false
+        },
+        "hladq_variants_file": {
+            "type": "file",
+            "default": "/pipeline/inputs/hla_dq_variants.txt",
+            "required": false
+        },
+        "non_hladq_variants_file": {
+            "type": "file",
+            "default": "/pipeline/inputs/non_hla_dq_variants.txt",
+            "required": false
+        },
+        "sequencing_provider": {
+            "type": "str",
+            "default": "revvity",
+            "required": false
+        },
+        "argo_api_url": {
+            "type": "str",
+            "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+            "required": false
+        },
+        "simultaneous_jobs": {
+            "type": "int",
+            "default": 50,
+            "required": false
+        },
+        "pass_only": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "filter_by_gq": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "hom_gq_threshold": {
+            "type": "int",
+            "default": 99,
+            "required": false
+        },
+        "het_gq_threshold": {
+            "type": "int",
+            "default": 48,
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>/entrypoint_download_and_launch_pipeline.log"
+        }
+    },
+    "entry_point": "download_gvcfs_from_revvity_sftp",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>download_gvcfs_from_revvity_sftp/gvcfs",
+        "sftp_server": "<inputs.sftp_server>",
+        "sftp_username": "<inputs.sftp_username>",
+        "sftp_password": "<inputs.sftp_password>",
+        "source_sftp_dir": "<inputs.source_sftp_dir>",
+        "manifest_dir": "<inputs.manifest_dir>",
+        "downloaded_samples": "<inputs.downloaded_samples>",
+        "download_limit": "<inputs.download_limit>",
+        "samples_to_download": "<inputs.samples_to_download>"
+    },
+    "pipeline": {
+        "download_gvcfs_from_revvity_sftp": {
+            "task": "download_gvcfs_from_revvity_sftp",
+            "check_output": {
+                "returncode_0": {
+                    "step": "batch_extract_gvcf_variants",
+                    "inputs": {
+                        "output_dir": "<inputs.output_dir>batch_extract_gvcf_variants",
+                        "gvcf_dir": "<inputs.output_dir>download_gvcfs_from_revvity_sftp/gvcfs",
+                        "control_gvcf_dir": "<inputs.control_dir>gvcfs",
+                        "variant_list": "<inputs.variant_list>",
+                        "hladq_variants_file": "<inputs.hladq_variants_file>",
+                        "non_hladq_variants_file": "<inputs.non_hladq_variants_file>",
+                        "sequencing_provider": "<inputs.sequencing_provider>",
+                        "argo_api_url": "<inputs.argo_api_url>",
+                        "simultaneous_jobs": "<inputs.simultaneous_jobs>",
+                        "pass_only": "<inputs.pass_only>",
+                        "filter_by_gq": "<inputs.filter_by_gq>",
+                        "hom_gq_threshold": "<inputs.hom_gq_threshold>",
+                        "het_gq_threshold": "<inputs.het_gq_threshold>"
+                                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "batch_extract_gvcf_variants": {
+            "task": "batch_extract_gvcf_variants",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

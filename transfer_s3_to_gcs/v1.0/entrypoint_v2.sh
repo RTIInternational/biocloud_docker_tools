@@ -40,25 +40,23 @@ JOB_NAME=$(gcloud transfer jobs list --job-names="$S3_BUCKET" --format="value(na
 echo "JOB_NAME: {{{ $JOB_NAME }}}"
 
 if [ -z "$JOB_NAME" ]; then
-    echo "<< Job does not exist. >>"
+    echo "Job does not exist."
     echo "[[ Initiate transfer from s3://$S3_BUCKET to gs://$GCS_BUCKET ]]"
-    gcloud transfer jobs create s3://"$S3_BUCKET" gs://"$GCS_BUCKET" \
+    TRANSFER_JOB_ID=$(gcloud transfer jobs create s3://"$S3_BUCKET" gs://"$GCS_BUCKET" \
     --name "$S3_BUCKET" \
     --description "s3://$S3_BUCKET to gs://GCS_BUCKET" \
     --source-creds-file "/opt/AWScreds.txt" \
     --project "$GC_PROJECT" \
     --overwrite-when 'different' \
     --delete-from 'destination-if-unique' \
-    --no-enable-posix-transfer-logs
-
-    echo "<< Waiting for the transfer job to be fully registered (30s) >>"
-    sleep 30  # Adjust this time if needed based on your observations
-
-    TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(latestOperationName)" | awk -F'/' '{print $2}')
+    --no-enable-posix-transfer-logs \
+    --format="value(name)")
+    echo "Waiting for the transfer job to be fully registered..."
+    sleep 15  # Adjust this time if needed based on your observations
     echo "***TRANSFER_JOB_ID: {{{ $TRANSFER_JOB_ID }}}"
 
 else
-    echo "<< Job found. >>"
+    echo "Job exists."
     gcloud transfer jobs update "$S3_BUCKET" \
         --clear-source-creds-file \
         --source="s3://$S3_BUCKET" \
@@ -66,10 +64,7 @@ else
         --delete-from destination-if-unique \
         --overwrite-when different 
 
-    echo "<< Waiting for the transfer job to be fully registered (30s) >>"
-    sleep 30  # Adjust this time if needed based on your observations
-
-    TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(latestOperationName)" | awk -F'/' '{print $2}')
+    TRANSFER_JOB_ID=$(gcloud transfer jobs describe "$S3_BUCKET" --format="value(name)")
     echo "***TRANSFER_JOB_ID: {{{ $TRANSFER_JOB_ID }}}"
 
     if ! gcloud transfer jobs run "$S3_BUCKET" --project "$GC_PROJECT"; then

@@ -22,4 +22,4 @@ COPY ./*.zip /data
 WORKDIR /data
 
 # Add to environment
-ENV PATH $PATH:/opt/
+ENV PATH=$PATH:/opt/

@@ -90,6 +90,7 @@ def get_receipt_manifest_file_pointer(input_manifest_file_path):
 		manifest_filepath = manifest_filepath.replace(".tsv", ".manifest." + timestr + ".tsv")	
 	else:
 		manifest_filepath += '.manifest.' + timestr + '.tsv'
+	print(f"** Writing receipt manifest file to {manifest_filepath}")
 	global out_file_path
 	out_file_path = manifest_filepath
 	f = open(manifest_filepath, 'wt')
@@ -205,7 +206,17 @@ def verify_gcloud_uploads(od, threads):
 
 def verify_gcloud_upload(value, bucket, bucket_name):
 	path = value['s3_path']
-	path = path.split("s3://" + bucket_name + '/',1)[1] 
+	
+	s3_bucket_name = ''
+
+	if bucket_name == "nih-nhlbi-bdc-manifest-gen-ftre-testing":
+		s3_bucket_name = "nih-nhlbi-rti-test-gcp-bucket"
+	else:
+		s3_bucket_name = bucket_name
+		
+
+	# path = path.split("s3://" + bucket_name + '/',1)[1] 
+	path = path.split("s3://" + s3_bucket_name + '/',1)[1] 
 
 #	print("checking blob gs://" + bucket_name + '/' +  path)
 	blob = bucket.get_blob(path)

@@ -17,7 +17,7 @@ Each of these files are copied to an output directory and prepended with a "link
 | -- | -- | -- |
 |  RMIP identifier | `RMIP` | Goes at the beginning of each linker |
 |  Project Identifier | `001` | Numeric only |
-|  Participant ID | `002` | Numeric only |
+|  Participant ID | `002` | Alphanumeric only, no length restrictions |
 |  Discriminator | `A` | Alphabetic only - combination with "Identifier" uniquely identifies every collection event |
 |  Identifier | `003` | Numeric only - combination with "Discriminator" uniquely identifies every collection event |
 |  Vial identifier (alphabetic) | `B` | Alphabetic only - identifies specific collection aliquot - optional if only one vial |

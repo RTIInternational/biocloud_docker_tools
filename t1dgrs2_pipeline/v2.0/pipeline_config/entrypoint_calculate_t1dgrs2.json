@@ -1,0 +1,131 @@
+{
+    "name": "entrypoint_calculate_t1dgrs2",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "run_id": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "control_bfile": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "sample_bfile_merge_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "sample_missingness_summary_merge_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "control_remove_file": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "t1dgrs2_yml": {
+            "type": "file",
+            "default": "/pipeline/config/t1dgrs2_settings.yml",
+            "required": false
+        },
+        "missing_hla_threshold": {
+            "type": "int",
+            "default": 1,
+            "required": false
+        },
+        "missing_non_hla_threshold": {
+            "type": "int",
+            "default": 3,
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>entrypoint_calculate_t1dgrs2.log"
+        }
+    },
+    "entry_point": "merge_sample_bfiles_and_controls",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>merge_sample_bfiles_and_controls",
+        "control_bfile": "<inputs.control_bfile>",
+        "sample_bfile_merge_list": "<inputs.sample_bfile_merge_list>",
+        "out_prefix": "<inputs.output_dir>merge_sample_bfiles_and_controls/samples_with_controls"
+    },
+    "pipeline": {
+        "merge_sample_bfiles_and_controls": {
+            "task": "merge_sample_bfiles_and_controls",
+            "check_output": {
+                "returncode_0": {
+                    "step": "calculate_t1dgrs2",
+                    "inputs": {
+                        "output_dir": "<inputs.output_dir>calculate_t1dgrs2",
+                        "bfile": "<steps.merge_sample_bfiles_and_controls.outputs.bfile>",
+                        "yml": "<inputs.t1dgrs2_yml>",
+                        "out_prefix": "<inputs.output_dir>calculate_t1dgrs2/samples_with_controls"
+                    }
+                },
+                "returncode_1": {
+                    "step": "error"
+                }
+            }
+        },
+        "calculate_t1dgrs2": {
+            "task": "calculate_t1dgrs2",
+            "check_output": {
+                "returncode_0": {
+                    "step": "merge_missingness_summaries",
+                    "inputs": {
+                        "output_dir": "<inputs.output_dir>merge_missingness_summaries",
+                        "merge_list": "<inputs.sample_missingness_summary_merge_list>",
+                        "header_row_count": "1",
+                        "out_file": "<inputs.output_dir>merge_missingness_summaries/missingness_summary.tsv"
+                    }
+                },
+                "returncode_1": {
+                    "step": "error"
+                }
+            }
+        },
+        "merge_missingness_summaries": {
+            "task": "merge_file_rows",
+            "check_output": {
+                "returncode_0": {
+                    "step": "generate_file_for_export",
+                    "inputs": {
+                        "output_dir": "<inputs.output_dir>generate_file_for_export",
+                        "run_id": "<inputs.run_id>",
+                        "t1dgrs2_results_file": "<steps.calculate_t1dgrs2.outputs.results>",
+                        "missingness_summary_file": "<steps.merge_missingness_summaries.outputs.merged_file>",
+                        "remove_file": "<inputs.control_remove_file>",
+                        "missing_hla_threshold": "<inputs.missing_hla_threshold>",
+                        "missing_non_hla_threshold": "<inputs.missing_non_hla_threshold>"
+
+                    }
+                },
+                "returncode_1": {
+                    "step": "error"
+                }
+            }
+        },
+        "generate_file_for_export": {
+            "task": "generate_file_for_export",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

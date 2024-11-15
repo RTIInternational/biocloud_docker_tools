@@ -1,0 +1,104 @@
+{
+    "name": "entrypoint_extract_gvcf_variants",
+    "inputs": {
+        "output_dir": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "sample_id": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "gvcf": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "variant_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "hladq_variants_file": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "non_hladq_variants_file": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "pass_only": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "filter_by_gq": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "hom_gq_threshold": {
+            "type": "int",
+            "default": 99,
+            "required": false
+        },
+        "het_gq_threshold": {
+            "type": "int",
+            "default": 48,
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>entrypoint_extract_gvcf_variants.log"
+        }
+    },
+    "entry_point": "extract_gvcf_variants",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>extract_gvcf_variants",
+        "sample_id": "<inputs.sample_id>",
+        "gvcf": "<inputs.gvcf>",
+        "variant_list": "<inputs.variant_list>",
+        "hladq_variants_file": "<inputs.hladq_variants_file>",
+        "non_hladq_variants_file": "<inputs.non_hladq_variants_file>",
+        "out_prefix": "<inputs.output_dir>extract_gvcf_variants/<inputs.sample_id>",
+        "pass_only": "<inputs.pass_only>",
+        "filter_by_gq": "<inputs.filter_by_gq>",
+        "hom_gq_threshold": "<inputs.hom_gq_threshold>",
+        "het_gq_threshold": "<inputs.het_gq_threshold>"
+    },
+    "pipeline": {
+        "extract_gvcf_variants": {
+            "task": "extract_gvcf_variants",
+            "check_output": {
+                "returncode_0": {
+                    "step": "convert_vcf_to_bfile",
+                    "inputs": {
+                        "output_dir": "<inputs.output_dir>convert_vcf_to_bfile",
+                        "vcf": "<steps.extract_gvcf_variants.outputs.t1dgrs2_variants_vcf>",
+                        "out_prefix": "<inputs.output_dir>convert_vcf_to_bfile/<inputs.sample_id>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "convert_vcf_to_bfile": {
+            "task": "convert_vcf_to_bfile",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

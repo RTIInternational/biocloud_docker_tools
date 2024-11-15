@@ -32,8 +32,3 @@ Include the following LABELs:
 
 ### Container Behavior 
 - [ ] Specify a meaningful `CMD` to define how the container should run by default (help message is a good default).
-
-<br>
-
-### Assign reviewer
-- [ ] Request review (default: @jaamarks)

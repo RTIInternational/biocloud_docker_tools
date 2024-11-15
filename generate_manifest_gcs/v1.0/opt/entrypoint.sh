@@ -4,6 +4,19 @@
 echo "[[ configure_aws_cli.sh ]]"
 bash /opt/configure_aws_cli.sh
 
+# If test-bucket, then GCS bucket is 
+if [ "$S3_BUCKET" == "nih-nhlbi-rti-test-gcp-bucket" ]; then
+    GCS_BUCKET="nih-nhlbi-bdc-manifest-gen-ftre-testing"
+else
+    GCS_BUCKET="$S3_BUCKET"
+fi
+
+# Get latest manifest file from S3
+echo "[[ aws s3 - get most recently generated manifest .tsv from s3://$S3_BUCKET]]"
+TSV_FILENAME=$(aws s3 ls s3://$S3_BUCKET | grep ".*manifest.*tsv" | sort | tail -n 1 | awk '{print $4}')
+aws s3 cp "s3://$S3_BUCKET/$TSV_FILENAME" "/opt/$TSV_FILENAME"
+echo "Pulled {$TSV_FILENAME}"
+
 # Activate the Google Cloud service account with the credentials file
 # Check if file or json environment variables exist
 if [ -n "$GC_ADC_FILE" ]; then
@@ -21,35 +34,31 @@ else
     exit 1
 fi
 
-# Check if ls_only flag exists
-if [[ " $* " =~ " --lsonly " ]]; then
-    echo "[[ Listing contents of S3 bucket ]]"
-    aws s3 ls s3://$S3_BUCKET > /opt/s3_bucket_contents.txt
-    echo "S3 bucket contents saved to /opt/s3_bucket_contents.txt"
+echo "[[ Set GAC credentials ]]"
+export GOOGLE_APPLICATION_CREDENTIALS="/opt/adc.json"
 
-    echo "[[ Listing contents of GCS bucket ]]"
-    gsutil ls -r "gs://$S3_BUCKET" > /opt/gcs_bucket_contents.txt
-    echo "GCS bucket contents saved to /opt/gcs_bucket_contents.txt"
-else
-    echo "[[ Create temporary AWScreds.txt file ]]"
-    echo "{ \"accessKeyId\": \"$AWS_ACCESS_KEY_ID\", \"secretAccessKey\": \"$AWS_SECRET_ACCESS_KEY\" }" > /opt/AWScreds.txt
+echo "[[ Set Google Cloud project ]]"
+gcloud config set project $GC_PROJECT
 
-    echo "[[ Cleanup gs://$S3_BUCKET of manifest files ]]"
-    gsutil rm -a "gs://$S3_BUCKET/*manifest*"
 
-    echo "[[ Generate manifest for gs://$S3_BUCKET ]]"
-    python3.9 /opt/generate_manifest_for_gcloud.py \
-        --bucket "$S3_BUCKET" \
-        --tsv "/opt/$TSV_FILENAME" \
-        --threads 1
+echo "[[ Create temporary AWScreds.txt file ]]"
+echo "{ \"accessKeyId\": \"$AWS_ACCESS_KEY_ID\", \"secretAccessKey\": \"$AWS_SECRET_ACCESS_KEY\" }" > /opt/AWScreds.txt
 
-    # List the contents of the specified Google Cloud Storage bucket
-    echo "[[ List manifest files in gs://$S3_BUCKET ]]"
-    gsutil ls -r "gs://$S3_BUCKET/*manifest*" 2> /dev/null || true
+echo "[[ Cleanup gs://$GCS_BUCKET of manifest files ]]"
+gsutil rm -a "gs://$GCS_BUCKET/*manifest*tsv"
 
-    echo "[[ List all objects in gs://$S3_BUCKET ]]"
-    gsutil ls -r "gs://$S3_BUCKET"  2> /dev/null || true
-fi
+echo "[[ Generate manifest for gs://$GCS_BUCKET ]]"
+python3.9 /opt/generate_manifest_for_gcloud.py \
+    --bucket "$GCS_BUCKET" \
+    --tsv "/opt/$TSV_FILENAME" \
+    --threads 1
+
+# List the contents of the specified Google Cloud Storage bucket
+echo "[[ List manifest files in gs://$GCS_BUCKET ]]"
+gsutil ls -r "gs://$GCS_BUCKET/*manifest*tsv" 2> /dev/null || true
+
+echo "[[ List all objects in gs://$GCS_BUCKET ]]"
+gsutil ls -r "gs://$GCS_BUCKET"  2> /dev/null || true
 
 if [ -n "$GC_ADC_JSON" ]; then
     echo "[[ Cleanup Google Service Account key file ]]"

@@ -28,7 +28,7 @@ extract_argument() {
 }
 
 echo_verbose() {
-  if [ "$verbose_mode" == true ]; then echo $1; fi
+  if [ "$VERBOSE_MODE" == true ]; then echo $1; fi
 }
 
 # Function to handle options and arguments
@@ -40,7 +40,7 @@ handle_options() {
         exit 0
         ;;
       -v | --verbose)
-        verbose_mode=true
+        VERBOSE_MODE=true
         ;;
       -l | --linker*)
         if ! has_argument $@; then
@@ -49,7 +49,7 @@ handle_options() {
           exit 1
         fi
 
-        linker=$(extract_argument $@)
+        LINKER=$(extract_argument $@)
 
         shift
         ;;
@@ -60,7 +60,7 @@ handle_options() {
           exit 1
         fi
 
-        zip_file=$(extract_argument $@)
+        ZIP_FILE=$(extract_argument $@)
 
         shift
         ;;
@@ -68,9 +68,9 @@ handle_options() {
         if ! has_argument $@; then
           echo "Warning: Output directory flag given, but not specified." >&2
           echo "Setting to current working directory." >&2
-          output_dir=""
+          OUTPUT_DIR=""
         else
-          output_dir=$(extract_argument $@)
+          OUTPUT_DIR=$(extract_argument $@)
         fi
 
         shift
@@ -92,69 +92,52 @@ echo_verbose "Verbose mode turned on"
 echo_verbose ""
 
 # QC checks of input parameters
-if [[ ${#linker} == 0 ]]; then
+if [[ ${#LINKER} == 0 ]]; then
   echo "ERROR: Linker not supplied. Must specify linker"
   usage
   exit 1
 fi
 
-if [[ ${#zip_file} == 0 ]]; then
+if [[ ${#ZIP_FILE} == 0 ]]; then
   echo "ERROR: ZIP file not supplied. Must specify ZIP file"
   usage
   exit 1
 fi
 
-if [[ ! -f ${zip_file} ]]; then
+if [[ ! -f ${ZIP_FILE} ]]; then
   echo "ERROR: ZIP file not found.  Please ensure path is correct and/or file exists"
-  echo "Given zip_file: $zip_file"
+  echo "Given ZIP_FILE: $ZIP_FILE"
   exit 1
 fi
 
-# Extracting basename from ZIP file name
-zip_file_name=$(basename -- "$zip_file")
-zip_file_name="${zip_file_name%.*}"
-echo_verbose "ZIP file name extracted: $zip_file_name"
-
-# If there is no output_dir supplied, then set to current working directory
-if [[ ${#output_dir} == 0 ]]; then
-  output_dir="./${linker}_${zip_file_name}"
-fi
-
-echo_verbose "Here is the directory to write to: ${output_dir}"
-
-if [[ ! -d ${output_dir} ]]; then
-  echo_verbose "Output directory '$output_dir' not found, creating..."
-  mkdir -p $output_dir
-fi
-
 # Defining regex matches for each part of linker
-linker_array[0]="RMIP"
-linker_array[1]="[[:digit:]]{3}"
-linker_array[2]="[[:digit:]]{3}"
-linker_array[3]="[[:alpha:]]"
-linker_array[4]="[[:digit:]]{3}"
-linker_array[5]="[[:alpha:]]"
+LINKER_ARRAY[0]="RMIP" # RMIP identifier
+LINKER_ARRAY[1]="[[:digit:]]{3}" # Project ID
+LINKER_ARRAY[2]="^[[:alnum:]]+$" # Participant ID (alphanumeric, no length restrictions)
+LINKER_ARRAY[3]="[[:alpha:]]" # Discriminator
+LINKER_ARRAY[4]="[[:digit:]]{3}" # Identifier
+LINKER_ARRAY[5]="[[:alpha:]]" # Vial identifier
 
 # Defining length restrictions for each part of linker
-linker_piece_length_array[0]=4
-linker_piece_length_array[1]=3
-linker_piece_length_array[2]=3
-linker_piece_length_array[3]=1
-linker_piece_length_array[4]=3
-linker_piece_length_array[5]=1
+LINKER_PIECE_LENGTH_ARRAY[0]=4 # RMIP identifier
+LINKER_PIECE_LENGTH_ARRAY[1]=3 # Project ID
+LINKER_PIECE_LENGTH_ARRAY[2]=0 # Participant ID (alphanumeric, no length restrictions)
+LINKER_PIECE_LENGTH_ARRAY[3]=1 # Discriminator
+LINKER_PIECE_LENGTH_ARRAY[4]=3 # Identifier
+LINKER_PIECE_LENGTH_ARRAY[5]=1 # Vial identifier
 
 
 # Creating, splitting, and validating input linker
-IFS="_" read -ra linker_split <<< "$linker"
+IFS="_" read -ra LINKER_SPLIT <<< "$LINKER"
 
 echo_verbose ""
 echo_verbose "Checking validity of linker format..."
 
 j=0
-for i in "${linker_split[@]}"; do
+for i in "${LINKER_SPLIT[@]}"; do
     echo_verbose "Linker part $j: $i"
-    echo_verbose "Linker regexp: ${linker_array[$j]}"
-    if [[ "$i" =~ ${linker_array[$j]} && ${#i} == ${linker_piece_length_array[$j]} ]]; then
+    echo_verbose "Linker regexp: ${LINKER_ARRAY[$j]}"
+    if [[ "$i" =~ ${LINKER_ARRAY[$j]} && (${#i} == ${LINKER_PIECE_LENGTH_ARRAY[$j]} || ${LINKER_PIECE_LENGTH_ARRAY[$j]} == 0) ]]; then
         echo_verbose "Regexp match!"
     else
         echo_verbose "Regexp not match"
@@ -167,52 +150,69 @@ for i in "${linker_split[@]}"; do
     echo_verbose ""
 done
 
-if [[ $j -gt ${#linker_array[@]} || $j -lt 5 ]]; then
+if [[ $j -gt ${#LINKER_ARRAY[@]} || $j -lt 5 ]]; then
     echo "ERROR: Input linker not long enough, got length $j"
     echo "Expected length 5 or 6"
     usage
     exit 1
 fi
 
-file_list=($zip_file_name/web_summary.html $zip_file_name/metrics_summary.csv $zip_file_name/raw_feature_bc_matrix.h5 $zip_file_name/possorted_genome_bam.bam $zip_file_name/possorted_genome_bam.bam.bai $zip_file_name/filtered_feature_bc_matrix.h5)
-# file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
-# file_list=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai raw_feature_bc_matrix/matrix.mtx.gz raw_feature_bc_matrix/features.tsv.gz raw_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/matrix.mtx.gz filtered_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/features.tsv.gz)
+# Extracting basename from ZIP file name
+ZIP_FILE_NAME=$(basename -- "$ZIP_FILE")
+ZIP_FILE_NAME="${ZIP_FILE_NAME%.*}"
+echo_verbose "ZIP file name extracted: $ZIP_FILE_NAME"
+
+# If there is no OUTPUT_DIR supplied, then set to current working directory
+if [[ ${#OUTPUT_DIR} == 0 ]]; then
+  OUTPUT_DIR="./${LINKER}_${ZIP_FILE_NAME}"
+fi
+
+echo_verbose "Here is the directory to write to: ${OUTPUT_DIR}"
+
+if [[ ! -d ${OUTPUT_DIR} ]]; then
+  echo_verbose "Output directory '$OUTPUT_DIR' not found, creating..."
+  mkdir -p $OUTPUT_DIR
+fi
+
+FILE_LIST=($ZIP_FILE_NAME/web_summary.html $ZIP_FILE_NAME/metrics_summary.csv $ZIP_FILE_NAME/raw_feature_bc_matrix.h5 $ZIP_FILE_NAME/possorted_genome_bam.bam $ZIP_FILE_NAME/possorted_genome_bam.bam.bai $ZIP_FILE_NAME/filtered_feature_bc_matrix.h5)
+# FILE_LIST=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
+# FILE_LIST=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai raw_feature_bc_matrix/matrix.mtx.gz raw_feature_bc_matrix/features.tsv.gz raw_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/matrix.mtx.gz filtered_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/features.tsv.gz)
 
 # Extracting and renaming files
-for file in ${file_list[@]}; do
-  echo_verbose $file;
+for FILE in ${FILE_LIST[@]}; do
+  echo_verbose $FILE;
 
   # Extracting basename from ZIP file name
-  file_name=$(basename -- "$file")
-  file_name="${file_name%.*}"
-  file_name_extension="${file##*.}"
-  echo_verbose "File name extracted: $file_name"
-  echo_verbose "File name extension extracted: $file_name_extension"
-  file_name_comb=$file_name\.$file_name_extension
+  FILE_NAME=$(basename -- "$FILE")
+  FILE_NAME="${FILE_NAME%.*}"
+  FILE_NAME_EXTENSION="${FILE##*.}"
+  echo_verbose "File name extracted: $FILE_NAME"
+  echo_verbose "File name extension extracted: $FILE_NAME_EXTENSION"
+  FILE_NAME_COMB=$FILE_NAME\.$FILE_NAME_EXTENSION
 
-  unzip -l $zip_file | grep -q $file;
+  unzip -l $ZIP_FILE | grep -q $FILE;
   if [[ "$?" == "0" ]]; then
-    unzip -p $zip_file $file >$output_dir/$file_name_comb;
+    unzip -p $ZIP_FILE $FILE >$OUTPUT_DIR/$FILE_NAME_COMB;
     
     # Removing "_bam" from filename
-    if [[ $file_name_comb == *"_bam"* ]]; then
-      echo_verbose "Found '_bam' in $file_name_comb"
-      new_file=${file_name_comb//"_bam"/}
-      echo_verbose "Removed '_bam': $new_file"
-      echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${new_file}'";
+    if [[ $FILE_NAME_COMB == *"_bam"* ]]; then
+      echo_verbose "Found '_bam' in $FILE_NAME_COMB"
+      NEW_FILE=${FILE_NAME_COMB//"_bam"/}
+      echo_verbose "Removed '_bam': $NEW_FILE"
+      echo_verbose "Moving '$OUTPUT_DIR/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${NEW_FILE}'";
       echo_verbose ""
-      mv $output_dir/${file_name_comb} $output_dir/${linker}_${new_file};
+      mv $OUTPUT_DIR/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${NEW_FILE};
     else
-      echo_verbose "Moving '$output_dir/${file_name_comb}' to '$output_dir/${linker}_${file_name_comb}'";
+      echo_verbose "Moving '$OUTPUT_DIR/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB}'";
       echo_verbose ""
-      mv $output_dir/${file_name_comb} $output_dir/${linker}_${file_name_comb};
+      mv $OUTPUT_DIR/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB};
     fi
   else
-    echo "File $file not found. Skipping"
+    echo "File $FILE not found. Skipping"
   fi
 done
 
-echo_verbose "Copying ZIP file to output directory: $zip_file -> ${output_dir}/${linker}_${zip_file}"
-cp $zip_file ${output_dir}/${linker}_${zip_file_name}.zip
+echo_verbose "Copying ZIP file to output directory: $ZIP_FILE -> ${OUTPUT_DIR}/${LINKER}_${ZIP_FILE}"
+cp $ZIP_FILE ${OUTPUT_DIR}/${LINKER}_${ZIP_FILE_NAME}.zip
 
 echo_verbose "Reached end of script"

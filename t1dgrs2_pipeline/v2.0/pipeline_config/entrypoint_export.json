@@ -1,0 +1,63 @@
+{
+    "name": "entrypoint_export",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "sftp_server": {
+            "type": "str",
+            "default": "esnftp.rti.org",
+            "required": false
+        },
+        "username": {
+            "type": "str",
+            "default": "svcEarlyCheck",
+            "required": false
+        },
+        "password": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "output_result_file": {
+            "type": "string",
+            "default": "",
+            "required": true
+        },
+        "target_dir": {
+            "type": "str",
+            "default": "/T1DRESULTS/",
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>/entrypoint_export.log"
+        }
+    },
+    "entry_point": "sftp_results",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>",
+        "sftp_server": "<inputs.sftp_server>",
+        "username": "<inputs.username>",
+        "password": "<inputs.password>",
+        "results_file": "<inputs.output_result_file>",
+        "target_dir": "<inputs.target_dir>"
+    },
+    "pipeline": {
+        "sftp_results": {
+            "task": "sftp_results",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "working_dir": "<RUN_DIR>/working_dir",
+    "output_dir": "<RUN_DIR>/output_dir",
+    "master_rti_manifest": "/home/merge-shared-folder/t1dgrs2-pipeline-runs/pipeline_inputs/manifests/Master_RTI_manifest_list.csv",
+    "gene_manifest": "<RUN_DIR>/output_dir/gvcfs_imported",
+    "argo_api_url": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+    "simultaneous_jobs": 50,
+    "ref_bfile": "/home/merge-shared-folder/t1dgrs2-pipeline-runs/pipeline_inputs/ref/t1dgrs2_ref",
+    "control_dir": "/home/merge-shared-folder/t1dgrs2-pipeline-runs/pipeline_inputs/controls"
+}
