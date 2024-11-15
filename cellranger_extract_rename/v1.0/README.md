@@ -38,20 +38,21 @@ docker run -it -v $PWD:/data cellranger_extract_rename:v1 rename_files.sh
 
 Usage info:
 ```
-Usage: ./rename_files.sh [OPTIONS]
+Usage: /rename_files.sh [OPTIONS]
 Options:
  -h, --help         Display this help message
  -v, --verbose      Enable verbose mode
- -l, --linker       STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<ddd>_<w>_<ddd>_<w>') - Required
-                       e.g. linker='RMIP_001_001_A_001_A'
+ -l, --linker       STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required
+                       e.g. linker='RMIP_001_allo1_A_001_A'
                        Note that the Vial Identifier (last letter) is optional
- -z, --zip_file     STRING/PATH Specify name and path of ZIP file to read, decompress, and rename - Required
+ -i, --input        STRING/PATH Specify name and path of either ZIP file to read OR input directory - Required
  -o, --output_dir   STRING/PATH Specify directory where to put extracted files.  Default = '.'
 
 Example usage
- Required flags:               ./rename_files.sh -z outs.zip -l RMIP_001_001_A_001_A
- Verbose mode:                 ./rename_files.sh -v -z outs.zip -l RMIP_001_001_A_001_B
- Writing to output directory:  ./rename_files.sh -z outs.zip -l RMIP_001_001_A_001_C -o test_output
+ Required flags (ZIP input):               ./rename_files.sh -i outs.zip -l RMIP_001_allo1_A_001_A
+ Required flags (DIRECTORY input):         ./rename_files.sh -i outs -l RMIP_001_allo1_A_001_B
+ Writing to output directory:              ./rename_files.sh -i outs.zip -l RMIP_001_allo1_A_001_C -o outs
+ Verbose mode:                             ./rename_files.sh -v -i outs.zip -l RMIP_001_allo1_A_001_D
 ```
 
 ## Files included
