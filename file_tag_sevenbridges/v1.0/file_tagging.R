@@ -99,14 +99,20 @@ for (i in c(1:nrow(df_files_out))){
   file_ext <- file_ext(file_name)
   
   file_name_sep<- str_split(file_name_base,pattern = "_",simplify = TRUE)
-  if (length(file_name_sep)!=6 | file_name_sep[1]!="RMIP"){
+  if (length(file_name_sep)>=6 | file_name_sep[1]!="RMIP"){
     log_print(paste("File", file_name, "is not formatted correctly. This file has not been tagged."), blank_after = FALSE)
   }else{
     log_print(paste("File", file_name, "is formatted correctly. Tagging..."), blank_after = FALSE)
     participant_id <- paste(file_name_sep[1:3],collapse = "_")
     sample_id <- paste(file_name_sep[4:5],collapse = "_")
-    data_type <- file_name_sep[6]
-    new_tags <- c(participant_id, sample_id, data_type, file_ext)
+    vial <- file_name_sep[6]
+    #don't tag Allo participants with participant id
+    if(length(grep("Allo",participant_id)) > 0){
+      new_tags <- c(sample_id, vial, file_ext)
+    }else{
+      new_tags <- c(participant_id, sample_id, vial, file_ext)
+    }
+    
     if (length(current_tags)>=1){
       tags <- unique(c(current_tags, new_tags))
     }else{
