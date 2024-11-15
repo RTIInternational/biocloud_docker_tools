@@ -15,7 +15,7 @@ WORKDIR /scratch
 # Install necessary R packages
 RUN Rscript -e 'install.packages(c("readr","tidyverse","openxlsx","sevenbridges2","tools","logr","stringr","optparse"), repos = "http://cran.us.r-project.org")'
 
-#Add to environment
+# Add to environment
 ENV PATH=$PATH:/opt/
 
 # Copy script
