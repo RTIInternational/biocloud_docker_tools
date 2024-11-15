@@ -99,7 +99,7 @@ for (i in c(1:nrow(df_files_out))){
   file_ext <- file_ext(file_name)
   
   file_name_sep<- str_split(file_name_base,pattern = "_",simplify = TRUE)
-  if (length(file_name_sep)>=6 | file_name_sep[1]!="RMIP"){
+  if (length(file_name_sep)<=6 | file_name_sep[1]!="RMIP"){
     log_print(paste("File", file_name, "is not formatted correctly. This file has not been tagged."), blank_after = FALSE)
   }else{
     log_print(paste("File", file_name, "is formatted correctly. Tagging..."), blank_after = FALSE)
