@@ -22,3 +22,4 @@ WORKDIR /data
 RUN chmod 755 /opt/convert_variant_ids.py
 
 CMD ["python", "/opt/convert_variant_ids.py", "--help"]
+
