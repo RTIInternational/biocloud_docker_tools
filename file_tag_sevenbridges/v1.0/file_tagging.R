@@ -35,7 +35,6 @@ if (!is.null(opt$folder)){
   folder_name <- opt$folder
 }
 
-
 ### functions ###
 extract_file_info <- function(project_id,parent_id=NA,parent_name="root", df_files) {
   print(paste(project_id, parent_id,parent_name))
