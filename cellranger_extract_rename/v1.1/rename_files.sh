@@ -4,19 +4,21 @@
 usage() {
  echo "Usage: $0 [OPTIONS]"
  echo "Options:"
- echo " -h, --help         Display this help message"
- echo " -v, --verbose      Enable verbose mode"
- echo " -l, --linker       STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required"
- echo "                       e.g. linker='RMIP_001_allo1_A_001_A'"
- echo "                       Note that the Vial Identifier (last letter) is optional"
- echo " -i, --input        STRING/PATH Specify name and path of either ZIP file to read OR input directory - Required"
- echo " -o, --output_dir   STRING/PATH Specify directory where to put extracted files.  Default = '.'"
+ echo " -h, --help             Display this help message"
+ echo " -v, --verbose          Enable verbose mode"
+ echo " -l, --linker           STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required"
+ echo "                          e.g. linker='RMIP_001_allo1_A_001_A'"
+ echo "                          Note that the Vial Identifier (last letter) is optional"
+ echo " -i, --input_dir        STRING/PATH Specify name and path of input directory to read - one of either ZIP or Input Directory Required"
+ echo " -z, --input_zip        STRING/PATH Specify name and path of ZIP file to read - one of either ZIP or Input Directory Required"
+ echo " -o, --output_dir       STRING/PATH Specify directory where to put extracted files.  Default = '.'"
  echo ""
  echo "Example usage"
- echo " Required flags (ZIP input):               ./rename_files.sh -i outs.zip -l RMIP_001_allo1_A_001_A"
+ echo " Required flags (ZIP input):               ./rename_files.sh -z outs.zip -l RMIP_001_allo1_A_001_A"
  echo " Required flags (DIRECTORY input):         ./rename_files.sh -i outs -l RMIP_001_allo1_A_001_B"
- echo " Writing to output directory:              ./rename_files.sh -i outs.zip -l RMIP_001_allo1_A_001_C -o outs"
- echo " Verbose mode:                             ./rename_files.sh -v -i outs.zip -l RMIP_001_allo1_A_001_D"
+ echo " Required flags (BOTH - defaults to ZIP):  ./rename_files.sh -z outs.zip -i outs -l RMIP_001_allo1_A_001_C"
+ echo " Writing to output directory:              ./rename_files.sh -z outs.zip -l RMIP_001_allo1_A_001_D -o outs"
+ echo " Verbose mode:                             ./rename_files.sh -v -z outs.zip -l RMIP_001_allo1_A_001_E"
 }
 
 # Defining tool functions
@@ -54,21 +56,32 @@ handle_options() {
 
         shift
         ;;
-      -i | --input*)
-        if ! has_argument $@; then
-          echo "ERROR: Input not specified." >&2
-          usage
-          exit 1
-        fi
+      -z | --input_zip*)
+        # if ! has_argument $@; then
+        #   echo "ERROR: Input ZIP not specified." >&2
+        #   usage
+        #   exit 1
+        # fi
 
-        INPUT=$(extract_argument $@)
+        INPUT_ZIP=$(extract_argument $@)
+
+        shift
+        ;;
+      -i | --input_dir*)
+        # if ! has_argument $@; then
+        #   echo "ERROR: Input Directory not specified." >&2
+        #   usage
+        #   exit 1
+        # fi
+
+        INPUT_DIR=$(extract_argument $@)
 
         shift
         ;;
       -o | --output_dir*)
         if ! has_argument $@; then
-          echo "Warning: Output directory flag given, but not specified." >&2
-          echo "Setting to current working directory." >&2
+          echo "WARNING: Output directory flag given, but not specified." >&2
+          echo "WARNING: Setting output directory to current working directory." >&2
           OUTPUT_DIR=""
         else
           OUTPUT_DIR=$(extract_argument $@)
@@ -89,7 +102,7 @@ handle_options() {
 # Main script execution
 handle_options "$@"
 
-echo_verbose "Verbose mode turned on"
+echo_verbose "INFO: Verbose mode turned on"
 echo_verbose ""
 
 # QC checks of input parameters
@@ -99,15 +112,26 @@ if [[ ${#LINKER} == 0 ]]; then
   exit 1
 fi
 
-if [[ ${#INPUT} == 0 ]]; then
-  echo "ERROR: INPUT not supplied. Must specify INPUT ZIP file or directory"
+if [[ (${#INPUT_ZIP} == 0) && (${#INPUT_DIR} == 0) ]]; then
+  echo "ERROR: INPUT not supplied. Must specify INPUT_ZIP file or INPUT_DIR directory"
   usage
   exit 1
 fi
 
+if [[ ${#INPUT_ZIP} == 0 ]]; then
+  echo_verbose "INFO: INPUT_ZIP not found, setting INPUT to INPUT_DIR"
+  INPUT=$INPUT_DIR
+elif [[ (${#INPUT_ZIP} > 0) && (${#INPUT_DIR} > 0) ]]
+  echo "INFO: Got both INPUT_ZIP and INPUT_DIR"
+  echo "INFO: Defaulting to using INPUT_ZIP"
+  INPUT=$INPUT_ZIP
+else
+  INPUT=$INPUT_ZIP
+fi
+
 if [[ ( ! -f ${INPUT} ) && ( ! -d ${INPUT} )]]; then
   echo "ERROR: INPUT not found.  Please ensure path is correct and/or ZIP file/directory exists"
-  echo "Given INPUT: $INPUT"
+  echo "INFO: Given INPUT '${INPUT}'"
   exit 1
 fi
 
@@ -135,12 +159,12 @@ echo_verbose "Checking validity of linker format..."
 
 j=0
 for i in "${LINKER_SPLIT[@]}"; do
-    echo_verbose "Linker part $j: $i"
-    echo_verbose "Linker regexp: ${LINKER_ARRAY[$j]}"
+    echo_verbose "INFO: Linker part $j: $i"
+    echo_verbose "INFO: Linker regexp: ${LINKER_ARRAY[$j]}"
     if [[ "$i" =~ ${LINKER_ARRAY[$j]} && (${#i} == ${LINKER_PIECE_LENGTH_ARRAY[$j]} || ${LINKER_PIECE_LENGTH_ARRAY[$j]} == 0) ]]; then
-        echo_verbose "Regexp match!"
+        echo_verbose "INFO: Regexp match!"
     else
-        echo_verbose "Regexp not match"
+        echo_verbose "ERROR: Regexp not match"
         echo_verbose ""
         echo "ERROR: Invalid linker format, exiting"
         usage
@@ -152,7 +176,7 @@ done
 
 if [[ $j -gt ${#LINKER_ARRAY[@]} || $j -lt 5 ]]; then
     echo "ERROR: Input linker not long enough, got length $j"
-    echo "Expected length 5 or 6"
+    echo "ERROR: Expected linker length 5 or 6"
     usage
     exit 1
 fi
@@ -160,24 +184,24 @@ fi
 # Testing if INPUT is 'file' or 'directory' type
 if [[ -f ${INPUT} ]]; then
   # Extracting basename from ZIP file name
-  echo_verbose "Found INPUT type 'file'"
+  echo_verbose "INFO: Found INPUT type 'file'"
   INPUT_BASENAME=$(basename -- "$INPUT")
   INPUT_NAME="${INPUT_BASENAME%.*}"
   INPUT_EXTENSION="${INPUT_BASENAME##*.}"
-  echo_verbose "INPUT name extracted: $INPUT_NAME"
-  echo_verbose "INPUT extension extracted: $INPUT_EXTENSION"
+  echo_verbose "INFO: INPUT name extracted '${INPUT_NAME}'"
+  echo_verbose "INFO: INPUT extension extracted '${INPUT_EXTENSION}'"
 
   if [[ $INPUT_EXTENSION == "zip" ]]; then
-    echo_verbose "ZIP file found.  Setting COMPRESSED_INPUT to 'true'"
+    echo_verbose "INFO: ZIP file found.  Setting COMPRESSED_INPUT to 'true'"
     COMPRESSED_INPUT=true
   fi
 elif [[ -d ${INPUT} ]]; then
-  echo_verbose "Found INPUT type 'directory'.  Setting COMPRESSED_INPUT to 'false'"
+  echo_verbose "INFO: Found INPUT type 'directory'.  Setting COMPRESSED_INPUT to 'false'"
   COMPRESSED_INPUT=false
   INPUT_NAME=$INPUT
-  echo_verbose "INPUT directory: $INPUT_NAME"
+  echo_verbose "INFO: INPUT directory '${INPUT_NAME}'"
 else
-  echo_verbose "Unknown error with INPUT type.  Please ensure it is file or directory"
+  echo_verbose "ERROR: Unknown error with INPUT type.  Please ensure it is file or directory"
   exit 1
 fi
 
@@ -187,10 +211,10 @@ if [[ ${#OUTPUT_DIR} == 0 ]]; then
   OUTPUT_DIR="./${LINKER}_${INPUT_NAME}"
 fi
 
-echo_verbose "Writing files to ${OUTPUT_DIR}"
+echo_verbose "INFO: Writing files to ${OUTPUT_DIR}"
 
 if [[ ! -d ${OUTPUT_DIR} ]]; then
-  echo_verbose "Output directory '$OUTPUT_DIR' not found, creating..."
+  echo_verbose "WARNING: Output directory '$OUTPUT_DIR' not found, creating..."
   mkdir -p $OUTPUT_DIR
 fi
 
@@ -199,10 +223,10 @@ TMP_OUTPUT_DIR=tmp_output_dir
 TMP_OUTPUT_DIR_EXISTS=false
 if [[ (-d ${TMP_OUTPUT_DIR}) && (${COMPRESSED_INPUT} == true) ]]; then
   echo_verbose "WARNING: temporary output directory for file copying already exists"
-  echo_verbose "Files will be copied here from input ZIP file"
+  echo_verbose "WARNING: files will be copied here from input ZIP file"
   TMP_OUTPUT_DIR_EXISTS=true
 else
-  echo_verbose "Creating TMP_OUTPUT_DIR"
+  echo_verbose "INFO: Creating TMP_OUTPUT_DIR"
   mkdir -p ${TMP_OUTPUT_DIR}
 fi
 
@@ -217,13 +241,13 @@ for FILE in ${FILE_LIST[@]}; do
   echo_verbose $FILE;
 
   if [[ ${COMPRESSED_INPUT} == true ]]; then
-    echo_verbose "Running in COMPRESSED mode"
+    echo_verbose "INFO: Running in COMPRESSED mode"
     # Extracting basename from ZIP file name
     FILE_NAME=$(basename -- "$FILE")
     FILE_NAME="${FILE_NAME%.*}"
     FILE_NAME_EXTENSION="${FILE##*.}"
-    echo_verbose "File name extracted: $FILE_NAME"
-    echo_verbose "File name extension extracted: $FILE_NAME_EXTENSION"
+    echo_verbose "INFO: File name extracted '${FILE_NAME}'"
+    echo_verbose "INFO: File name extension extracted '${FILE_NAME_EXTENSION}'"
     FILE_NAME_COMB=$FILE_NAME\.$FILE_NAME_EXTENSION
 
     unzip -l $INPUT | grep -q $FILE;
@@ -232,47 +256,47 @@ for FILE in ${FILE_LIST[@]}; do
       
       # Removing "_bam" from filename
       if [[ $FILE_NAME_COMB == *"_bam"* ]]; then
-        echo_verbose "Found '_bam' in $FILE_NAME_COMB"
+        echo_verbose "INFO: Found '_bam' in '${FILE_NAME_COMB}'"
         NEW_FILE=${FILE_NAME_COMB//"_bam"/}
-        echo_verbose "Removed '_bam': $NEW_FILE"
-        echo_verbose "Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${NEW_FILE}'";
+        echo_verbose "INFO: Removed '_bam' to make '${NEW_FILE}'"
+        echo_verbose "INFO: Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${NEW_FILE}'";
         echo_verbose ""
         mv ${TMP_OUTPUT_DIR}/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${NEW_FILE};
       else
-        echo_verbose "Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB}'";
+        echo_verbose "INFO: Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB}'";
         echo_verbose ""
         mv ${TMP_OUTPUT_DIR}/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB};
       fi
     else
-      echo "File $FILE not found in ZIP file. Skipping"
+      echo "INFO: File '${FILE}' not found in ZIP file. Skipping"
     fi
   elif [[ ${COMPRESSED_INPUT} == false ]]; then
-    echo_verbose "Running in UNCOMPRESSED mode"
+    echo_verbose "INFO: Running in UNCOMPRESSED mode"
 
     FILE=${FILE#${INPUT_NAME}/}
 
     if [[ $FILE == *"_bam"* ]]; then
-      echo_verbose "Found '_bam' in $FILE"
+      echo_verbose "INFO: Found '_bam' in '${FILE}'"
       NEW_FILE=${FILE//"_bam"/}
-      echo_verbose "Removed '_bam': $NEW_FILE"
+      echo_verbose "INFO: Removed '_bam' to make '${NEW_FILE}'"
       echo_verbose ""
       cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${NEW_FILE}"
-      echo_verbose "Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${NEW_FILE}'"
+      echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${NEW_FILE}'"
       echo_verbose ""
     else
-      echo_verbose "Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${FILE}'"
+      echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${FILE}'"
       echo_verbose ""
       cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${FILE}"
     fi
   fi
 done
 
-[[ ${COMPRESSED_INPUT} == true ]] && echo_verbose "Copying ZIP file to output directory: $INPUT -> ${OUTPUT_DIR}/${LINKER}_${INPUT}"
+[[ ${COMPRESSED_INPUT} == true ]] && echo_verbose "INFO: Copying ZIP file to output directory: $INPUT -> ${OUTPUT_DIR}/${LINKER}_${INPUT}"
 [[ ${COMPRESSED_INPUT} == true ]] && cp $INPUT ${OUTPUT_DIR}/${LINKER}_${INPUT_NAME}.zip
 
 if [[ ${TMP_OUTPUT_DIR_EXISTS} == true ]]; then
-  echo_verbose "Removing TMP_OUTPUT_DIR"
+  echo_verbose "INFO: Removing TMP_OUTPUT_DIR"
   rm -rf ${TMP_OUTPUT_DIR}
 fi
 
-echo_verbose "Reached end of script"
+echo_verbose "INFO: Reached end of script"
