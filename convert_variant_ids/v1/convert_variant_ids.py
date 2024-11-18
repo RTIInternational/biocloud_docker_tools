@@ -146,7 +146,7 @@ if chrom == "23" or chrom == "X":
 elif chrom == "24" or chrom == "Y":
     filter_chrs = {
         "24",
-        "Y"
+        "Y",
         "chr24",
         "chrY"
     }

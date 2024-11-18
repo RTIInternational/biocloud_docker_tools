@@ -1,11 +1,12 @@
-FROM joshkeegan/zip:3.19.1
+FROM alpine:3.20.3
 
 LABEL maintainer="David Williams <dnwilliams@rti.org>"
-LABEL description="This Docker image contains an in-house script written to extract and rename files coming from the 'outs.zip' file from Cellranger"
+LABEL description="This Docker image contains an in-house script written to extract and rename files coming from the 'outs.zip' file or outs directory from Cellranger"
+LABEL software-version="1.1"
 
 RUN apk update
-RUN apk add vim vim-doc vim-tutor
-RUN apk add bash
+RUN apk add --no-cache vim vim-doc vim-tutor zip unzip
+RUN apk add --no-cache bash
 
 # Add scripts to make it run
 ADD rename_files.sh /
