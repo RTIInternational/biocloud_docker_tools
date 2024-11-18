@@ -57,22 +57,12 @@ handle_options() {
         shift
         ;;
       -z | --input_zip*)
-        # if ! has_argument $@; then
-        #   echo "ERROR: Input ZIP not specified." >&2
-        #   usage
-        #   exit 1
-        # fi
 
         INPUT_ZIP=$(extract_argument $@)
 
         shift
         ;;
       -i | --input_dir*)
-        # if ! has_argument $@; then
-        #   echo "ERROR: Input Directory not specified." >&2
-        #   usage
-        #   exit 1
-        # fi
 
         INPUT_DIR=$(extract_argument $@)
 
@@ -118,16 +108,48 @@ if [[ (${#INPUT_ZIP} == 0) && (${#INPUT_DIR} == 0) ]]; then
   exit 1
 fi
 
+# Setting INPUT and COMPRESSED_INPUT based on whether INPUT_ZIP or INPUT_DIR was supplied
 if [[ ${#INPUT_ZIP} == 0 ]]; then
   echo_verbose "INFO: INPUT_ZIP not found, setting INPUT to INPUT_DIR"
   INPUT=$INPUT_DIR
-elif [[ (${#INPUT_ZIP} > 0) && (${#INPUT_DIR} > 0) ]]
-  echo "INFO: Got both INPUT_ZIP and INPUT_DIR"
-  echo "INFO: Defaulting to using INPUT_ZIP"
+  COMPRESSED_INPUT=false
+elif [[ (${#INPUT_ZIP} > 0) && (${#INPUT_DIR} > 0) ]]; then
+  echo "WARNING: Got both INPUT_ZIP and INPUT_DIR"
+  echo "WARNING: Defaulting to using INPUT_ZIP"
   INPUT=$INPUT_ZIP
+  COMPRESSED_INPUT=true
 else
   INPUT=$INPUT_ZIP
+  COMPRESSED_INPUT=true
 fi
+
+# Verifying input type as either directory or ZIP file type
+if [[ (-d ${INPUT}) && (${COMPRESSED_INPUT} == 'false') ]]; then
+  # Confirming that input is a directory type
+  echo_verbose "INFO: Found INPUT type 'directory'."
+  INPUT_NAME=$INPUT
+  echo_verbose "INFO: INPUT directory '${INPUT_NAME}'"
+elif [[ (-f ${INPUT}) && (${COMPRESSED_INPUT} == 'true')]]; then
+  # Extracting basename from ZIP file name for validation
+  echo_verbose "INFO: Found INPUT type 'file'"
+  INPUT_BASENAME=$(basename -- "$INPUT")
+  INPUT_NAME="${INPUT_BASENAME%.*}"
+  INPUT_EXTENSION="${INPUT_BASENAME##*.}"
+  echo_verbose "INFO: INPUT name extracted '${INPUT_NAME}'"
+  echo_verbose "INFO: INPUT extension extracted '${INPUT_EXTENSION}'"
+
+  # Confirming that input is a ZIP file type
+  if [[ $INPUT_EXTENSION == "zip" ]]; then
+    echo_verbose "INFO: Confirmed ZIP file found as input."
+  fi
+else
+  echo_verbose "ERROR: INPUT argument mismatch or file/directory not found."
+  echo_verbose "ERROR: Confirm that argument is supplied with correct type and that file/directory exists."
+  usage
+  exit 1
+fi
+
+echo_verbose ""
 
 if [[ ( ! -f ${INPUT} ) && ( ! -d ${INPUT} )]]; then
   echo "ERROR: INPUT not found.  Please ensure path is correct and/or ZIP file/directory exists"
@@ -179,30 +201,6 @@ if [[ $j -gt ${#LINKER_ARRAY[@]} || $j -lt 5 ]]; then
     echo "ERROR: Expected linker length 5 or 6"
     usage
     exit 1
-fi
-
-# Testing if INPUT is 'file' or 'directory' type
-if [[ -f ${INPUT} ]]; then
-  # Extracting basename from ZIP file name
-  echo_verbose "INFO: Found INPUT type 'file'"
-  INPUT_BASENAME=$(basename -- "$INPUT")
-  INPUT_NAME="${INPUT_BASENAME%.*}"
-  INPUT_EXTENSION="${INPUT_BASENAME##*.}"
-  echo_verbose "INFO: INPUT name extracted '${INPUT_NAME}'"
-  echo_verbose "INFO: INPUT extension extracted '${INPUT_EXTENSION}'"
-
-  if [[ $INPUT_EXTENSION == "zip" ]]; then
-    echo_verbose "INFO: ZIP file found.  Setting COMPRESSED_INPUT to 'true'"
-    COMPRESSED_INPUT=true
-  fi
-elif [[ -d ${INPUT} ]]; then
-  echo_verbose "INFO: Found INPUT type 'directory'.  Setting COMPRESSED_INPUT to 'false'"
-  COMPRESSED_INPUT=false
-  INPUT_NAME=$INPUT
-  echo_verbose "INFO: INPUT directory '${INPUT_NAME}'"
-else
-  echo_verbose "ERROR: Unknown error with INPUT type.  Please ensure it is file or directory"
-  exit 1
 fi
 
 # If there is no OUTPUT_DIR supplied, then set to directory named by linker and input within current working directory
@@ -273,20 +271,25 @@ for FILE in ${FILE_LIST[@]}; do
   elif [[ ${COMPRESSED_INPUT} == false ]]; then
     echo_verbose "INFO: Running in UNCOMPRESSED mode"
 
-    FILE=${FILE#${INPUT_NAME}/}
-
-    if [[ $FILE == *"_bam"* ]]; then
-      echo_verbose "INFO: Found '_bam' in '${FILE}'"
-      NEW_FILE=${FILE//"_bam"/}
-      echo_verbose "INFO: Removed '_bam' to make '${NEW_FILE}'"
-      echo_verbose ""
-      cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${NEW_FILE}"
-      echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${NEW_FILE}'"
-      echo_verbose ""
+    if [[ ! -f ${FILE} ]]; then
+      echo "INFO: File '${FILE}' not found, skipping"
+      echo ""
     else
-      echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${FILE}'"
-      echo_verbose ""
-      cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${FILE}"
+      FILE=${FILE#${INPUT_NAME}/}
+
+      if [[ $FILE == *"_bam"* ]]; then
+        echo_verbose "INFO: Found '_bam' in '${FILE}'"
+        NEW_FILE=${FILE//"_bam"/}
+        echo_verbose "INFO: Removed '_bam' to make '${NEW_FILE}'"
+        echo_verbose ""
+        cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${NEW_FILE}"
+        echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${NEW_FILE}'"
+        echo_verbose ""
+      else
+        echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${FILE}'"
+        echo_verbose ""
+        cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${FILE}"
+      fi
     fi
   fi
 done

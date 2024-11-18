@@ -40,19 +40,21 @@ Usage info:
 ```
 Usage: /rename_files.sh [OPTIONS]
 Options:
- -h, --help         Display this help message
- -v, --verbose      Enable verbose mode
- -l, --linker       STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required
-                       e.g. linker='RMIP_001_allo1_A_001_A'
-                       Note that the Vial Identifier (last letter) is optional
- -i, --input        STRING/PATH Specify name and path of either ZIP file to read OR input directory - Required
- -o, --output_dir   STRING/PATH Specify directory where to put extracted files.  Default = '.'
+ -h, --help             Display this help message
+ -v, --verbose          Enable verbose mode
+ -l, --linker           STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required
+                          e.g. linker='RMIP_001_allo1_A_001_A'
+                          Note that the Vial Identifier (last letter) is optional
+ -i, --input_dir        STRING/PATH Specify name and path of input directory to read - one of either ZIP or Input Directory Required
+ -z, --input_zip        STRING/PATH Specify name and path of ZIP file to read - one of either ZIP or Input Directory Required
+ -o, --output_dir       STRING/PATH Specify directory where to put extracted files.  Default = '.'
 
 Example usage
- Required flags (ZIP input):               ./rename_files.sh -i outs.zip -l RMIP_001_allo1_A_001_A
+ Required flags (ZIP input):               ./rename_files.sh -z outs.zip -l RMIP_001_allo1_A_001_A
  Required flags (DIRECTORY input):         ./rename_files.sh -i outs -l RMIP_001_allo1_A_001_B
- Writing to output directory:              ./rename_files.sh -i outs.zip -l RMIP_001_allo1_A_001_C -o outs
- Verbose mode:                             ./rename_files.sh -v -i outs.zip -l RMIP_001_allo1_A_001_D
+ Required flags (BOTH - defaults to ZIP):  ./rename_files.sh -z outs.zip -i outs -l RMIP_001_allo1_A_001_C
+ Writing to output directory:              ./rename_files.sh -z outs.zip -l RMIP_001_allo1_A_001_D -o outs
+ Verbose mode:                             ./rename_files.sh -v -z outs.zip -l RMIP_001_allo1_A_001_E
 ```
 
 ## Files included
