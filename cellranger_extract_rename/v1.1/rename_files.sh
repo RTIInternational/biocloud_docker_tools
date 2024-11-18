@@ -206,7 +206,7 @@ fi
 # If there is no OUTPUT_DIR supplied, then set to directory named by linker and input within current working directory
 if [[ ${#OUTPUT_DIR} == 0 ]]; then
   echo_verbose "WARNING: OUTPUT_DIR not specified!"
-  OUTPUT_DIR="./${LINKER}_${INPUT_NAME}"
+  OUTPUT_DIR="./${LINKER}_outs"
 fi
 
 echo_verbose "INFO: Writing files to ${OUTPUT_DIR}"
@@ -281,7 +281,6 @@ for FILE in ${FILE_LIST[@]}; do
         echo_verbose "INFO: Found '_bam' in '${FILE}'"
         NEW_FILE=${FILE//"_bam"/}
         echo_verbose "INFO: Removed '_bam' to make '${NEW_FILE}'"
-        echo_verbose ""
         cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${NEW_FILE}"
         echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${NEW_FILE}'"
         echo_verbose ""
