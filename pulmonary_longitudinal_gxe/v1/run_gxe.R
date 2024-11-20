@@ -302,7 +302,8 @@ for (chunk in 1:chunk_count) {
         sprintf("%s_chunk_%s.tsv", get_arg(args, "file-out-prefix"), chunk),
         col.names=TRUE,
         row.names=FALSE,
-        quote=FALSE
+        quote=FALSE,
+        sep="\t"
     )
 
     # Remove temp file  

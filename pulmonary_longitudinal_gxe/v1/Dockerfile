@@ -20,4 +20,3 @@ RUN Rscript -e 'BiocManager::install(c("dbplyr"), ask = FALSE)'
 # Set wrkdir
 RUN mkdir /data
 WORKDIR /data
-
