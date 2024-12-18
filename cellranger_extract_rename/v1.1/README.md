@@ -42,6 +42,7 @@ Usage: /rename_files.sh [OPTIONS]
 Options:
  -h, --help             Display this help message
  -v, --verbose          Enable verbose mode
+ -p, --pilot            Enable pilot mode
  -l, --linker           STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required
                           e.g. linker='RMIP_001_allo1_A_001_A'
                           Note that the Vial Identifier (last letter) is optional
@@ -55,6 +56,7 @@ Example usage
  Required flags (BOTH - defaults to ZIP):  ./rename_files.sh -z outs.zip -i outs -l RMIP_001_allo1_A_001_C
  Writing to output directory:              ./rename_files.sh -z outs.zip -l RMIP_001_allo1_A_001_D -o outs
  Verbose mode:                             ./rename_files.sh -v -z outs.zip -l RMIP_001_allo1_A_001_E
+ Pilot mode:                               ./rename_files.sh -p -z outs.zip -l RMIP_001_PL_001
 ```
 
 ## Files included

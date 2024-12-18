@@ -6,6 +6,7 @@ usage() {
  echo "Options:"
  echo " -h, --help             Display this help message"
  echo " -v, --verbose          Enable verbose mode"
+ echo " -p, --pilot            Enable pilot mode"
  echo " -l, --linker           STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required"
  echo "                          e.g. linker='RMIP_001_allo1_A_001_A'"
  echo "                          Note that the Vial Identifier (last letter) is optional"
@@ -19,6 +20,7 @@ usage() {
  echo " Required flags (BOTH - defaults to ZIP):  ./rename_files.sh -z outs.zip -i outs -l RMIP_001_allo1_A_001_C"
  echo " Writing to output directory:              ./rename_files.sh -z outs.zip -l RMIP_001_allo1_A_001_D -o outs"
  echo " Verbose mode:                             ./rename_files.sh -v -z outs.zip -l RMIP_001_allo1_A_001_E"
+ echo " Pilot mode:                               ./rename_files.sh -p -z outs.zip -l RMIP_001_PL_001"
 }
 
 # Defining tool functions
@@ -44,6 +46,9 @@ handle_options() {
         ;;
       -v | --verbose)
         VERBOSE_MODE=true
+        ;;
+      -p | --pilot)
+        PILOT_MODE=true
         ;;
       -l | --linker*)
         if ! has_argument $@; then
@@ -175,32 +180,37 @@ LINKER_PIECE_LENGTH_ARRAY[5]=1 # Vial identifier
 
 
 # Creating, splitting, and validating input linker
-IFS="_" read -ra LINKER_SPLIT <<< "$LINKER"
 
-echo_verbose "Checking validity of linker format..."
+if [ "$PILOT_MODE" == true ]; then
+  echo "INFO: PILOT_MODE activated, skipping linker check"
+else
+  IFS="_" read -ra LINKER_SPLIT <<< "$LINKER"
 
-j=0
-for i in "${LINKER_SPLIT[@]}"; do
-    echo_verbose "INFO: Linker part $j: $i"
-    echo_verbose "INFO: Linker regexp: ${LINKER_ARRAY[$j]}"
-    if [[ "$i" =~ ${LINKER_ARRAY[$j]} && (${#i} == ${LINKER_PIECE_LENGTH_ARRAY[$j]} || ${LINKER_PIECE_LENGTH_ARRAY[$j]} == 0) ]]; then
-        echo_verbose "INFO: Regexp match!"
-    else
-        echo_verbose "ERROR: Regexp not match"
-        echo_verbose ""
-        echo "ERROR: Invalid linker format, exiting"
-        usage
-        exit 1
-    fi
-    ((j+=1))
-    echo_verbose ""
-done
+  echo_verbose "Checking validity of linker format..."
 
-if [[ $j -gt ${#LINKER_ARRAY[@]} || $j -lt 5 ]]; then
-    echo "ERROR: Input linker not long enough, got length $j"
-    echo "ERROR: Expected linker length 5 or 6"
-    usage
-    exit 1
+  j=0
+  for i in "${LINKER_SPLIT[@]}"; do
+      echo_verbose "INFO: Linker part $j: $i"
+      echo_verbose "INFO: Linker regexp: ${LINKER_ARRAY[$j]}"
+      if [[ "$i" =~ ${LINKER_ARRAY[$j]} && (${#i} == ${LINKER_PIECE_LENGTH_ARRAY[$j]} || ${LINKER_PIECE_LENGTH_ARRAY[$j]} == 0) ]]; then
+          echo_verbose "INFO: Regexp match!"
+      else
+          echo_verbose "ERROR: Regexp not match"
+          echo_verbose ""
+          echo "ERROR: Invalid linker format, exiting"
+          usage
+          exit 1
+      fi
+      ((j+=1))
+      echo_verbose ""
+  done
+
+  if [[ $j -gt ${#LINKER_ARRAY[@]} || $j -lt 5 ]]; then
+      echo "ERROR: Input linker not long enough, got length $j"
+      echo "ERROR: Expected linker length 5 or 6"
+      usage
+      exit 1
+  fi
 fi
 
 # If there is no OUTPUT_DIR supplied, then set to directory named by linker and input within current working directory
