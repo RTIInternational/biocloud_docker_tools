@@ -15,7 +15,6 @@ RUN apt install -y \
 
 # Set workdir
 RUN mkdir /data
-COPY ./*.zip ./*.7z ./*.gz ./*.tar ./*.rar ./*.bz ./*.tbz ./*.tb2 ./*.bz2 /data
 WORKDIR /data
 
 # Add to environment
