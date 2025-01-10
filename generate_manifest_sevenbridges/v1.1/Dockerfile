@@ -9,7 +9,9 @@ LABEL software-version="1.1"
 RUN apt update && apt install -y \
     libcurl4-openssl-dev \
     libssl-dev \ 
-    vim
+    vim \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install R libraries
 RUN Rscript -e 'install.packages(c("dplyr","stringr", "lubridate", "openxlsx", "sevenbridges2", "getopt"))'
