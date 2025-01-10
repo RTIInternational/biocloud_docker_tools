@@ -1,6 +1,6 @@
 # Description
 
-This Docker image contains an in-house script written to create an Excel workbook or tab-separated text file of a file and folder manifest of a Seven Bridges project.  Its purpose is to get a sense of how folders are structured, how much space is used, and how many files exits.  The Input to this should be a Seven Bridges developer's token and a string indicating which project to get a manifest of, and the output is an Excel or text file with a manifest of files and folders of the specified Seven Bridges project.  The following information is provided about the project and its files and folders:
+This Docker image contains an in-house script written to create an Excel workbook **OR** tab-separated text file of a file and folder manifest of a Seven Bridges project.  Its purpose is to get a sense of how folders are structured, how much space is used, and how many files exits.  The Input to this should be a Seven Bridges developer's token and a string indicating which project to get a manifest of, and the output is an Excel **OR** text file with a manifest of files and folders of the specified Seven Bridges project.  The following information is provided about the project and its files and folders:
 
 Summary metrics:
 - Report Date - date manifest was generated
@@ -39,9 +39,9 @@ Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
               [-t | --token         ]    <Seven Bridges Developer token> (REQUIRED)
               [-p | --project_id    ]    <Project ID, e.g. "username/test-project"> (REQUIRED)
-             -- Optional Parameters -- 
+             -- Optional Flags -- 
               [-v | --verbose       ]    <Activates verbose mode>
-              [-x | --text_save     ]    <Save output as a text file>
+              [-x | --text_save     ]    <Save output as a tab delimited text file>
              -- Help Flag --  
               [-h | --help          ]    <Displays this help message>
              Example:
@@ -51,7 +51,7 @@ Usage: convert_ab1_to_fasta.r [OPTIONS]
 ## Files included
 
 - `Dockerfile`: the Docker file used to build this image
-- `generate_manifest_sevenbridges.R`: R script that serves as the main executable when the Docker container is run.  Expected behavior is to call the Seven Bridges API recursively on a project and generate an Excel report or tab separated text file containing the project's summary metrics, a directory manifest, and a file manifest.  In the end, this writes the extracted results to an output Excel sheet (.xlsx) or text file (.txt) named after the project's name.
+- `generate_manifest_sevenbridges.R`: R script that serves as the main executable when the Docker container is run.  Expected behavior is to call the Seven Bridges API recursively on a project and generate an Excel report **OR** tab separated text file containing the project's summary metrics, a directory manifest, and a file manifest.  In the end, this writes the extracted results to an output Excel sheet (.xlsx) or text file (.txt) named after the project's name.
 
 ## Contact
 

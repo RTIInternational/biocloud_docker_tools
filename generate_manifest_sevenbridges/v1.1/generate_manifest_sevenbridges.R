@@ -15,9 +15,9 @@ usage <- paste("Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
               [-t | --token         ]    <Seven Bridges Developer token> (REQUIRED)
               [-p | --project_id    ]    <Project ID, e.g. \"username/test-project\"> (REQUIRED)
-             -- Optional Parameters -- 
+             -- Optional Flags -- 
               [-v | --verbose       ]    <Activates verbose mode>
-              [-x | --text_save     ]    <Save output as a text file>
+              [-x | --text_save     ]    <Save output as a tab delimited text file>
              -- Help Flag --  
               [-h | --help          ]    <Displays this help message>
              Example:
