@@ -15,8 +15,9 @@ usage <- paste("Usage: convert_ab1_to_fasta.r [OPTIONS]
              -- Required Parameters --
               [-t | --token         ]    <Seven Bridges Developer token> (REQUIRED)
               [-p | --project_id    ]    <Project ID, e.g. \"username/test-project\"> (REQUIRED)
-             -- Optional Parameters -- 
+             -- Optional Flags -- 
               [-v | --verbose       ]    <Activates verbose mode>
+              [-x | --text_save     ]    <Save output as a tab delimited text file>
              -- Help Flag --  
               [-h | --help          ]    <Displays this help message>
              Example:
@@ -28,6 +29,7 @@ spec <- matrix(c(
   'token',            't', 1, "character",
   'project_id',       'p', 1, "character",
   'verbose',          'v', 0, "logical",
+  'text_save',        'x', 0, "logical",
   'help',             'h', 0, "logical"
 ), byrow=TRUE, ncol=4);
 
@@ -57,7 +59,14 @@ if (exitFlag) {
   q(save="no",status=1,runLast=FALSE)
 }
 
-print_verbose <- function(x) {if (args$verbose) {print(x)}}
+print_verbose <- function(x) {if ("verbose" %in% names(args)) {print(x)}}
+text_save_flag <- FALSE
+text_save_flag <- "text_save" %in% names(args)
+if (text_save_flag) {
+  print_verbose("text_save_flag set to TRUE - manifest will be saved as text file")
+} else {
+  print_verbose("text_save_flag set to FALSE - manifest will be saved as Excel workbook")
+}
 
 # Extracting inputs
 token <- args$token
@@ -265,7 +274,8 @@ names(summary_metrics_df) <- names(summary_metrics_init)
 summary_metrics <- bind_rows(summary_metrics_init,summary_metrics_df)
 
 df_file_manifest <- df_files %>%
-  mutate(size = size*byte_to_gigabyte) %>%
+  mutate(size = size*byte_to_gigabyte,
+         upload_date = format(upload_date, "%Y-%m-%d %H:%M")) %>%
   filter(type=="file") %>%
   select(`File Name` = name, `File Size (GB)` = size, `Upload Date` = upload_date, `Path` = path, `SB URI` = sb_uri) %>%
   arrange(`File Name`)
@@ -281,28 +291,39 @@ hs2 <- createStyle(halign = "left", textDecoration = "Bold")
 hs3 <- createStyle(halign = "left", textDecoration = c("Bold","underline"))
 hs4 <- createStyle(halign = "left", indent = 1)
 
-# write_sheet <- "test_RMIP_inventory"
 write_sheet <- gsub("^.*\\/","",project_id)
 
-# Creating the workbook and worksheet
-print_verbose(paste0("Writing to workbook: ", write_sheet))
-wb <- createWorkbook()
-addWorksheet(wb, sheetName = write_sheet)
+if (text_save_flag) {
+  write_sheet_text <- paste0(Sys.Date(), "_", write_sheet)
+  cat("Summary Metrics", file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+  cat(paste0(colnames(summary_metrics),collapse = '\t'), file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+  cat(apply(summary_metrics,1,paste0, collapse = '\t'), file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+  cat(paste0(colnames(df_directory_file_counts[,1:3]), collapse = '\t'), file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+  cat(apply(df_directory_file_counts[,1:3], 1, paste0, collapse = '\t'), file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+  cat("\n\nFile Manifest", file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+  cat(paste0(colnames(df_file_manifest), collapse = '\t'), file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+  cat(apply(df_file_manifest, 1, paste0, collapse = '\t'), file = paste0(write_sheet_text,".txt"), append = TRUE, sep = '\n')
+} else {
+  # Creating the workbook and worksheet
+  print_verbose(paste0("Writing to workbook: ", write_sheet))
+  wb <- createWorkbook()
+  addWorksheet(wb, sheetName = write_sheet)
 
-# Adding headers and data
-writeData(wb, sheet = write_sheet,x = "Summary Metrics", startRow = 1, headerStyle = hs1)
-mergeCells(wb, sheet= write_sheet, cols=1:5, rows=1)
-addStyle(wb, sheet = write_sheet, cols=1:5, rows=1, style = hs1)
-writeData(wb, sheet = write_sheet,x = summary_metrics, startCol = 1, startRow = 2, colNames = FALSE, rowNames = FALSE)
-writeData(wb, sheet = write_sheet,x = df_directory_file_counts[,1:3], startCol = 1, startRow = 2 + nrow(summary_metrics), colNames = FALSE, rowNames = FALSE )
-writeData(wb, sheet = write_sheet,x = "File Manifest", startCol = 1, startRow = 2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 1, headerStyle = hs1)
-mergeCells(wb, sheet = write_sheet, cols=1:5, rows=2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 1)
-addStyle(wb, sheet = write_sheet, cols=1, rows=1 + nrow(summary_metrics) + 1, style = hs3)
-addStyle(wb, sheet = write_sheet, cols=1, rows=1 + nrow(summary_metrics) + depth_one_indexes, style = hs2)
-addStyle(wb, sheet = write_sheet, cols=1, rows=1 + nrow(summary_metrics) + depth_two_plus_indexes, style = hs4)
-addStyle(wb, sheet = write_sheet, cols=1:5, rows=2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 1, style = hs1)
-writeData(wb, sheet = write_sheet,x = df_file_manifest, startCol = 1, startRow = 2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 2, headerStyle = hs2)
-setColWidths(wb, sheet = write_sheet, cols = 1:5, widths = c("30","25","25","25","25"))
+  # Adding headers and data
+  writeData(wb, sheet = write_sheet,x = "Summary Metrics", startRow = 1, headerStyle = hs1)
+  mergeCells(wb, sheet= write_sheet, cols=1:5, rows=1)
+  addStyle(wb, sheet = write_sheet, cols=1:5, rows=1, style = hs1)
+  writeData(wb, sheet = write_sheet,x = summary_metrics, startCol = 1, startRow = 2, colNames = FALSE, rowNames = FALSE)
+  writeData(wb, sheet = write_sheet,x = df_directory_file_counts[,1:3], startCol = 1, startRow = 2 + nrow(summary_metrics), colNames = FALSE, rowNames = FALSE )
+  writeData(wb, sheet = write_sheet,x = "File Manifest", startCol = 1, startRow = 2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 1, headerStyle = hs1)
+  mergeCells(wb, sheet = write_sheet, cols=1:5, rows=2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 1)
+  addStyle(wb, sheet = write_sheet, cols=1, rows=1 + nrow(summary_metrics) + 1, style = hs3)
+  addStyle(wb, sheet = write_sheet, cols=1, rows=1 + nrow(summary_metrics) + depth_one_indexes, style = hs2)
+  addStyle(wb, sheet = write_sheet, cols=1, rows=1 + nrow(summary_metrics) + depth_two_plus_indexes, style = hs4)
+  addStyle(wb, sheet = write_sheet, cols=1:5, rows=2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 1, style = hs1)
+  writeData(wb, sheet = write_sheet,x = df_file_manifest, startCol = 1, startRow = 2 + nrow(summary_metrics) + nrow(df_directory_file_counts) + 2, headerStyle = hs2)
+  setColWidths(wb, sheet = write_sheet, cols = 1:5, widths = c("30","25","25","25","25"))
 
-# Saving workbook
-saveWorkbook(wb, paste0(write_sheet,".xlsx"),overwrite = TRUE)
+  # Saving workbook
+  saveWorkbook(wb, paste0(Sys.Date(), "_", write_sheet,".xlsx"),overwrite = TRUE)
+}
