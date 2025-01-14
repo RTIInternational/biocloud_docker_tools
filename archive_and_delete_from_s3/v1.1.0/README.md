@@ -1,7 +1,7 @@
 # Archive and Delete Files from S3
 Archives S3 objects recursively in a folder or deletes them if they have been archived for a specified time.
 
-**Note:** `rti-cromwell-output` is hard coded into the code. So even if you provide a different bucket, `rti-cromwell-output` will be used.
+**Note:** The bucket name `rti-cromwell-output` is hardcoded into the code. So even if you specify a different bucket, `rti-cromwell-output` will still be used. This was done to prevent accidental deletion of data from other buckets.
 
 ## v1.1.0
 This version leverages Typer to create a more modern CLI.
