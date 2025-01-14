@@ -24,13 +24,17 @@ $ docker run -it rtibiocloud/archive_and_delete_from_s3:<latest-tag> \
 
 example:
 ```
+# get aws keys from hidden folder. input them as docker parameter
+$ aws_access_key_id=$(perl -ane 'BEGIN {$take = 0;} if ($F[0] =~ /rti-code/) { $take = 1; } if ($take && $F[0] =~ /aws_access_key_id/) { print $F[2]; $take = 0; }' ~/.aws/credentials)
+$ aws_secret_access_key_id=$(perl -ane 'BEGIN {$take = 0;} if ($F[0] =~ /rti-code/) { $take = 1; } if ($take && $F[0] =~ /aws_secret_access_key/) { print $F[2]; $take = 0; }' ~/.aws/credentials)
+
 $ docker run -it rtibiocloud/archive_and_delete_from_s3:v1_9940a86  \
     --bucket-name rti-cromwell-output \
     --prefix cromwell-execution/metal_gwas_meta_analysis_wf/07c84f1f-d272-4808-94cc-c39332c65d87/ \
     --days-to-archive 30 \
     --days-to-delete 180 \
-    --aws-access-key-id AKIA12345 \
-    --aws-secret-access-key abcde12345
+    --aws-access-key $aws_access_key_id \
+    --aws-secret-access-key $aws_secret_access_key_id
 ```
 
 This will move all objects in the `cromwell-execution/metal_gwas_meta_analysis_wf/07c84f1f-d272-4808-94cc-c39332c65d87/` folder of the `rti-cromwell-output` bucket that are older than 30 days from Standard Storage to Intelligent-Tiering Storage, and delete any objects in the same folder that are currently in Intelligent-Tiering and are older than 180 days.
