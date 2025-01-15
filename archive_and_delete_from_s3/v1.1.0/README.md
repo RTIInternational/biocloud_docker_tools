@@ -1,3 +1,8 @@
+**_Note_**: Implementing Life Cycle Policies all but obsoletes this tool.
+See our "Automatically Delete Data After 90 Days" policy we currenlty have in place for the `rti-cromwell-output` bucket.
+
+<br>
+
 # Archive and Delete Files from S3
 Archives S3 objects recursively in a folder or deletes them if they have been archived for a specified time.
 
