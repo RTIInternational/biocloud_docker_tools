@@ -75,8 +75,8 @@ consented_samples = []
 for file in os.listdir(manifest_dir):
     if file[len(file) - 3:] == 'csv':
         manifest = pd.read_csv("{}{}".format(manifest_dir, file))
-        manifest = manifest[manifest["ApprovalID"].str.contains(u'T1D')]
-        consented_samples = consented_samples + manifest["Well #"].values.astype(str).tolist()
+        manifest = manifest[manifest["RequestedPanel"].astype(str).str.contains(u'T1D')]
+        consented_samples = consented_samples + manifest["AccessionNumber"].values.astype(str).tolist()
 
 # Read in samples_to_download or previous_sample_downloads
 samples_to_download = []
