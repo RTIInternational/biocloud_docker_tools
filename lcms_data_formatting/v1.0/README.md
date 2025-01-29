@@ -18,6 +18,8 @@ docker run -it -v $PWD:/scratch lcms_data_formatting:v1.0 Rscript LCMS_file_form
 - `Dockerfile`: the Docker file used to build this image
 - `LCMS_file_formatter.R`: R script that serves as the main executable when the Docker container is run.  Expected behavior is to format the LCMS file by removing unnecessary rows and columns and rename column names to match correct sample prefix.
 
+### Output
+- This script will output a .xlsx and .csv set of files of the formatted LCMS data. It will be in the format of *lcms_file_name*_formatted.xlsx.
 
 ### Contact
 
