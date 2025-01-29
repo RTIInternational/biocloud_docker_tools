@@ -19,9 +19,7 @@ if(is.null(opt$file) | is.null(opt$column_converter)){
   lcms_file <- opt$file
   column_converter_file <- opt$column_converter
 }
-#file <- "~/Downloads/RMIP_008 LCMS data raw.xlsx"
-#column_converter_file <- "~/Downloads/RMIP_008_column_converter.csv"
-
+#read in files
 LCMS<-read_xlsx(lcms_file, sheet="combined")
 LCMS<- as.data.frame(LCMS)
 column_converter <-read.table(column_converter_file, sep=',')
@@ -37,6 +35,7 @@ drops<-c("# Usable QC","RSD QC Areas [%]","RT [min]", "Name")
 #remove unnecessary columns
 LCMS <-LCMS[, !(names(LCMS) %in% drops)]
 
+#write out files
 filename<- file_path_sans_ext(basename(lcms_file))
 new_filename_csv<-paste0(filename,"_formatted.csv")
 new_filename_xlsx<-paste0(filename,"_formatted.xlsx")
