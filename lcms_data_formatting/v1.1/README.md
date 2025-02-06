@@ -5,12 +5,14 @@ This Docker image contains a script to format LCMS xlsx files.
 ### Inputs
 - LCMS xlsx file
 - Column name converter file (.csv) with current column names in the 1st column, new column names in the second column, no header
+- columns to drop file (.csv, optional) with list of column names to drop if different from the default: "# Usable QC","RSD QC Areas [%]","RT [min]", "Name"
 
 ### Run
 ```
 docker run -it -v $PWD:/scratch lcms_data_formatting:v1.0 Rscript LCMS_file_formatter.R \
   -f <lcms_file_here> \
   -c <column_converter_here> \
+  -d <columns_to_drop_here>
 ```
 
 ### Files included
