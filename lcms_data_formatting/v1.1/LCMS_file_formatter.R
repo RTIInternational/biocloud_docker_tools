@@ -27,7 +27,6 @@ if (!is.null(opt$columns_to_drop)){
   }else{
     columns_to_drop_file<-opt$columns_to_drop
   }
-
 }
 
 if(!(file_ext(lcms_file)=="xlsx")){
