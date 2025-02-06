@@ -30,11 +30,9 @@ if(is.null(opt$token) | is.null(opt$project_id)){
   api_endpoint <-opt$api_endpoint
 }
 
-
 if (!is.null(opt$folder)){
   folder_name <- opt$folder
 }
-
 
 ### functions ###
 extract_file_info <- function(project_id,parent_id=NA,parent_name="root", df_files) {
@@ -68,7 +66,7 @@ extract_file_info <- function(project_id,parent_id=NA,parent_name="root", df_fil
   }
   return(df_files)
 }
-####
+###
 
 log_loc<-file.path("file_tagging.log")
 lf <- log_open(log_loc,logdir = FALSE, show_notes = FALSE)

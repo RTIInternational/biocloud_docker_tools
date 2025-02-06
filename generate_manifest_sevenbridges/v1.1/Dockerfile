@@ -3,13 +3,15 @@ FROM rocker/r-ubuntu:22.04
 LABEL maintainer="David Williams <dnwilliams@rti.org>"
 LABEL description="This Docker image contains an in-house script written to generate a file manifest of projects in Seven Bridges."
 LABEL base-image="rocker/r-ubuntu:22.04"
-LABEL software-version="1.0"
+LABEL software-version="1.1"
 
 # Install vim and required packages for R libraries
 RUN apt update && apt install -y \
     libcurl4-openssl-dev \
     libssl-dev \ 
-    vim
+    vim \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install R libraries
 RUN Rscript -e 'install.packages(c("dplyr","stringr", "lubridate", "openxlsx", "sevenbridges2", "getopt"))'

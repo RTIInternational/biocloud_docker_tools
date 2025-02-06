@@ -18,14 +18,6 @@ if [ -z "$aws_region_name" ]; then
     echo "--aws_region_name not provided, exiting!"
     exit
 fi
-if [ -z "$name" ]; then
-    echo "--name not provided, exiting!"
-    exit 
-fi
-# Assign default values if parameters not provided
-if [ -z "$storage_capacity" ]; then
-    storage_capacity=2000
-fi
 
 if [[ "$task" == "create_wf" ]]; then
 
@@ -38,12 +30,21 @@ if [[ "$task" == "create_wf" ]]; then
         echo "--main not provided, exiting!"
         exit 
     fi
+    if [ -z "$name" ]; then
+        echo "--name not provided, exiting!"
+        exit 
+    fi
     if [ -z "$description" ]; then
         echo "--description not provided, exiting!"
         exit 
     fi
+
+    # Assign default values if parameters not provided
     if [ -z "$engine" ]; then
         engine="WDL"
+    fi
+    if [ -z "$storage_capacity" ]; then
+        storage_capacity=2000
     fi
 
     # Add repo to list of safe directories
@@ -78,6 +79,10 @@ if [[ "$task" == "start_run" ]]; then
         echo "--parameters not provided, exiting!"
         exit 
     fi
+    if [ -z "$name" ]; then
+        echo "--name not provided, exiting!"
+        exit 
+    fi
     if [ -z "$output_uri" ]; then
         echo "--output_uri not provided, exiting!"
         exit 
@@ -86,6 +91,8 @@ if [[ "$task" == "start_run" ]]; then
         echo "--run_metadata_output_dir not provided, exiting!"
         exit 
     fi
+
+    # Assign default values if parameters not provided
     if [ -z "$workflow_type" ]; then
         workflow_type="PRIVATE"
     fi
@@ -94,6 +101,9 @@ if [[ "$task" == "start_run" ]]; then
     fi
     if [ -z "$storage_type" ]; then
         storage_type="STATIC"
+    fi
+    if [ -z "$storage_capacity" ]; then
+        storage_capacity=2000
     fi
     if [ -z "$log_level" ]; then
         log_level="ALL"
@@ -119,5 +129,43 @@ if [[ "$task" == "start_run" ]]; then
         --storage_capacity $storage_capacity \
         --log_level "$log_level" \
         --retention_mode "$retention_mode"
+
+fi
+
+
+if [[ "$task" == "cancel_all_runs" ]]; then
+
+    # Start run
+    python3 /opt/cancel_all_runs.py \
+        --aws_access_key_id "$aws_access_key_id" \
+        --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_region_name "$aws_region_name"
+
+fi
+
+
+if [[ "$task" == "delete_runs" ]]; then
+
+    param_run_status=''
+    if [ -z "$run_status" ]; then
+        param_run_status="--run_status $run_status"
+    fi
+    param_delete_run_data=''
+    if [ -z "$run_status" ]; then
+        param_run_status="--run_status $run_status"
+    fi
+    param_run_status=''
+    if [ -z "$run_status" ]; then
+        param_run_status="--run_status $run_status"
+    fi
+
+    # Start run
+    python3 /opt/cancel_all_runs.py \
+        --aws_access_key_id "$aws_access_key_id" \
+        --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_region_name "$aws_region_name" \
+        --param_run_status \
+        --param_delete_run_data \
+        --param_run_output_dir
 
 fi
