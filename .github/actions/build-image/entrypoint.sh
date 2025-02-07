@@ -92,10 +92,9 @@ function main() {
 
     push
 
-    echo "::set-output name=tag::${FIRST_TAG}"
+    echo "tag=${FIRST_TAG}" >> ${GITHUB_OUTPUT}
     DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ${DOCKERNAME})
-    echo "::set-output name=digest::${DIGEST}"
-
+    echo "digest=${DIGEST}" >> ${GITHUB_OUTPUT}
     docker logout
 }
 
@@ -161,7 +160,7 @@ function uses() {
 #   local SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-6)
 #   local SNAPSHOT_TAG="${TIMESTAMP}${SHORT_SHA}"
 #   TAGS="${TAGS} ${SNAPSHOT_TAG}"
-#   echo ::set-output name=snapshot-tag::"${SNAPSHOT_TAG}"
+#   echo "snapshot-tag=${SNAPSHOT_TAG}" >> ${GITHUB_OUTPUT}
 # }
 
 function push() {
