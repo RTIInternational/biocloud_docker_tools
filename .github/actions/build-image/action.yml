@@ -1,5 +1,5 @@
 name: 'Build and Publish Docker'
-author: 'Chris Ball'
+author: 'Jesse Marks'
 branding:
   icon: 'code'
   color: 'green'
@@ -19,9 +19,9 @@ inputs:
     required: true
 outputs:
   tag:
-    description: 'Is the tag, which was pushed'
+    description: 'Is the tag that was pushed'
   digest:
-    description: 'Is the digest of the image, which was pushed'
+    description: 'Is the digest of the pushed image'
 runs:
   using: 'docker'
   image: 'Dockerfile'
