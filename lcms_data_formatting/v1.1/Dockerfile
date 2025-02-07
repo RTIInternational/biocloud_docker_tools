@@ -1,10 +1,10 @@
 # Base image
-FROM rocker/tidyverse:4.4.1
+FROM rocker/tidyverse:4.4.2
 
 # Maintainer and author 
 LABEL maintainer="Caryn Willis <cdwillis@rti.org>"
 LABEL description="An R script to format LCMS xlsx files."
-LABEL base-image="rocker/tidyverse:4.4.1"
+LABEL base-image="rocker/tidyverse:4.4.2"
 
 # Create working directory
 RUN mkdir -p /scratch
