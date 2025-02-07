@@ -9,30 +9,37 @@ on:
       - '.gitignore'
       - 'README.md'
       - '*/*/README.md'
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - run: |
-        git fetch --prune --unshallow
-    - name: get changed files
-      id: getfile
-      run: |
-        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          BASE="${{ github.event.pull_request.base.sha }}"
-          echo "files=$(git diff --name-only $BASE ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
-        elif [[ "${{ github.event_name }}" == "push" ]]; then
-          # For pushes, get the previous commit on the branch
-          PREVIOUS_COMMIT=$(git rev-parse HEAD^1)
-          echo "files=$(git diff --name-only $PREVIOUS_COMMIT ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
-        fi
-    - name: Build, Tag, Publish Docker
-      uses: ./.github/actions/build-image
-      with:
-        organization: rtibiocloud
-        changed_files: ${{ steps.getfile.outputs.files }}
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: actions/checkout@v4
+      - run: git fetch --prune --unshallow
+
+      - name: Get changed files
+        id: get_changed_files
+        run: |
+          BASE=$(git rev-parse HEAD^1)
+          FILES=$(git diff --name-only "$BASE" ${{ github.sha }} | xargs)
+          echo "files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Build and Publish Docker (Push)
+        if: github.event_name == 'push'
+        uses: ./.github/actions/build-image
+        with:
+          organization: rtibiocloud
+          changed_files: ${{ steps.get_changed_files.outputs.files }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Test Build Docker Images (Pull Request)
+        if: github.event_name == 'pull_request'
+        run: |
+          read -r first_file _ <<< "${{ steps.get_changed_files.outputs.files }}"
+          ddir=$(dirname "$first_file")
+          echo "Testing build"
+          docker build -t test-image:latest "$ddir"
