@@ -15,13 +15,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - run: |
         git fetch --prune --unshallow
     - name: get changed files
       id: getfile
       run: |
-        echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs)"
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          BASE="${{ github.event.pull_request.base.sha }}"
+          echo "files=$(git diff --name-only $BASE ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.event_name }}" == "push" ]]; then
+          # For pushes, get the previous commit on the branch
+          PREVIOUS_COMMIT=$(git rev-parse HEAD^1)
+          echo "files=$(git diff --name-only $PREVIOUS_COMMIT ${{ github.sha }} | xargs)" >> $GITHUB_OUTPUT
+        fi
     - name: Build, Tag, Publish Docker
       uses: ./.github/actions/build-image
       with:
