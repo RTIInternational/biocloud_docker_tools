@@ -13,6 +13,7 @@ init <- Sys.time(); timer <- proc.time();
 #
 # Revisions
 # v1.0 initial commit
+# v1.1 update outfile default
 #
 #-----------------------------------------------------
 
@@ -44,7 +45,6 @@ usage <- paste("Usage: parse_viability_pdf.r
              -- Required Parameters --
               [-i | --pdf]          <Path to the PDF> (Required)
              -- Optional Parameters -- 
-              [-o | --outfile]      <The output file name> (default = pdf_extract.tsv)
               [-p | --outpath]      <Path to the directory to save the outputs> (default = path of the input file)
              -- Optional Flags --   
               [-E | --excel]        <Export results as a MS Excel Workbook>(default=FALSE)
@@ -59,7 +59,6 @@ usage <- paste("Usage: parse_viability_pdf.r
 spec <- matrix(c(
           'excel',    'E', 0, "logical",
           'pdf',      'i', 1, "character",
-          'outfile',  'o', 2, "character",
           'outpath',  'p', 2, "character",
           'verbose',  'v', 0, "logical",
           'help',     'h', 0, "logical"
@@ -82,7 +81,7 @@ if(is.null(args$excel)){
   suffix <- '.xlsx'
 }
 
-if(is.null(args$outfile)){args$outfile <- paste0("pdf_extract", suffix)}
+args$outfile <- paste0((sub(".*/(.*)\\.pdf$", "\\1", args$pdf)), "_harmonized", suffix)
 if(is.null(args$outpath)){args$outpath <- dirname(args$pdf)}
 if(is.null(args$verbose)){args$verbose <- F}
 

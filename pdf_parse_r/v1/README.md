@@ -23,7 +23,7 @@ docker run -it rtibiocloud/pdf_parse_r:<tagname> -c "Rscript /opt/parser/parse_v
 
 Example Docker run command with volume mounting:
 ```bash
-docker run --rm -v ${PWD}:/data -w /data rtibiocloud/pdf_parse_r:<tagname> /bin/bash -c " Rscript /opt/parser/parse_viability_pdf.R -i /data/example.pdf -p /data -o example.tsv -v"
+docker run --rm -v ${PWD}:/data -w /data rtibiocloud/pdf_parse_r:<tagname> /bin/bash -c " Rscript /opt/parser/parse_viability_pdf.R -i /data/example.pdf -p /data -v"
 ```
 
 If not running the docker from the directory with the data, replace `${PWD}` with the actual path on your host system with the PDF outputs.
@@ -48,7 +48,6 @@ Running this command will build a Docker image with the name `rtibiocloud/pdf_pa
 | Short Flag | Long Flag | Description |
 |:-----:|:--------:|--------------------------------|
 |   -i  |  --pdf       | Path to the input PDF file                 |
-|   -o  |  --outfile   | Name of the output file                    |
 |   -p  |  --outpath   | Path to the output directory               |
 |   -E  |  --excel     | Export the results as an MS Excel Workbook |
 |   -v  |  --verbose   | Display verbose logging                    |
@@ -74,7 +73,7 @@ A tab-delimited file with 1 row and 14 columns
 | pct aggregated |  The percentage of cells that occur in aggregates with five or more cells.                            |
 
 ## Perform a testrun
-`docker run -v ${PWD}/example_files/:/data -t rtibiocloud/pdf_parse_r:v1.0.0 /bin/bash  -c "Rscript /opt/parser/parse_viability_pdf.R -i /data/example.pdf -p /data -o example.tsv"`
+`docker run -v ${PWD}/example_files/:/data -t rtibiocloud/pdf_parse_r:v1.0.0 /bin/bash  -c "Rscript /opt/parser/parse_viability_pdf.R -i /data/example.pdf -p /data"`
 
 <details>
 
@@ -104,7 +103,7 @@ Using poppler version 22.12.0
 [2024-02-03 03:27:51.61331] - getopt - INFO - Arguments: ARGS = character(0)
 [2024-02-03 03:27:51.61331] - getopt - INFO - Arguments: pdf = /data/example.pdf
 [2024-02-03 03:27:51.61331] - getopt - INFO - Arguments: outpath = /data
-[2024-02-03 03:27:51.61331] - getopt - INFO - Arguments: outfile = example.tsv
+[2024-02-03 03:27:51.61331] - getopt - INFO - Arguments: outfile = example_harmonized.tsv
 [2024-02-03 03:27:51.61331] - getopt - INFO - Arguments: excel = FALSE
 [2024-02-03 03:27:51.61331] - getopt - INFO - Arguments: verbose = FALSE
 [2024-02-03 03:27:51.624912] - load_pdf - INFO - Reading in the PDF file
@@ -117,7 +116,7 @@ Using poppler version 22.12.0
 
 ```
 Outputs:
-- Tab separated table:                      /data/example.tsv
+- Tab separated table:                      /data/example_harmonized.tsv
 ```
 </details>
 
