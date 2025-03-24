@@ -1,12 +1,12 @@
 #----------------------------------------------------------------
 # Use the official R image as a base
 #----------------------------------------------------------------
-FROM r-base:4.3.2
+FROM r-base:4.4.3
 
 #----------------------------------------------------------------
 # Container Metadata
 #----------------------------------------------------------------
-LABEL base.image="r-base:v4.3.2"
+LABEL base.image="r-base:v4.4.3"
 LABEL maintainer="Mike Enger <menger@rti.org>"
 LABEL description="PDF parser for cell viability outputs"
 LABEL software="R, pdftools, dplyr, openxlsx, getopt"
