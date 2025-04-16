@@ -48,9 +48,15 @@ LCMS<- as.data.frame(LCMS)
 column_converter <-read.table(column_converter_file, sep=',')
 
 #remove duplicate header columns
-LCMS <- subset(LCMS, column != "Column")
-LCMS <- subset(LCMS, column != "column")
-
+if("column" %in% names(LCMS)){
+	LCMS <- subset(LCMS, column != "Column")
+	LCMS <- subset(LCMS, column != "column")
+}else if("Column" %in% names(LCMS)){
+        LCMS <- subset(LCMS, Column != "Column")
+        LCMS <- subset(LCMS, Column != "column")
+}else{
+  stop("LCMS file must contain a column named Column or column to drop duplicated headers")
+}
 #correct column names
 names(LCMS)[match(column_converter$V1, names(LCMS))] <- column_converter$V2
 
