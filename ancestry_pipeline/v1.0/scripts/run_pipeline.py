@@ -32,13 +32,15 @@ args = parser.parse_args()
 
 def set_wf_inputs (wf_def, wf_args):
     wf_vars = {}
-    for input in wf_def['inputs']:
-        wf_vars["inputs.{}".format(input)] = wf_def['inputs'][input]['default']
+    for parameter in wf_def['inputs']:
+        wf_vars["inputs.{}".format(parameter)] = wf_def['inputs'][parameter]['default']
     
     for parameter in wf_args:
         key = "inputs.{}".format(parameter)
         if key in wf_vars:
             wf_vars[key] = wf_args[parameter]
+            if wf_def['inputs'][parameter]['type'] == 'dir':
+                wf_vars[key] = wf_vars[key] if (wf_vars[key][-1] == "/") else (wf_vars[key] + "/")
         else:
             sys.exit("Workflow parameter does not exist: {}".format(parameter))
 
@@ -62,6 +64,8 @@ def set_task_inputs (wf_vars, task_def, step_inputs, base_key):
     for parameter in step_inputs:
         key = "{}.inputs.{}".format(base_key, parameter)
         wf_vars[key] = process_wf_vars(step_inputs[parameter], wf_vars, '')
+        if task_def['inputs'][parameter]['type'] == 'dir':
+            wf_vars[key] = wf_vars[key] if (wf_vars[key][-1] == "/") else (wf_vars[key] + "/")
 
     return wf_vars
 
@@ -136,7 +140,6 @@ with open(args.wf_arguments) as f:
 
 # Set wf input vars from wf definition and arguments
 wf_vars = set_wf_inputs(wf_def, wf_args)
-wf_vars['inputs.final_file_location'] = wf_vars['inputs.final_file_location'] if (wf_vars['inputs.final_file_location'][-1] == "/") else (wf_vars['inputs.final_file_location'] + "/")
 
 # Open log file
 os.system("mkdir -p {}".format(wf_vars['inputs.final_file_location']))

@@ -33,9 +33,9 @@ RUN apt-get install -y \
 RUN wget https://github.com/chrchang/plink-ng/archive/refs/tags/b15c19f.tar.gz \
     && tar -xvzf b15c19f.tar.gz \
     && mv plink-ng-b15c19f/ /plink_tmp/
-COPY plink_common.h /plink_tmp/1.9/plink_common.h
-COPY sse2neon.h /plink_tmp/1.9/sse2neon.h 
-COPY SFMT.h /plink_tmp/1.9/SFMT.h
+COPY dependencies/plink_common.h /plink_tmp/1.9/plink_common.h
+COPY dependencies/sse2neon.h /plink_tmp/1.9/sse2neon.h 
+COPY dependencies/SFMT.h /plink_tmp/1.9/SFMT.h
 RUN cd /plink_tmp/1.9/ \
     && ./plink_first_compile \
     && cp /plink_tmp/1.9/plink /opt/plink1.9 \
@@ -44,10 +44,10 @@ RUN cd /plink_tmp/1.9/ \
 
 #### Install plink2 ####
 ENV DEBIAN_FRONTEND noninteractive
-RUN wget https://s3.amazonaws.com/plink2-assets/alpha3/plink2_linux_x86_64_20220519.zip \
-    && unzip plink2_linux_x86_64_20220519.zip -d /plink_tmp \
+RUN wget https://s3.amazonaws.com/plink2-assets/alpha6/plink2_linux_x86_64_20250129.zip \
+    && unzip plink2_linux_x86_64_20250129.zip -d /plink_tmp \
     && cp /plink_tmp/plink2 /opt/ \
-    && rm -rf plink2_linux_x86_64_20220519.zip plink_tmp
+    && rm -rf plink2_linux_x86_64_20250129.zip plink_tmp
 ENV PATH=pkg-config:$PATH:/opt/
 
 #### Install eigensoft ####
@@ -74,37 +74,48 @@ RUN R -e "install.packages('optparse',dependencies=TRUE, repos='http://cran.rstu
 RUN mkdir /data
 RUN mkdir /data/.ref
 WORKDIR /data/.ref
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205025Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=ab18959fa733ea19d4f070210608cba911b86ee86edddb8eba375a6018359591"
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205025Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=73330af7f76ff0ebb23ef035116c11f852387e50c7f3527b64a909005fb40881"
-RUN wget -O all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205026Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=db5d9a862e4236dca9c00ab233f6659a32c6900f9c72617a9b25389548d8b380"
-RUN wget -O 1000g_variants.tsv "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205027Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=32caebc3015389b710e7b890d2a299f00b72a21ba60f42c34bd97ce25b4aa4b3"
-RUN wget -O phase3_orig.psam "https://rti-common.s3.us-east-1.amazonaws.com/ancestry/smartpca_mahal_pipeline/phase3_orig.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20240116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240116T205026Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=0ab2e87ece3a84a0c0c2e555aaa577b60b8b9c7b9dded020f7489728f13aa0ea"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bed "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184446Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=48df0023425f0bc69b37354a529977c322b76824373562cb3d39487589717fce"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bim "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184447Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7ca5f23dea49aa1899b774f37768cbd60ec1293ac883c707698119935c5a4170"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.fam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184447Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=0f7477faee54dfe16f0d1ada65931a35182238352d13516469353ef57203376a"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.psam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184448Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=2a1387fdccad2b2dd3d7e67ee2cacb0879cc3746e03e2808d9d13c51a5da4330"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bed "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184448Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=e085a9cb9659af0098a905cbc77c52c5dc886b07ace8b3c1188bc07266468c33"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bim "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184449Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=6ae1047e2a8dc916dcf42170bf13778f4d20f585aecd99a07585aa27127289b1"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.fam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184450Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7c60c1d671db6566f2e681227849546fa50f3530cf0dc029fc4a1ea5d94e7e3f"
+RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.psam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184450Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7d91a995ef0d743da436a479b7d88353fb329e78a3f100e35542151e9425be0d"
+
+# Add pipeline config files
+RUN mkdir -p /pipeline/config
+ADD config/ancestry_pipeline_entrypoint_bfile.json /pipeline/config/
+ADD config/ancestry_pipeline_entrypoint_gvcf.json /pipeline/config/
+ADD config/ancestry_tasks.json /pipeline/config/
 
 #### Install custom scripts ####
 # Add scripts
-ADD entrypoint.sh /opt/
-ADD run_pipeline.py /opt/
-ADD ancestry_pipeline.json /opt/
-ADD ancestry_tasks.json /opt/
-ADD get_dataset_variants.pl /opt/
-ADD get_ref_samples.pl /opt/
-ADD add_pop_ids_to_fam_files.pl /opt/
-ADD prepare_smartpca_input.pl /opt/
-ADD process_smartpca_results.pl /opt/
-ADD assign_ancestry_mahalanobis.R /opt/
-ADD get_ancestry_assignment.pl /opt/
+RUN mkdir -p /pipeline/scripts
+ADD scripts/add_pop_ids_to_fam_files.pl /pipeline/scripts/
+ADD scripts/assign_ancestry_mahalanobis.R /pipeline/scripts/
+ADD scripts/assign_ids_to_dataset_bim.pl /pipeline/scripts/
+ADD scripts/entrypoint.sh /pipeline/scripts/
+ADD scripts/get_ancestry_assignment.pl /pipeline/scripts/
+ADD scripts/get_ref_samples.pl /pipeline/scripts/
+ADD scripts/get_ref_variants_from_dataset_gvcf.pl /pipeline/scripts/
+ADD scripts/prepare_smartpca_input.pl /pipeline/scripts/
+ADD scripts/process_smartpca_results.pl /pipeline/scripts/
+ADD scripts/run_pipeline.py /pipeline/scripts/
+
 # Change permissions
-RUN chmod 755 /opt/entrypoint.sh
-RUN chmod 755 /opt/run_pipeline.py
-RUN chmod 755 /opt/get_dataset_variants.pl
-RUN chmod 755 /opt/get_ref_samples.pl
-RUN chmod 755 /opt/add_pop_ids_to_fam_files.pl
-RUN chmod 755 /opt/prepare_smartpca_input.pl
-RUN chmod 755 /opt/process_smartpca_results.pl
-RUN chmod 755 /opt/assign_ancestry_mahalanobis.R
-RUN chmod 755 /opt/get_ancestry_assignment.pl
+RUN chmod 755 /pipeline/scripts/add_pop_ids_to_fam_files.pl
+RUN chmod 755 /pipeline/scripts/assign_ancestry_mahalanobis.R
+RUN chmod 755 /pipeline/scripts/assign_ids_to_dataset_bim.pl
+RUN chmod 755 /pipeline/scripts/entrypoint.sh
+RUN chmod 755 /pipeline/scripts/get_ancestry_assignment.pl
+RUN chmod 755 /pipeline/scripts/get_ref_samples.pl
+RUN chmod 755 /pipeline/scripts/get_ref_variants_from_dataset_gvcf.pl
+RUN chmod 755 /pipeline/scripts/prepare_smartpca_input.pl
+RUN chmod 755 /pipeline/scripts/process_smartpca_results.pl
+RUN chmod 755 /pipeline/scripts/run_pipeline.py
 
 WORKDIR /data
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+ENTRYPOINT [ "/pipeline/scripts/entrypoint.sh" ]
 

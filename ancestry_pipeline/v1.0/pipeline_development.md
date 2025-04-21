@@ -151,3 +151,34 @@ perl /rti-01/ngaddis/git/biocloud_docker_tools/ancestry_pipeline/get_ancestry_as
     --file_out_ancestry_assignment /rti-01/ngaddis/data/temp/t1d_test/ancestry_assignment.txt
 ```
 </details>
+
+
+<details>
+<summary>Test assign_ids_to_dataset_variants.pl</details>
+
+``` bash
+/rti-01/ngaddis/git/biocloud_docker_tools/ancestry_pipeline/v1.0/dependencies/assign_ids_to_dataset_bim.pl \
+    --file_in_dataset_bim /shared/ngaddis/data/temp/test.bim \
+    --file_in_ref_bim /shared/ngaddis/data/rti-bioinformatics-resources/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bim \
+    --file_out_dataset_bim /shared/ngaddis/data/temp/test_updated.bim \
+    --file_out_extract_list /shared/ngaddis/data/temp/test.extract
+```
+</details>
+
+
+<details>
+<summary>Test get_ref_files.py</details>
+
+``` bash
+aws_acct=code
+aws_access_key_id=$(perl -ane 'BEGIN {$take = 0;} if ($F[0] =~ /'$aws_acct'/) { $take = 1; } if ($take && $F[0] =~ /aws_access_key_id/) { print $F[2]; $take = 0; }' ~/.aws/credentials)
+aws_secret_access_key=$(perl -ane 'BEGIN {$take = 0;} if ($F[0] =~ /'$aws_acct'/) { $take = 1; } if ($take && $F[0] =~ /aws_secret_access_key/) { print $F[2]; $take = 0; }' ~/.aws/credentials)
+python3 /rti-01/ngaddis/git/biocloud_docker_tools/ancestry_pipeline/v1.0/scripts/get_ref_files.py \
+    --genome_build grch37 \
+    --ref_panel 1000g \
+    --aws_access_key $aws_access_key_id \
+    --aws_secret_access_key $aws_secret_access_key \
+    --target_dir /shared/ngaddis/temp/1000g/
+
+```
+</details>

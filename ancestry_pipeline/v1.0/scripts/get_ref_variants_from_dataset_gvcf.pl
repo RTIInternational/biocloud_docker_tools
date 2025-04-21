@@ -10,13 +10,13 @@ use constant TRUE  => 1;
 select((select(STDOUT), $|=1)[0]);
 
 my $fileInGVCF = '';
-my $fileInPosList = '';
+my $fileInRefBim = '';
 my $fileOutPrefix = '';
 my $monomorphicPositions = '';
 
 GetOptions (
     'file_in_gvcf=s' => \$fileInGVCF,
-    'file_in_pos_list=s' => \$fileInPosList,
+    'file_in_ref_bim=s' => \$fileInRefBim,
     'file_out_prefix=s' => \$fileOutPrefix,
     'monomorphic_positions' => \$monomorphicPositions
 ) or die("Invalid options");
@@ -49,13 +49,13 @@ my @F = ();
 for (my $chr=1; $chr<23; $chr++) {
     %{$variants{"chr".$chr}} = ();
 }
-open(POSITIONS, $fileInPosList);
-while (<POSITIONS>) {
+open(REF_BIM, $fileInRefBim);
+while (<REF_BIM>) {
     chomp;
     @F = split();
-    $variants{"chr".$F[0]}{$F[1]} = $F[2];
+    $variants{"chr".$F[0]}{$F[3]} = $F[1];
 }
-close POSITIONS;
+close REF_BIM;
 
 # Get dataset variants by position
 open(OUT_VCF, "> $fileOutPrefix.vcf");
