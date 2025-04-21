@@ -24,7 +24,7 @@ GetOptions (
 ) or die("Invalid options");
 
 # Set population column to search in PSAM
-my $popCol = ($popType eq "SUPERPOP") ? 2 : (($popType eq "POP") ? 3 : 0);
+my $popCol = ($popType eq "SUPERPOP") ? 4 : (($popType eq "POP") ? 5 : 0);
 
 # Create ancestry ID xref
 my @ancestries = split(",", $ancestriesToInclude);

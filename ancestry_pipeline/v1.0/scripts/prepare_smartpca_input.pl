@@ -17,7 +17,6 @@ my $datasetName = '';
 my $refPops = '';
 my $fileOutPrefix = '';
 my $smartpcaOutPrefix = '';
-my $threads = 1;
 
 GetOptions (
     'file_in_bed=s' => \$fileInBed,
@@ -27,8 +26,7 @@ GetOptions (
     'dataset_name=s' => \$datasetName,
     'ref_pops=s' => \$refPops,
     'file_out_prefix=s' => \$fileOutPrefix,
-    'smartpca_out_prefix=s' => \$smartpcaOutPrefix,
-    'threads=i' => \$threads
+    'smartpca_out_prefix=s' => \$smartpcaOutPrefix
 ) or die("Invalid options");
 
 my $nextId = 1;
@@ -96,5 +94,4 @@ print FILE_OUT_PAR "snpweightoutname: $smartpcaOutPrefix.snpweight\n";
 print FILE_OUT_PAR "altnormstyle: YES\n";
 print FILE_OUT_PAR "numoutevec: 10\n";
 print FILE_OUT_PAR "numoutlieriter: 5\n";
-print FILE_OUT_PAR "numthreads: $threads\n";
 close FILE_OUT_PAR;
