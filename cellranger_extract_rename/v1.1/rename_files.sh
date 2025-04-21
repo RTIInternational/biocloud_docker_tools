@@ -305,6 +305,7 @@ done
 
 [[ ${COMPRESSED_INPUT} == true ]] && echo_verbose "INFO: Copying ZIP file to output directory: $INPUT -> ${OUTPUT_DIR}/${LINKER}_${INPUT}"
 [[ ${COMPRESSED_INPUT} == true ]] && cp $INPUT ${OUTPUT_DIR}/${LINKER}_${INPUT_NAME}.zip
+[[ ${COMPRESSED_INPUT} == false ]] && zip -r ${OUTPUT_DIR}/${LINKER}_outs.zip ${INPUT_NAME} -x "${FILE_LIST[@]}"
 
 if [[ ${TMP_OUTPUT_DIR_EXISTS} == true ]]; then
   echo_verbose "INFO: Removing TMP_OUTPUT_DIR"
