@@ -518,5 +518,47 @@
                 "value": "<inputs.output_dir>sftp_results.log"
             }
         }
+    },
+    "archive_gvcfs": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "source_gvcf_dir": {
+                "type": "dir"
+            },
+            "s3_access_key": {
+                "type": "str"
+            },
+            "s3_secret_access_key": {
+                "type": "str"
+            },
+            "target_s3_bucket": {
+                "type": "str"
+            },
+            "target_s3_dir": {
+                "type": "str"
+            }
+            },
+        "cmd": [
+            "python",
+            "/opt/archive_gvcfs.py",
+            "--source_gvcf_dir",
+            "<inputs.source_gvcf_dir>",
+            "--s3_access_key",
+            "<inputs.s3_access_key>",
+            "--s3_secret_access_key",
+            "<inputs.s3_secret_access_key>",
+            "--target_s3_bucket",
+            "<inputs.target_s3_bucket>",
+            "--target_s3_dir",
+            "<inputs.target_s3_dir>"
+        ],
+        "outputs": {
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>archive_gvcfs.log"
+            }
+        }
     }
 }

@@ -1,0 +1,63 @@
+{
+    "name": "entrypoint_archive_gvcfs",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "source_gvcf_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "s3_access_key": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "s3_secret_access_key": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "target_s3_bucket": {
+            "type": "str",
+            "default": "rti-early-check-seq",
+            "required": false
+        },
+        "target_s3_dir": {
+            "type": "str",
+            "default": "revvity",
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>/entrypoint_archive_gvcfs.log"
+        }
+    },
+    "entry_point": "archive_gvcfs",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>",
+        "source_gvcf_dir": "<inputs.source_gvcf_dir>",
+        "s3_access_key": "<inputs.s3_access_key>",
+        "s3_secret_access_key": "<inputs.s3_secret_access_key>",
+        "target_s3_bucket": "<inputs.target_s3_bucket>",
+        "target_s3_dir": "<inputs.target_s3_dir>"
+    },
+    "pipeline": {
+        "archive_gvcfs": {
+            "task": "archive_gvcfs",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

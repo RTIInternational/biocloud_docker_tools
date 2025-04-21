@@ -1,0 +1,8 @@
+{
+    "output_dir": "<RUN_DIR>/output_dir",
+    "source_gvcf_dir": "<RUN_DIR>/output_dir/download_gvcfs_from_revvity_sftp/gvcfs",
+    "s3_access_key": "<S3_ACCESS_KEY>",
+    "s3_secret_access_key": "<S3_SECRET_ACCESS_KEY>",
+    "target_s3_bucket": "rti-early-check-seq",
+    "target_s3_dir": "revvity"
+}
