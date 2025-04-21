@@ -1,0 +1,9 @@
+{
+    "output_dir": "<RUN_DIR>/output_dir",
+    "control_bfile": "/home/merge-shared-folder/t1dgrs2-pipeline-runs-revvity/pipeline_inputs/controls/bfile/simulated_controls",
+    "sample_bfile_merge_list": "<RUN_DIR>/output_dir/batch_extract_gvcf_variants/plink_merge_list.txt",
+    "sample_missingness_summary_merge_list": "<RUN_DIR>/output_dir/batch_extract_gvcf_variants/missingness_merge_list.txt",
+    "control_remove_file": "/home/merge-shared-folder/t1dgrs2-pipeline-runs-revvity/pipeline_inputs/controls/remove_controls.txt",
+    "missing_hla_threshold": 1,
+    "missing_non_hla_threshold": 3
+}

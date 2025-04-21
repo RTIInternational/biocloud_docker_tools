@@ -1,0 +1,5 @@
+{
+    "output_dir": "<RUN_DIR>/output_dir",
+    "output_result_file": "<RUN_DIR>/output_dir/generate_file_for_export/<RUN_ID>.csv",
+    "password": "<PASSWORD>"
+}

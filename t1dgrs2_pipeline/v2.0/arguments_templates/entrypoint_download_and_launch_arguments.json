@@ -1,0 +1,12 @@
+{
+    "output_dir": "<RUN_DIR>/output_dir",
+    "sftp_server": "jumpgate.revvity.com",
+    "sftp_username": "rti_early_check",
+    "sftp_password": "<PASSWORD>",
+    "source_sftp_dir": "rti_early_check/Ready_to_download/gVCFs/",
+    "manifest_dir": "/home/merge-shared-folder/t1dgrs2-pipeline-runs-revvity/pipeline_inputs/manifests",
+    "downloaded_samples": "/home/merge-shared-folder/t1dgrs2-pipeline-runs-revvity/pipeline_inputs/downloaded_samples.json",
+    "download_limit": 500,
+    "control_dir": "/home/merge-shared-folder/t1dgrs2-pipeline-runs-revvity/pipeline_inputs/controls",
+    "samples_to_download": ""
+}

@@ -1,8 +1,0 @@
-{
-    "working_dir": "<RUN_DIR>/working_dir",
-    "output_dir": "<RUN_DIR>/output_dir",
-    "results_dir": "<RUN_DIR>/output_dir/batch_calculate_t1dgrs2",
-    "output_result_file": "<RUN_DIR>/output_dir/20240510_1_results_for_export.csv",
-    "output_control_file": "<RUN_DIR>/output_dir/20240510_1_control_results.csv",
-    "password": "<PASSWORD>"
-}
