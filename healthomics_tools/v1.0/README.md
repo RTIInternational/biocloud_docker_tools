@@ -90,7 +90,6 @@ docker run -ti \
 ### Command
 ``` sh
 docker run -ti \
-    -v <HOST_DIR>:<CONTAINER_DIR> \
     -e task=cancel_all_runs \
     -e aws_access_key_id=<AWS_ACCESS_KEY_ID> \
     -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
