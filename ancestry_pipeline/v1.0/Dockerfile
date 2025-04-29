@@ -4,13 +4,6 @@ FROM rocker/r-ubuntu:22.04
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
 
-# Arguments
-ARG bed
-ARG bim
-ARG fam
-ARG psam
-ARG variants
-
 # Configure default locale, see https://github.com/rocker-org/rocker/issues/19
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && locale-gen en_US.utf8 \
@@ -69,19 +62,18 @@ RUN rm -Rf /var/lib/apt/lists/*
 RUN R -e "install.packages('scatterplot3d',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('optparse',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
-#### Add reference data
-# Note: prior to build get new presigned URLs and insert below
-RUN mkdir /data
-RUN mkdir /data/.ref
-WORKDIR /data/.ref
-RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bed "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184446Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=48df0023425f0bc69b37354a529977c322b76824373562cb3d39487589717fce"
-RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bim "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184447Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7ca5f23dea49aa1899b774f37768cbd60ec1293ac883c707698119935c5a4170"
-RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.fam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184447Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=0f7477faee54dfe16f0d1ada65931a35182238352d13516469353ef57203376a"
-RUN wget -O all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.psam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch37/all_phase3_ld_pruned_autosomes_grch37_dbsnp_b153.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184448Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=2a1387fdccad2b2dd3d7e67ee2cacb0879cc3746e03e2808d9d13c51a5da4330"
-RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bed "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bed?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184448Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=e085a9cb9659af0098a905cbc77c52c5dc886b07ace8b3c1188bc07266468c33"
-RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bim "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.bim?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184449Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=6ae1047e2a8dc916dcf42170bf13778f4d20f585aecd99a07585aa27127289b1"
-RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.fam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.fam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184450Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7c60c1d671db6566f2e681227849546fa50f3530cf0dc029fc4a1ea5d94e7e3f"
-RUN wget -O all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.psam "https://rti-bioinformatics-resources.s3.us-east-1.amazonaws.com/wf_inputs/biocloud_docker_tools/ancestry_pipeline/v1/grch38/all_phase3_ld_pruned_autosomes_grch38_dbsnp_b153.psam?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAV4MGIV2ZNAT4GLK2%2F20250409%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250409T184450Z&X-Amz-Expires=8640&X-Amz-SignedHeaders=host&X-Amz-Signature=7d91a995ef0d743da436a479b7d88353fb329e78a3f100e35542151e9425be0d"
+#### Install python and python libraries
+# Install python3 and pip
+RUN apt-get update && apt-get install -y python3 python3-pip
+RUN pip3 install --upgrade pip
+RUN pip3 install boto3
+
+#### Install awscli
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
+RUN rm -rf awscliv2.zip
+RUN rm -rf aws
 
 # Add pipeline config files
 RUN mkdir -p /pipeline/config
@@ -92,28 +84,10 @@ ADD config/ancestry_tasks.json /pipeline/config/
 #### Install custom scripts ####
 # Add scripts
 RUN mkdir -p /pipeline/scripts
-ADD scripts/add_pop_ids_to_fam_files.pl /pipeline/scripts/
-ADD scripts/assign_ancestry_mahalanobis.R /pipeline/scripts/
-ADD scripts/assign_ids_to_dataset_bim.pl /pipeline/scripts/
-ADD scripts/entrypoint.sh /pipeline/scripts/
-ADD scripts/get_ancestry_assignment.pl /pipeline/scripts/
-ADD scripts/get_ref_samples.pl /pipeline/scripts/
-ADD scripts/get_ref_variants_from_dataset_gvcf.pl /pipeline/scripts/
-ADD scripts/prepare_smartpca_input.pl /pipeline/scripts/
-ADD scripts/process_smartpca_results.pl /pipeline/scripts/
-ADD scripts/run_pipeline.py /pipeline/scripts/
+ADD scripts/* /pipeline/scripts/
 
 # Change permissions
-RUN chmod 755 /pipeline/scripts/add_pop_ids_to_fam_files.pl
-RUN chmod 755 /pipeline/scripts/assign_ancestry_mahalanobis.R
-RUN chmod 755 /pipeline/scripts/assign_ids_to_dataset_bim.pl
-RUN chmod 755 /pipeline/scripts/entrypoint.sh
-RUN chmod 755 /pipeline/scripts/get_ancestry_assignment.pl
-RUN chmod 755 /pipeline/scripts/get_ref_samples.pl
-RUN chmod 755 /pipeline/scripts/get_ref_variants_from_dataset_gvcf.pl
-RUN chmod 755 /pipeline/scripts/prepare_smartpca_input.pl
-RUN chmod 755 /pipeline/scripts/process_smartpca_results.pl
-RUN chmod 755 /pipeline/scripts/run_pipeline.py
+RUN chmod 755 /pipeline/scripts/*
 
 WORKDIR /data
 
