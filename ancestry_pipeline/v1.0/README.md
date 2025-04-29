@@ -22,11 +22,6 @@ docker run -ti \
 
 ``` shell
 cd biocloud_docker_tools/ancestry_pipeline/v1.0
-
-# Create Dockerfile from template
-./docker/make_dockerfile.pl
-
-# Local build
 docker build . -t ancestry_pipeline/ancestry_pipeline:v1.0
 
 ```
