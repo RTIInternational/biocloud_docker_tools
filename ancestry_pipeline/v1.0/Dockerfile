@@ -8,8 +8,8 @@ LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
     && locale-gen en_US.utf8 \
     && /usr/sbin/update-locale LANG=en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8
 
 #### Install general packages
 RUN rm -Rf /var/lib/apt/lists/*
@@ -36,7 +36,7 @@ RUN cd /plink_tmp/1.9/ \
     && rm -rf b15c19f.tar.gz plink_tmp
 
 #### Install plink2 ####
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN wget https://s3.amazonaws.com/plink2-assets/alpha6/plink2_linux_x86_64_20250129.zip \
     && unzip plink2_linux_x86_64_20250129.zip -d /plink_tmp \
     && cp /plink_tmp/plink2 /opt/ \
@@ -75,18 +75,13 @@ RUN ./aws/install
 RUN rm -rf awscliv2.zip
 RUN rm -rf aws
 
-# Add pipeline config files
+#### Add pipeline config files
 RUN mkdir -p /pipeline/config
-ADD config/ancestry_pipeline_entrypoint_bfile.json /pipeline/config/
-ADD config/ancestry_pipeline_entrypoint_gvcf.json /pipeline/config/
-ADD config/ancestry_tasks.json /pipeline/config/
+ADD config/* /pipeline/config/
 
-#### Install custom scripts ####
-# Add scripts
+#### Add scripts
 RUN mkdir -p /pipeline/scripts
 ADD scripts/* /pipeline/scripts/
-
-# Change permissions
 RUN chmod 755 /pipeline/scripts/*
 
 WORKDIR /data
