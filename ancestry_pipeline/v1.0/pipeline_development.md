@@ -30,11 +30,21 @@ python3 /mnt/git/biocloud_docker_tools/ancestry_pipeline/run_pipeline.py \
 
 ```shell
 # Get variants from dataset
-perl ~/git/biocloud_docker_tools/ancestry_pipeline/get_dataset_variants.pl \
-    --file_in_gvcf ~/data/temp/t1d_test/PFNA12878.hard-filtered.gvcf.gz \
-    --file_in_pos_list ~/data/rti-common/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv \
-    --file_out_prefix ~/data/temp/t1d_test/PFNA12878 \
-    --variants_only
+perl /rti-01/ngaddis/git/biocloud_docker_tools/ancestry_pipeline/v1.0/scripts/get_ref_variants_from_dataset_gvcf.pl \
+    --file_in_gvcf /home/merge-shared-folder/testing/genedx/gvcfs/2841201.hard-filtered.gvcf.gz \
+    --file_in_ref_bim /home/merge-shared-folder/ref/grch37/all_phase3_autosomes_maf_gt_1pct_grch37_dbsnp_b153.bim \
+    --file_out_prefix /home/merge-shared-folder/testing/genedx/get_ref_variants_from_dataset_gvcf/2841201 \
+    --monomorphic_positions include \
+    --pass_only 1
+
+perl /rti-01/ngaddis/git/biocloud_docker_tools/ancestry_pipeline/v1.0/scripts/get_ref_variants_from_dataset_gvcf.pl \
+    --file_in_gvcf /home/merge-shared-folder/testing/genedx/gvcfs/2841201.hard-filtered.gvcf.gz \
+    --file_in_ref_bim /home/merge-shared-folder/ref/grch37/all_phase3_autosomes_maf_gt_1pct_grch37_dbsnp_b153.bim \
+    --file_out_prefix /home/merge-shared-folder/testing/genedx/get_ref_variants_from_dataset_gvcf/2841201 \
+    --monomorphic_positions include \
+    --pass_only 1 \
+    --filter_by_gq 1
+
 
 # Convert dataset vcf to bfile
 docker run -ti -v ~:/mnt --rm rtibiocloud/plink:v2.0_c6004f7 bash
