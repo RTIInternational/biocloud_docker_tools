@@ -1,0 +1,90 @@
+{
+    "name": "entrypoint_extract_gvcf_variants",
+    "inputs": {
+        "sample_id": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "gvcf": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "ref_bim": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "final_file_location": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "include_monomorphic_positions": {
+            "type": "int",
+            "default": 0
+        },
+        "filter_by_qual": {
+            "type": "int",
+            "default": 0
+        },
+        "filter_by_gq": {
+            "type": "int",
+            "default": 0
+        },
+        "hom_gq_threshold": {
+            "type": "int",
+            "default": 99
+        },
+        "het_gq_threshold": {
+            "type": "int",
+            "default": 48
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.final_file_location>entrypoint_extract_gvcf_variants.log"
+        }
+    },
+    "entry_point": "get_ref_variants_from_dataset_gvcf",
+    "entry_point_inputs": {
+        "file_in_gvcf": "<inputs.gvcf>",
+        "file_in_ref_bim": "/data/.ref/all_phase3_ld_pruned_autosomes_<inputs.genome_build>_dbsnp_b153.bim",
+        "file_out_prefix": "<inputs.final_file_location>get_ref_variants_from_dataset_gvcf/<inputs.sample_id>",
+        "include_monomorphic_positions": "<inputs.include_monomorphic_positions>",
+        "filter_by_qual": "<inputs.filter_by_qual>",
+        "filter_by_gq": "<inputs.filter_by_gq",
+        "hom_gq_threshold": "<inputs.hom_gq_threshold",
+        "het_gq_threshold": "<inputs.het_gq_threshold"
+    },
+    "pipeline": {
+        "get_ref_variants_from_dataset_gvcf": {
+            "task": "get_ref_variants_from_dataset_gvcf",
+            "check_output": {
+                "returncode_0": {
+                    "step": "convert_dataset_to_bfile",
+                    "inputs": {
+                        "file_in_vcf": "<steps.get_ref_variants_from_dataset_gvcf.outputs.sample_vcf>",
+                        "file_out_prefix": "<inputs.final_file_location>convert_dataset_to_bfile/<inputs.sample_id>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "convert_dataset_to_bfile": {
+            "task": "convert_dataset_to_bfile",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}
