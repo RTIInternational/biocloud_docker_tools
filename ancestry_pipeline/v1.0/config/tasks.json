@@ -45,7 +45,7 @@
         },
         "cmd": [
             "python3",
-            "/opt/batch_extract_gvcf_variants.py",
+            "/pipeline/scripts/batch_extract_gvcf_variants.py",
             "--output_dir",
             "<inputs.output_dir>",
             "--gvcf_dir",
