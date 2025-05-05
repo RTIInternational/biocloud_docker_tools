@@ -16,7 +16,8 @@ RUN rm -Rf /var/lib/apt/lists/*
 RUN apt-get update \
     && apt-get install -y \
         curl \
-        awscli
+        awscli \
+        linux-libc-dev
 
 #### Install plink1.9 ####
 RUN apt-get install -y \
