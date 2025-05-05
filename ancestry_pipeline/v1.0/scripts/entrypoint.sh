@@ -12,5 +12,5 @@ fi
 
 python3 /pipeline/scripts/run_pipeline.py \
     --wf_definition /pipeline/config/$wf_definition.json \
-    --wf_tasks /pipeline/config/ancestry_tasks.json \
+    --wf_tasks /pipeline/config/tasks.json \
     --wf_arguments $wf_arguments
