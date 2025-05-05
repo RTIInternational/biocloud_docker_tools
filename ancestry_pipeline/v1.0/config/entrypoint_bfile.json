@@ -1,5 +1,5 @@
 {
-    "name": "ancestry_assignment",
+    "name": "entrypoint_bfile",
     "inputs": {
         "dataset_name": {
             "type": "str",

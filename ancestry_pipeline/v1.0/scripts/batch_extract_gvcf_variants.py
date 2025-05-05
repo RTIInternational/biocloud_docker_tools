@@ -45,8 +45,14 @@ parser.add_argument(
     type = int
 )
 parser.add_argument(
-    '--pass_only',
-    help = 'Limit extraction to variants designated PASS',
+    '--include_monomorphic_positions',
+    help = 'Include non-variant positions',
+    default = 0,
+    type = int
+)
+parser.add_argument(
+    '--filter_by_qual',
+    help = 'Limit extraction to variants with QUAL=PASS',
     default = 0,
     type = int
 )
@@ -93,6 +99,7 @@ if len(files_to_process) == 0:
     sys.exit("No files to process")
 
 # Loop over all files
+file_plink_merge_list = "{}plink_merge_list.txt".format(output_dir)
 for file, path in files_to_process.items():
     if "gvcf.gz" not in file:
         continue
@@ -119,8 +126,13 @@ for file, path in files_to_process.items():
         # Create workflow args for gvcf file
         wf_arguments = {
             "file_in_gvcf": path,
+            "file_in_ref_bim": args.ref_bim,
             "file_out_prefix": "{}{}".format(sample_output_dir, sample_id),
-            "file_in_ref_bim": args.ref_bim
+            "monomorphic_positions": args.include_monomorphic_positions,
+            "pass_only": args.filter_by_qual,
+            "filter_by_gq": args.filter_by_gq,
+            "hom_gq_threshold": args.hom_gq_threshold,
+            "het_gq_threshold": args.het_gq_threshold
         }
         file_wf_arguments = output_dir + sample_id + '.json'
         with open(file_wf_arguments, 'w', encoding='utf-8') as f:
@@ -150,7 +162,7 @@ for file, path in files_to_process.items():
                         ]
                     },
                     "workflowTemplateRef": {
-                        "name": "t1dgrs2-v2-extract-variants"
+                        "name": "ancestry_extract_gvcf_variants"
                     }
                 }
             }
@@ -163,7 +175,3 @@ for file, path in files_to_process.items():
         # Write sample plink output prefix to merge list
         with open(file_plink_merge_list, 'a') as f:
             f.write("{}{}/{}\n".format(sample_output_dir, "convert_vcf_to_bfile", sample_id))
-
-        # Write sample missing summary tsv path to list
-        with open(file_missingness_merge_list, 'a') as f:
-            f.write("{}{}/{}_missing_summary.tsv\n".format(sample_output_dir, "extract_gvcf_variants", sample_id))

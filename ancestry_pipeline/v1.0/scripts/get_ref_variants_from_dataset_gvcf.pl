@@ -12,8 +12,8 @@ select((select(STDOUT), $|=1)[0]);
 my $file_in_gvcf = '';
 my $file_in_ref_bim = '';
 my $file_out_prefix = '';
-my $monomorphic_positions = 'exclude';
-my $pass_only = 0;
+my $include_monomorphic_positions = 0;
+my $filter_by_qual = 0;
 my $filter_by_gq = 0;
 my $hom_gq_threshold = 99;
 my $het_gq_threshold = 48;
@@ -22,8 +22,8 @@ GetOptions (
     'file_in_gvcf=s' => \$file_in_gvcf,
     'file_in_ref_bim=s' => \$file_in_ref_bim,
     'file_out_prefix=s' => \$file_out_prefix,
-    'monomorphic_positions:s' => \$monomorphic_positions,
-    'pass_only:i' => \$pass_only,
+    'include_monomorphic_positions:i' => \$include_monomorphic_positions,
+    'filter_by_qual:i' => \$filter_by_qual,
     'filter_by_gq:i' => \$filter_by_gq,
     'hom_gq_threshold:i' => \$hom_gq_threshold,
     'het_gq_threshold:i' => \$het_gq_threshold
@@ -80,7 +80,7 @@ while(<GVCF>){
         chomp;
         @F =split();
         if (
-            !$pass_only
+            !$filter_by_qual
             || (uc($F[6]) eq "PASS")
         ) {
             if ($F[0] =~ /(\d+)$/) {
@@ -106,7 +106,7 @@ while(<GVCF>){
                         )
                     )
                 ) {
-                    if ($F[7] =~ /END=(\d+)/ && ($monomorphic_positions eq 'include')) {
+                    if ($F[7] =~ /END=(\d+)/ && $monomorphic_positions) {
                         my $end = $1;
                         for (my $i=$F[1]; $i<=$end; $i++) {
                             if (exists($variants{$F[0]})) {
