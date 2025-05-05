@@ -125,11 +125,12 @@ for file, path in files_to_process.items():
 
         # Create workflow args for gvcf file
         wf_arguments = {
-            "file_in_gvcf": path,
-            "file_in_ref_bim": args.ref_bim,
-            "file_out_prefix": "{}{}".format(sample_output_dir, sample_id),
-            "monomorphic_positions": args.include_monomorphic_positions,
-            "pass_only": args.filter_by_qual,
+            "sample_id": sample_id,
+            "gvcf": path,
+            "ref_bim": args.ref_bim,
+            "final_file_location": sample_output_dir,
+            "include_monomorphic_positions": args.include_monomorphic_positions,
+            "filter_by_qual": args.filter_by_qual,
             "filter_by_gq": args.filter_by_gq,
             "hom_gq_threshold": args.hom_gq_threshold,
             "het_gq_threshold": args.het_gq_threshold
@@ -149,12 +150,9 @@ for file, path in files_to_process.items():
                     "generateName": generate_name
                 },
                 "spec": {
+                    "entrypoint": "extract-gvcf-variants",
                     "arguments": {
                         "parameters": [
-                            {
-                                "name": "wf_definition",
-                                "value": "entrypoint_extract_gvcf_variants"
-                            },
                             {
                                 "name": "wf_arguments",
                                 "value": file_wf_arguments
@@ -162,7 +160,7 @@ for file, path in files_to_process.items():
                         ]
                     },
                     "workflowTemplateRef": {
-                        "name": "ancestry_extract_gvcf_variants"
+                        "name": "ancestry"
                     }
                 }
             }
