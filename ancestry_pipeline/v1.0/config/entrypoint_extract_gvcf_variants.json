@@ -1,6 +1,11 @@
 {
     "name": "entrypoint_extract_gvcf_variants",
     "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
         "sample_id": {
             "type": "str",
             "default": "",
@@ -13,11 +18,6 @@
         },
         "ref_bim": {
             "type": "file",
-            "default": "",
-            "required": true
-        },
-        "final_file_location": {
-            "type": "dir",
             "default": "",
             "required": true
         },
@@ -45,14 +45,14 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.final_file_location>entrypoint_extract_gvcf_variants.log"
+            "value": "<inputs.output_dir>entrypoint_extract_gvcf_variants.log"
         }
     },
     "entry_point": "get_ref_variants_from_dataset_gvcf",
     "entry_point_inputs": {
         "file_in_gvcf": "<inputs.gvcf>",
         "file_in_ref_bim": "<inputs.ref_bim>",
-        "file_out_prefix": "<inputs.final_file_location>get_ref_variants_from_dataset_gvcf/<inputs.sample_id>",
+        "file_out_prefix": "<inputs.output_dir>get_ref_variants_from_dataset_gvcf/<inputs.sample_id>",
         "include_monomorphic_positions": "<inputs.include_monomorphic_positions>",
         "filter_by_qual": "<inputs.filter_by_qual>",
         "filter_by_gq": "<inputs.filter_by_gq",
@@ -67,7 +67,7 @@
                     "step": "convert_dataset_to_bfile",
                     "inputs": {
                         "file_in_vcf": "<steps.get_ref_variants_from_dataset_gvcf.outputs.sample_vcf>",
-                        "file_out_prefix": "<inputs.final_file_location>convert_dataset_to_bfile/<inputs.sample_id>"
+                        "file_out_prefix": "<inputs.output_dir>convert_dataset_to_bfile/<inputs.sample_id>"
                     }
                 },
                 "returncode_1": { 

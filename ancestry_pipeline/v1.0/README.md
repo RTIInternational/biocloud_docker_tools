@@ -5,7 +5,7 @@
 docker run -ti \
     -v /shared/ngaddis:/shared/ngaddis \
     -e wf_arguments=/shared/ngaddis/data/temp/ancestry_weiss/ancestry_pipeline_entrypoint_bfile_superpop_arguments.json \
-    -e wf_definition=ancestry_pipeline_entrypoint_bfile \
+    -e wf_definition=entrypoint_bfile \
     --rm ancestry_pipeline/ancestry_pipeline:v1.0
 
 docker run -ti \
