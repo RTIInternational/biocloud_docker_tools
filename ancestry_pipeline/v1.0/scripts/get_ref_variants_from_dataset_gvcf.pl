@@ -106,7 +106,7 @@ while(<GVCF>){
                         )
                     )
                 ) {
-                    if ($F[7] =~ /END=(\d+)/ && $monomorphic_positions) {
+                    if ($F[7] =~ /END=(\d+)/ && $include_monomorphic_positions) {
                         my $end = $1;
                         for (my $i=$F[1]; $i<=$end; $i++) {
                             if (exists($variants{$F[0]})) {
