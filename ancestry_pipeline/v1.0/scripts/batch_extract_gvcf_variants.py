@@ -74,6 +74,18 @@ parser.add_argument(
     default = 48,
     type = int
 )
+parser.add_argument(
+    '--workflow_template',
+    help = 'Workflow template to use',
+    default = 'ancestry',
+    type = str
+)
+parser.add_argument(
+    '--entrypoint',
+    help = 'Entrypoint to use',
+    default = 'extract-gvcf-variants',
+    type = str
+)
 args = parser.parse_args()
 
 # Function to get the number of running workflows
@@ -150,7 +162,7 @@ for file, path in files_to_process.items():
                     "generateName": generate_name
                 },
                 "spec": {
-                    "entrypoint": "extract-gvcf-variants",
+                    "entrypoint": args.entrypoint,
                     "arguments": {
                         "parameters": [
                             {
@@ -160,7 +172,7 @@ for file, path in files_to_process.items():
                         ]
                     },
                     "workflowTemplateRef": {
-                        "name": "ancestry"
+                        "name": args.workflow_template
                     }
                 }
             }
