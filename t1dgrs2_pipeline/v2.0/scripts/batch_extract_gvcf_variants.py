@@ -62,7 +62,7 @@ parser.add_argument(
     type = int
 )
 parser.add_argument(
-    '--pass_only',
+    '--filter_by_qual',
     help = 'Limit extraction to variants designated PASS',
     default = 0,
     type = int
@@ -172,7 +172,7 @@ for file, path in files_to_process.items():
             "variant_list": args.variant_list,
             "hladq_variants_file": args.hladq_variants_file,
             "non_hladq_variants_file": args.non_hladq_variants_file,
-            "pass_only": args.pass_only,
+            "filter_by_qual": args.filter_by_qual,
             "filter_by_gq": args.filter_by_gq,
             "hom_gq_threshold": args.hom_gq_threshold,
             "het_gq_threshold": args.het_gq_threshold
