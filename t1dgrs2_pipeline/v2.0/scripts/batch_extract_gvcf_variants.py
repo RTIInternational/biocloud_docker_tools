@@ -85,6 +85,18 @@ parser.add_argument(
     default = 48,
     type = int
 )
+parser.add_argument(
+    '--workflow_template',
+    help = 'Workflow template to use',
+    default = 't1dgrs2-revvity',
+    type = str
+)
+parser.add_argument(
+    '--entrypoint',
+    help = 'Entrypoint to use',
+    default = 'extract-gvcf-variants',
+    type = str
+)
 args = parser.parse_args()
 
 # Function to get the number of running workflows
@@ -180,12 +192,9 @@ for file, path in files_to_process.items():
                     "generateName": generate_name
                 },
                 "spec": {
+                    "entrypoint": args.entrypoint,
                     "arguments": {
                         "parameters": [
-                            {
-                                "name": "wf_definition",
-                                "value": "entrypoint_extract_gvcf_variants"
-                            },
                             {
                                 "name": "wf_arguments",
                                 "value": file_wf_arguments
@@ -193,7 +202,7 @@ for file, path in files_to_process.items():
                         ]
                     },
                     "workflowTemplateRef": {
-                        "name": "t1dgrs2-v2-extract-variants"
+                        "name": args.workflow_template
                     }
                 }
             }
