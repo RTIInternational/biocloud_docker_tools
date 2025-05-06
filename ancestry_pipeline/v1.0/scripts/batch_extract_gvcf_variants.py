@@ -128,7 +128,7 @@ for file, path in files_to_process.items():
             "sample_id": sample_id,
             "gvcf": path,
             "ref_bim": args.ref_bim,
-            "final_file_location": sample_output_dir,
+            "output_dir": sample_output_dir,
             "include_monomorphic_positions": args.include_monomorphic_positions,
             "filter_by_qual": args.filter_by_qual,
             "filter_by_gq": args.filter_by_gq,
