@@ -96,6 +96,8 @@
             "plink1.9",
             "--merge-list",
             "<inputs.sample_bfile_merge_list>",
+            "--geno",
+            "0",
             "--out",
             "<inputs.out_prefix>",
             "--make-bed"
