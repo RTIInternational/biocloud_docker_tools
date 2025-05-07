@@ -1,0 +1,40 @@
+{
+    "name": "entrypoint_bfile_merge_list",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "sample_bfile_merge_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>entrypoint_calculate_t1dgrs2.log"
+        }
+    },
+    "entry_point": "merge_sample_bfiles",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>merge_sample_bfiles",
+        "sample_bfile_merge_list": "<inputs.sample_bfile_merge_list>",
+        "out_prefix": "<inputs.output_dir>merge_sample_bfiles/merged_samples"
+    },
+    "pipeline": {
+        "merge_sample_bfiles": {
+            "task": "merge_sample_bfiles",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

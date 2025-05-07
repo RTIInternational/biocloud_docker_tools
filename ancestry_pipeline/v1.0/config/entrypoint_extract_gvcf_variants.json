@@ -16,8 +16,8 @@
             "default": "",
             "required": true
         },
-        "ref_bim": {
-            "type": "file",
+        "ref_prefix": {
+            "type": "str",
             "default": "",
             "required": true
         },
@@ -51,7 +51,7 @@
     "entry_point": "get_ref_variants_from_dataset_gvcf",
     "entry_point_inputs": {
         "file_in_gvcf": "<inputs.gvcf>",
-        "file_in_ref_bim": "<inputs.ref_bim>",
+        "file_in_ref_bim": "<inputs.ref_prefix>.bim",
         "file_out_prefix": "<inputs.output_dir>get_ref_variants_from_dataset_gvcf/<inputs.sample_id>",
         "include_monomorphic_positions": "<inputs.include_monomorphic_positions>",
         "filter_by_qual": "<inputs.filter_by_qual>",

@@ -4,7 +4,7 @@
     "dataset_bed": "<DATASET_BED>",
     "dataset_bim": "<DATASET_BIM>",
     "dataset_fam": "<DATASET_FAM>",
-    "genome_build": "<GENOME_BUILD>",
+    "ref_prefix": "<REF_PREFIX>",
     "ancestry_pop_type": "SUPERPOP",
     "ancestries_to_include": "AFR,AMR,EAS,EUR,SAS",
     "std_dev_cutoff": 3

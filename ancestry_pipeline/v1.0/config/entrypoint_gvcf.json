@@ -16,10 +16,10 @@
             "default": "",
             "required": true
         },
-        "genome_build": {
+        "ref_prefix": {
             "type": "str",
-            "default": "grch37",
-            "required": false
+            "default": "",
+            "required": true
         },
         "include_monomorphic_positions": {
             "type": "int",
@@ -70,7 +70,7 @@
     "entry_point": "get_ref_variants_from_dataset_gvcf",
     "entry_point_inputs": {
         "file_in_gvcf": "<inputs.gvcf>",
-        "file_in_ref_bim": "/data/.ref/all_phase3_ld_pruned_autosomes_<inputs.genome_build>_dbsnp_b153.bim",
+        "file_in_ref_bim": "<inputs.ref_prefix>.bim",
         "file_out_prefix": "<inputs.output_dir>get_ref_variants_from_dataset_gvcf/dataset",
         "include_monomorphic_positions": "<inputs.include_monomorphic_positions>",
         "filter_by_qual": "<inputs.filter_by_qual>",
@@ -100,7 +100,7 @@
                 "returncode_0": {
                     "step": "get_ref_samples",
                     "inputs": {
-                        "file_in_psam": "/data/.ref/all_phase3_ld_pruned_autosomes_<inputs.genome_build>_dbsnp_b153.psam",
+                        "file_in_psam": "<inputs.ref_prefix>.psam",
                         "ancestry_pop_type": "<inputs.ancestry_pop_type>",
                         "ancestries_to_include": "<inputs.ancestries_to_include>",
                         "file_out_ancestry_id_xref": "<inputs.output_dir>get_ref_samples/ancestry_id_xref.tsv",
@@ -119,7 +119,7 @@
                     "step": "add_pop_ids_to_fam_files",
                     "inputs": {
                         "file_in_dataset_fam": "<steps.convert_dataset_to_bfile.outputs.fam>",
-                        "file_in_ref_fam": "/data/.ref/all_phase3_ld_pruned_autosomes_<inputs.genome_build>_dbsnp_b153.fam",
+                        "file_in_ref_fam": "<inputs.ref_prefix>.fam",
                         "file_in_ref_samples": "<steps.get_ref_samples.outputs.ref_samples>",
                         "file_out_dataset_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/dataset.fam",
                         "file_out_ref_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/ref.fam"
@@ -136,8 +136,8 @@
                 "returncode_0": {
                     "step": "get_ref_genotypes",
                     "inputs": {
-                        "bed": "/data/.ref/all_phase3_ld_pruned_autosomes_<inputs.genome_build>_dbsnp_b153.bed",
-                        "bim": "/data/.ref/all_phase3_ld_pruned_autosomes_<inputs.genome_build>_dbsnp_b153.bim",
+                        "bed": "<inputs.ref_prefix>.bed",
+                        "bim": "<inputs.ref_prefix>.bim",
                         "fam": "<steps.add_pop_ids_to_fam_files.outputs.ref_fam>",
                         "keep": "<steps.get_ref_samples.outputs.ref_samples>",
                         "extract": "<steps.get_ref_variants_from_dataset_gvcf.outputs.variant_list>",

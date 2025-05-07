@@ -80,6 +80,53 @@
             }
         }
     },
+    "merge_sample_bfiles": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "sample_bfile_merge_list": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "plink",
+            "--merge-list",
+            "<inputs.sample_bfile_merge_list>",
+            "--out",
+            "<inputs.out_prefix>",
+            "--make-bed"
+        ],
+        "outputs": {
+            "bfile": {
+                "type": "str",
+                "value": "<inputs.out_prefix>"
+            },
+            "bed": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>merge_bfile_with_reference.log"
+            }
+        }
+    },
     "get_ref_variants_from_dataset_gvcf": {
         "inputs": {
             "file_in_gvcf": {
