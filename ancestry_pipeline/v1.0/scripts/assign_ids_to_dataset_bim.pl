@@ -42,8 +42,18 @@ sub flip {
     return $alleleComplement;
 }
 
-# Read variants from ref bim
+# Get list of variants in dataset
 my %variantIds = ();
+open(FILE_IN_DATASET_BIM, $fileInDatasetBim);
+while(<FILE_IN_DATASET_BIM>) {
+    chomp;
+    my @F = split();
+    my $chrPos = $F[0]."_".$F[3];
+    $variantIds{$chrPos} = "";
+}
+close FILE_IN_DATASET_BIM;
+
+# Read variants from ref bim
 my %allele1s = ();
 my %allele2s = ();
 my %allele1sFlipped = ();   
@@ -53,11 +63,11 @@ while (<REF_BIM>) {
     chomp;
     my @F = split();
     my $chrPos = $F[0]."_".$F[3];
-    $variantIds{$chrPos} = $F[1];
-    $allele1s{$chrPos} = $F[4];
-    $allele2s{$chrPos} = $F[5];
-    $allele1sFlipped{$chrPos} = flip($F[4]);
-    $allele2sFlipped{$chrPos} = flip($F[5]);
+    if (exists($variantIds{$chrPos})) {
+        $variantIds{$chrPos} = $F[1];
+        $allele1s{$chrPos} = $F[4];
+        $allele2s{$chrPos} = $F[5];
+    }
 }
 close REF_BIM;
 
@@ -72,8 +82,8 @@ while(<FILE_IN_DATASET_BIM>) {
         if (
             ($allele1s{$chrPos} eq $F[4] && $allele2s{$chrPos} eq $F[5]) ||
             ($allele1s{$chrPos} eq $F[5] && $allele2s{$chrPos} eq $F[4]) ||
-            ($allele1sFlipped{$chrPos} eq $F[4] && $allele2sFlipped{$chrPos} eq $F[5]) ||
-            ($allele1sFlipped{$chrPos} eq $F[5] && $allele2sFlipped{$chrPos} eq $F[4])
+            (flip($allele1s{$chrPos}) eq $F[4] && flip($allele2s{$chrPos}) eq $F[5]) ||
+            (flip($allele1s{$chrPos}) eq $F[5] && flip($allele2s{$chrPos}) eq $F[4])
         ) {
             $F[1] = $variantIds{$chrPos};
             print FILE_OUT_EXTRACT_LIST $variantIds{$chrPos}."\n";
