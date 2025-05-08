@@ -12,7 +12,7 @@
             "required": true
         },
         "ref_prefix": {
-            "type": "file",
+            "type": "str",
             "default": "",
             "required": true
         },
