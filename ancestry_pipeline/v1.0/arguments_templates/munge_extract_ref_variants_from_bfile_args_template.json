@@ -1,0 +1,8 @@
+{
+    "output_dir": "<OUTPUT_DIR>",
+    "bed": "<BED>",
+    "bim": "<BIM>",
+    "fam": "<FAM>",
+    "ref_prefix": "<REF_PREFIX>",
+    "out_prefix": "<OUT_PREFIX>"
+}

@@ -137,10 +137,10 @@ for file, path in files_to_process.items():
 
         # Create workflow args for gvcf file
         wf_arguments = {
+            "output_dir": sample_output_dir,
             "sample_id": sample_id,
             "gvcf": path,
-            "ref_bim": args.ref_bim,
-            "output_dir": sample_output_dir,
+            "ref_prefix": args.ref_bim,
             "include_monomorphic_positions": args.include_monomorphic_positions,
             "filter_by_qual": args.filter_by_qual,
             "filter_by_gq": args.filter_by_gq,

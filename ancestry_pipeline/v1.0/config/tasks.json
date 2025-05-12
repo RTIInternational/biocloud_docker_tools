@@ -187,22 +187,25 @@
             }
         }
     },
-    "merge_sample_bfiles": {
+    "merge_bfiles": {
         "inputs": {
             "output_dir": {
                 "type": "dir"
             },
-            "sample_bfile_merge_list": {
+            "bfile_merge_list": {
                 "type": "file"
             },
             "out_prefix": {
                 "type": "str"
+            },
+            "geno": {
+                "type": "float"
             }
         },
         "cmd": [
             "plink1.9",
             "--merge-list",
-            "<inputs.sample_bfile_merge_list>",
+            "<inputs.bfile_merge_list>",
             "--geno",
             "0",
             "--out",
