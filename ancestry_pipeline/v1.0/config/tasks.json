@@ -80,55 +80,6 @@
             }
         }
     },
-    "merge_sample_bfiles": {
-        "inputs": {
-            "output_dir": {
-                "type": "dir"
-            },
-            "sample_bfile_merge_list": {
-                "type": "file"
-            },
-            "out_prefix": {
-                "type": "str"
-            }
-        },
-        "cmd": [
-            "plink1.9",
-            "--merge-list",
-            "<inputs.sample_bfile_merge_list>",
-            "--geno",
-            "0",
-            "--out",
-            "<inputs.out_prefix>",
-            "--make-bed"
-        ],
-        "outputs": {
-            "bfile": {
-                "type": "str",
-                "value": "<inputs.out_prefix>"
-            },
-            "bed": {
-                "type": "file",
-                "value": "<inputs.out_prefix>.bed"
-            },
-            "bim": {
-                "type": "file",
-                "value": "<inputs.out_prefix>.bim"
-            },
-            "fam": {
-                "type": "file",
-                "value": "<inputs.out_prefix>.fam"
-            },
-            "plink_log": {
-                "type": "file",
-                "value": "<inputs.out_prefix>.log"
-            },
-            "log": {
-                "type": "file",
-                "value": "<inputs.output_dir>merge_bfile_with_reference.log"
-            }
-        }
-    },
     "get_ref_variants_from_dataset_gvcf": {
         "inputs": {
             "file_in_gvcf": {
@@ -236,6 +187,55 @@
             }
         }
     },
+    "merge_sample_bfiles": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "sample_bfile_merge_list": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "plink1.9",
+            "--merge-list",
+            "<inputs.sample_bfile_merge_list>",
+            "--geno",
+            "0",
+            "--out",
+            "<inputs.out_prefix>",
+            "--make-bed"
+        ],
+        "outputs": {
+            "bfile": {
+                "type": "str",
+                "value": "<inputs.out_prefix>"
+            },
+            "bed": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>merge_bfile_with_reference.log"
+            }
+        }
+    },
     "assign_ids_to_dataset_bim": {
         "inputs": {
             "file_in_dataset_bim": {
@@ -277,7 +277,7 @@
             }
         }
     },
-    "get_ref_variants_from_dataset_bfile": {
+    "get_variants_from_bfile": {
         "inputs": {
             "file_in_bed": {
                 "type": "file"
@@ -330,6 +330,67 @@
             "log": {
                 "type": "file",
                 "value": "get_ref_variants_from_dataset_bim.log"
+            }
+        }
+    },
+    "get_variants_and_samples_from_bfile": {
+        "inputs": {
+            "bed": {
+                "type": "file"
+            },
+            "bim": {
+                "type": "file"
+            },
+            "fam": {
+                "type": "file"
+            },
+            "keep": {
+                "type": "file"
+            },
+            "extract": {
+                "type": "file"
+            },
+            "file_out_prefix": {
+                "type": "str",
+                "default": "ref"
+            }
+        },
+        "cmd": [
+            "plink1.9",
+            "--bed",
+            "<inputs.bed>",
+            "--bim",
+            "<inputs.bim>",
+            "--fam",
+            "<inputs.fam>",
+            "--keep",
+            "<inputs.keep>",
+            "--extract",
+            "<inputs.extract>",
+            "--make-bed",
+            "--out",
+            "<inputs.file_out_prefix>"
+        ],
+        "outputs": {
+            "bed": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "get_variants_and_samples_from_bfile.log"
             }
         }
     },
@@ -426,67 +487,6 @@
             "log": {
                 "type": "file",
                 "value": "add_pop_ids_to_fam_files.log"
-            }
-        }
-    },
-    "get_ref_genotypes": {
-        "inputs": {
-            "bed": {
-                "type": "file"
-            },
-            "bim": {
-                "type": "file"
-            },
-            "fam": {
-                "type": "file"
-            },
-            "keep": {
-                "type": "file"
-            },
-            "extract": {
-                "type": "file"
-            },
-            "file_out_prefix": {
-                "type": "str",
-                "default": "ref"
-            }
-        },
-        "cmd": [
-            "plink1.9",
-            "--bed",
-            "<inputs.bed>",
-            "--bim",
-            "<inputs.bim>",
-            "--fam",
-            "<inputs.fam>",
-            "--keep",
-            "<inputs.keep>",
-            "--extract",
-            "<inputs.extract>",
-            "--make-bed",
-            "--out",
-            "<inputs.file_out_prefix>"
-        ],
-        "outputs": {
-            "bed": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.bed"
-            },
-            "bim": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.bim"
-            },
-            "fam": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.fam"
-            },
-            "plink_log": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.log"
-            },
-            "log": {
-                "type": "file",
-                "value": "get_ref_genotypes.log"
             }
         }
     },
@@ -790,11 +790,11 @@
                 "type": "file"
             },
             "ref_ancestries": {
-                "type": "file",
+                "type": "str",
                 "default": "AFR,AMR,EAS,EUR,SAS"
             },
             "dataset_name": {
-                "type": "file"
+                "type": "str"
             },
             "std_dev_cutoff": {
                 "type": "int",

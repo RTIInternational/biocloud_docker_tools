@@ -1,0 +1,57 @@
+{
+    "name": "munge_extract_ref_variants_from_bfiles",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "bfile_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "ref_prefix": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "argo_api_url": {
+            "type": "str",
+            "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+            "required": false
+        },
+        "simultaneous_jobs": {
+            "type": "int",
+            "default": 50,
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>munge_extract_ref_variants_from_bfiles.log"
+        }
+    },
+    "entry_point": "batch_extract_bfile_variants",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>batch_extract_bfile_variants",
+        "bfile_list": "<inputs.bfile_list>",
+        "ref_prefix": "<inputs.ref_prefix>",
+        "argo_api_url": "<inputs.argo_api_url>",
+        "simultaneous_jobs": "<inputs.simultaneous_jobs>"
+    },
+    "pipeline": {
+        "batch_extract_bfile_variants": {
+            "task": "batch_extract_bfile_variants",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

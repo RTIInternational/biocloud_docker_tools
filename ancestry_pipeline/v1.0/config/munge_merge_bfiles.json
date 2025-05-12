@@ -1,5 +1,5 @@
 {
-    "name": "entrypoint_bfile_merge_list",
+    "name": "munge_merge_bfiles",
     "inputs": {
         "output_dir": {
             "type": "dir",
@@ -15,7 +15,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.output_dir>entrypoint_calculate_t1dgrs2.log"
+            "value": "<inputs.output_dir>munge_merge_bfiles.log"
         }
     },
     "entry_point": "merge_sample_bfiles",

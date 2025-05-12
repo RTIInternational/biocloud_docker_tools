@@ -1,5 +1,5 @@
 {
-    "name": "entrypoint_gvcfs",
+    "name": "munge_extract_ref_variants_from_gvcfs",
     "inputs": {
         "output_dir": {
             "type": "dir",
@@ -60,7 +60,7 @@
     "outputs": {
         "log": {
             "type": "file",
-            "value": "<inputs.output_dir>/entrypoint_batch_extract_gvcf_variants.log"
+            "value": "<inputs.output_dir>/munge_extract_ref_variants_from_gvcfs.log"
         }
     },
     "entry_point": "batch_extract_gvcf_variants",

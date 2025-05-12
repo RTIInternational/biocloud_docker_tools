@@ -1,5 +1,5 @@
 {
-    "name": "entrypoint_bfile",
+    "name": "ancestry_from_gvcf",
     "inputs": {
         "output_dir": {
             "type": "dir",
@@ -11,17 +11,7 @@
             "default": "",
             "required": true
         },
-        "dataset_bed": {
-            "type": "file",
-            "default": "",
-            "required": true
-        },
-        "dataset_bim": {
-            "type": "file",
-            "default": "",
-            "required": true
-        },
-        "dataset_fam": {
+        "gvcf": {
             "type": "file",
             "default": "",
             "required": true
@@ -30,6 +20,26 @@
             "type": "str",
             "default": "",
             "required": true
+        },
+        "include_monomorphic_positions": {
+            "type": "int",
+            "default": 0
+        },
+        "filter_by_qual": {
+            "type": "int",
+            "default": 0
+        },
+        "filter_by_gq": {
+            "type": "int",
+            "default": 0
+        },
+        "hom_gq_threshold": {
+            "type": "int",
+            "default": 99
+        },
+        "het_gq_threshold": {
+            "type": "int",
+            "default": 48
         },
         "ancestry_pop_type": {
             "type": "str",
@@ -48,31 +58,63 @@
         }
     },
     "outputs": {
-        "ancestry_assignmment": {
-            "type": "file",
-            "value": "<steps.get_ancestry_assignment.outputs.ancestry_assignment>"
-        },
         "log": {
             "type": "file",
-            "value": "<inputs.output_dir>ancestry_assignment.log"
+            "value": "<inputs.output_dir>ancestry_from_gvcf.log"
         }
     },
-    "entry_point": "get_ref_samples",
+    "entry_point": "get_ref_variants_from_dataset_gvcf",
     "entry_point_inputs": {
-        "file_in_psam": "<inputs.ref_prefix>.psam",
-        "ancestry_pop_type": "<inputs.ancestry_pop_type>",
-        "ancestries_to_include": "<inputs.ancestries_to_include>",
-        "file_out_ancestry_id_xref": "<inputs.output_dir>get_ref_samples/ancestry_id_xref.tsv",
-        "file_out_ref_samples": "<inputs.output_dir>get_ref_samples/ref_samples.tsv"
+        "file_in_gvcf": "<inputs.gvcf>",
+        "file_in_ref_bim": "<inputs.ref_prefix>.bim",
+        "file_out_prefix": "<inputs.output_dir>get_ref_variants_from_dataset_gvcf/dataset",
+        "include_monomorphic_positions": "<inputs.include_monomorphic_positions>",
+        "filter_by_qual": "<inputs.filter_by_qual>",
+        "filter_by_gq": "<inputs.filter_by_gq",
+        "hom_gq_threshold": "<inputs.hom_gq_threshold",
+        "het_gq_threshold": "<inputs.het_gq_threshold"
     },
     "pipeline": {
+        "get_ref_variants_from_dataset_gvcf": {
+            "task": "get_ref_variants_from_dataset_gvcf",
+            "check_output": {
+                "returncode_0": {
+                    "step": "convert_dataset_to_bfile",
+                    "inputs": {
+                        "file_in_vcf": "<steps.get_ref_variants_from_dataset_gvcf.outputs.sample_vcf>",
+                        "file_out_prefix": "<inputs.output_dir>convert_dataset_to_bfile/dataset"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "convert_dataset_to_bfile": {
+            "task": "convert_dataset_to_bfile",
+            "check_output": {
+                "returncode_0": {
+                    "step": "get_ref_samples",
+                    "inputs": {
+                        "file_in_psam": "<inputs.ref_prefix>.psam",
+                        "ancestry_pop_type": "<inputs.ancestry_pop_type>",
+                        "ancestries_to_include": "<inputs.ancestries_to_include>",
+                        "file_out_ancestry_id_xref": "<inputs.output_dir>get_ref_samples/ancestry_id_xref.tsv",
+                        "file_out_ref_samples": "<inputs.output_dir>get_ref_samples/ref_samples.tsv"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
         "get_ref_samples": {
             "task": "get_ref_samples",
             "check_output": {
                 "returncode_0": {
                     "step": "add_pop_ids_to_fam_files",
                     "inputs": {
-                        "file_in_dataset_fam": "<inputs.dataset_fam>",
+                        "file_in_dataset_fam": "<steps.convert_dataset_to_bfile.outputs.fam>",
                         "file_in_ref_fam": "<inputs.ref_prefix>.fam",
                         "file_in_ref_samples": "<steps.get_ref_samples.outputs.ref_samples>",
                         "file_out_dataset_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/dataset.fam",
@@ -88,48 +130,13 @@
             "task": "add_pop_ids_to_fam_files",
             "check_output": {
                 "returncode_0": {
-                    "step": "assign_ids_to_dataset_bim",
-                    "inputs": {
-                        "file_in_dataset_bim": "<inputs.dataset_bim>",
-                        "file_in_ref_bim": "<inputs.ref_prefix>.bim",
-                        "file_out_dataset_bim": "<inputs.output_dir>assign_ids_to_dataset_bim/dataset.bim",
-                        "file_out_extract_list": "<inputs.output_dir>assign_ids_to_dataset_bim/extract_list.txt"
-                    }
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
-        },
-        "assign_ids_to_dataset_bim": {
-            "task": "assign_ids_to_dataset_bim",
-            "check_output": {
-                "returncode_0": {
-                    "step": "get_ref_variants_from_dataset_bfile",
-                    "inputs": {
-                        "file_in_bed": "<inputs.dataset_bed>",
-                        "file_in_bim": "<steps.assign_ids_to_dataset_bim.outputs.bim>",
-                        "file_in_fam": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
-                        "file_in_extract_list": "<steps.assign_ids_to_dataset_bim.outputs.extract_list>",
-                        "file_out_prefix": "<inputs.output_dir>get_ref_variants_from_dataset_bfile/dataset"
-                    }
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
-        },
-        "get_ref_variants_from_dataset_bfile": {
-            "task": "get_ref_variants_from_dataset_bfile",
-            "check_output": {
-                "returncode_0": {
                     "step": "get_ref_genotypes",
                     "inputs": {
                         "bed": "<inputs.ref_prefix>.bed",
                         "bim": "<inputs.ref_prefix>.bim",
                         "fam": "<steps.add_pop_ids_to_fam_files.outputs.ref_fam>",
                         "keep": "<steps.get_ref_samples.outputs.ref_samples>",
-                        "extract": "<steps.assign_ids_to_dataset_bim.outputs.extract_list>",
+                        "extract": "<steps.get_ref_variants_from_dataset_gvcf.outputs.variant_list>",
                         "file_out_prefix": "<inputs.output_dir>get_ref_genotypes/ref"
                     }
                 },
@@ -139,7 +146,7 @@
             }
         },
         "get_ref_genotypes": {
-            "task": "get_ref_genotypes",
+            "task": "get_variants_and_samples_from_bfile",
             "check_output": {
                 "returncode_0": {
                     "step": "get_merge_conflicts",
@@ -147,9 +154,9 @@
                         "bed_1": "<steps.get_ref_genotypes.outputs.bed>",
                         "bim_1": "<steps.get_ref_genotypes.outputs.bim>",
                         "fam_1": "<steps.get_ref_genotypes.outputs.fam>",
-                        "bed_2": "<steps.get_ref_variants_from_dataset_bfile.outputs.bed>",
-                        "bim_2": "<steps.get_ref_variants_from_dataset_bfile.outputs.bim>",
-                        "fam_2": "<steps.get_ref_variants_from_dataset_bfile.outputs.fam>",
+                        "bed_2": "<steps.convert_dataset_to_bfile.outputs.bed>",
+                        "bim_2": "<steps.convert_dataset_to_bfile.outputs.bim>",
+                        "fam_2": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
                         "file_out_prefix": "<inputs.output_dir>get_merge_conflicts/dataset_ref"
                     }
                 },
@@ -177,9 +184,9 @@
                 "returncode_1": { 
                     "step": "flip_ref",
                     "inputs": {
-                        "bed": "<steps.get_ref_genotypes.outputs.bed>",
-                        "bim": "<steps.get_ref_genotypes.outputs.bim>",
-                        "fam": "<steps.get_ref_genotypes.outputs.fam>",
+                        "bed": "<inputs.ref_bed>",
+                        "bim": "<inputs.ref_bim>",
+                        "fam": "<steps.add_pop_ids_to_fam_files.outputs.ref_fam>",
                         "flip": "<steps.get_merge_conflicts.outputs.missnp>",
                         "file_out_prefix": "<inputs.output_dir>flip_ref/ref"
                     }
@@ -195,9 +202,9 @@
                         "bed_1": "<steps.flip_ref.outputs.bed>",
                         "bim_1": "<steps.flip_ref.outputs.bim>",
                         "fam_1": "<steps.flip_ref.outputs.fam>",
-                        "bed_2": "<steps.get_ref_variants_from_dataset_bfile.outputs.bed>",
-                        "bim_2": "<steps.get_ref_variants_from_dataset_bfile.outputs.bim>",
-                        "fam_2": "<steps.get_ref_variants_from_dataset_bfile.outputs.dataset_fam>",
+                        "bed_2": "<steps.convert_dataset_to_bfile.outputs.bed>",
+                        "bim_2": "<steps.convert_dataset_to_bfile.outputs.bim>",
+                        "fam_2": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
                         "file_out_prefix": "<inputs.output_dir>merge_dataset_ref/dataset_ref"
                     }
                 },

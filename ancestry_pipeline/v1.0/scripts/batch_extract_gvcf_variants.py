@@ -83,7 +83,7 @@ parser.add_argument(
 parser.add_argument(
     '--entrypoint',
     help = 'Entrypoint to use',
-    default = 'extract-gvcf-variants',
+    default = 'munge-extract-ref-variants-from-gvcf',
     type = str
 )
 args = parser.parse_args()

@@ -1,0 +1,79 @@
+{
+    "name": "munge_extract_ref_variants_from_bfile",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "bed": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "bim": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "fam": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "ref_prefix": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "out_prefix": {
+            "type": "str",
+            "default": "",
+            "required": true
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>munge_extract_ref_variants_from_bfile.log"
+        }
+    },
+    "entry_point": "assign_ids_to_dataset_bim",
+    "entry_point_inputs": {
+        "file_in_dataset_bim": "<inputs.bim>",
+        "file_in_ref_bim": "<inputs.ref_prefix>.bim",
+        "file_out_dataset_bim": "<inputs.output_dir>assign_ids_to_dataset_bim/<inputs.out_prefix>.bim",
+        "file_out_extract_list": "<inputs.output_dir>assign_ids_to_dataset_bim/<inputs.out_prefix>_variants.txt"
+    },
+    "pipeline": {
+        "assign_ids_to_dataset_bim": {
+            "task": "assign_ids_to_dataset_bim",
+            "check_output": {
+                "returncode_0": {
+                    "step": "get_variants_from_dataset_bfile",
+                    "inputs": {
+                        "file_in_bed": "<inputs.bed>",
+                        "file_in_bim": "<steps.assign_ids_to_dataset_bim.outputs.file_out_dataset_bim>",
+                        "file_in_fam": "<inputs.fam>",
+                        "extract_list": "<inputs.ref_prefix>_variants.txt",
+                        "file_out_prefix": "<inputs.output_dir>get_variants_from_dataset_bfile/<inputs.out_prefix>"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "get_variants_from_dataset_bfile": {
+            "task": "get_variants_from_bfile",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}
