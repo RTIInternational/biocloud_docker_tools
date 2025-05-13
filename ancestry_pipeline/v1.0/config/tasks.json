@@ -7,7 +7,7 @@
             "gvcf_dir": {
                 "type": "dir"
             },
-            "ref_bim": {
+            "ref_prefix": {
                 "type": "file"
             },
             "sequencing_provider": {
@@ -50,8 +50,8 @@
             "<inputs.output_dir>",
             "--gvcf_dir",
             "<inputs.gvcf_dir>",
-            "--ref_bim",
-            "<inputs.ref_bim>",
+            "--ref_prefix",
+            "<inputs.ref_prefix>",
             "--sequencing_provider",
             "<inputs.sequencing_provider>",
             "--argo_api_url",

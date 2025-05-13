@@ -67,7 +67,7 @@
     "entry_point_inputs": {
         "output_dir": "<inputs.output_dir>batch_extract_gvcf_variants",
         "gvcf_dir": "<inputs.gvcf_dir>",
-        "ref_bim": "<inputs.ref_prefix>.bim",
+        "ref_prefix": "<inputs.ref_prefix>",
         "sequencing_provider": "<inputs.sequencing_provider>",
         "argo_api_url": "<inputs.argo_api_url>",
         "simultaneous_jobs": "<inputs.simultaneous_jobs>",
