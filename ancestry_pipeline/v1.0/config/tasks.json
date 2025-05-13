@@ -8,7 +8,7 @@
                 "type": "dir"
             },
             "ref_prefix": {
-                "type": "file"
+                "type": "str"
             },
             "sequencing_provider": {
                 "type": "str",
