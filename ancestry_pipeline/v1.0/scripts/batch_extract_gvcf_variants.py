@@ -20,9 +20,9 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
-    '--ref_bim',
+    '--ref_prefix',
     required = True,
-    help = 'Reference bim file',
+    help = 'Prefix for reference files',
     type = str
 )
 parser.add_argument(
@@ -140,7 +140,7 @@ for file, path in files_to_process.items():
             "output_dir": sample_output_dir,
             "sample_id": sample_id,
             "gvcf": path,
-            "ref_prefix": args.ref_bim,
+            "ref_prefix": args.ref_prefix,
             "include_monomorphic_positions": args.include_monomorphic_positions,
             "filter_by_qual": args.filter_by_qual,
             "filter_by_gq": args.filter_by_gq,
