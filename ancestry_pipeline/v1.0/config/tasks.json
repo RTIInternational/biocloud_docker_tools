@@ -121,6 +121,7 @@
             "<inputs.file_in_ref_bim>",
             "--file_out_prefix",
             "<inputs.file_out_prefix>",
+            "--include_monomorphic_positions",
             "<inputs.include_monomorphic_positions>",
             "--filter_by_qual",
             "<inputs.filter_by_qual>",
