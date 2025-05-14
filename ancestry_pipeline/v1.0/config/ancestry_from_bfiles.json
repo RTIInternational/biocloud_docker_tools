@@ -46,7 +46,7 @@
     "entry_point": "merge_bfiles",
     "entry_point_inputs": {
         "output_dir": "<inputs.output_dir>merge_bfiles",
-        "bfile_merge_list": "<inputs.bfile_merge_list>",
+        "bfile_merge_list": "<inputs.dataset_bfile_merge_list>",
         "out_prefix": "<inputs.output_dir>merge_bfiles/merged_samples",
         "geno": "0"
     },
