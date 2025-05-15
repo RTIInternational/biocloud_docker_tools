@@ -66,8 +66,9 @@ while (<REF_BIM>) {
 close REF_BIM;
 
 # Get dataset variants by position
-open(OUT_VCF, "> $file_out_prefix.vcf");
+open(OUT_VCF, "> ".$file_out_prefix.".vcf");
 open(OUT_VARIANTS, "> ".$file_out_prefix."_variants.txt");
+open(OUT_FLIP, "> ".$file_out_prefix."_flip.txt");
 if ($file_in_gvcf =~ /gz$/) {
     open(GVCF, "gunzip -c $file_in_gvcf |") or die "gunzip $file_in_gvcf: $!";
 } else {
@@ -116,9 +117,17 @@ while(<GVCF>){
                                     my $a2 = $2;
                                     my $flip_a1 = flip($a1);
                                     my $flip_a2 = flip($a2);
-                                    if ($F[3] eq $a1 || $F[3] eq $a2 || $F[3] eq flip($a1) || $F[3] eq flip($a2)) {
-                                        $F[4] = ($F[3] eq $a1) ? $a2 : (($F[3] eq $a2) ? $a1 : (($F[3] eq $flip_a1) ? $flip_a2 : $flip_a1));
-                                        $F[7] = "END=".$i;
+                                    if ($F[3] eq $a1 || $F[3] eq $a2 || $F[3] eq $flip_a1 || $F[3] eq $flip_a2) {
+                                        if ($F[3] eq $a1 || $F[3] eq $a2) {
+                                            $F[4] = ($F[3] eq $a1) ? $a2 : $a1;
+                                        } else {
+                                            $F[4] = ($F[3] eq $flip_a1) ? $flip_a2 : $flip_a1;
+                                            print OUT_FLIP $variants{$F[0]}{$i}."\n";
+                                        }
+                                        $F[2] = $variants{$F[0]}{$i};
+                                        $F[7] = "";
+                                        $F[8] =~ s/:.+//;
+                                        $F[9] =~ s/:.+//;
                                         print OUT_VCF join("\t", $F[0], $i, $variants{$F[0]}{$i}, @F[3..(@F-1)])."\n";
                                         print OUT_VARIANTS $variants{$F[0]}{$i}."\n";
                                     }
@@ -136,6 +145,13 @@ while(<GVCF>){
                                     my $flip_a1 = flip($a1);
                                     my $flip_a2 = flip($a2);
                                     if (($F[3] eq $a1 && $F[4] eq $a2) || ($F[3] eq $a2 && $F[4] eq $a1) || ($F[3] eq $flip_a1 && $F[4] eq $flip_a2) || ($F[3] eq $flip_a2 && $F[4] eq $flip_a1)) {
+                                        if (($F[3] eq $flip_a1 && $F[4] eq $flip_a2) || ($F[3] eq $flip_a2 && $F[4] eq $flip_a1)) {
+                                            print OUT_FLIP $variants{$F[0]}{$F[1]}."\n";
+                                        }
+                                        $F[2] = $variants{$F[0]}{$F[1]};
+                                        $F[7] = "";
+                                        $F[8] =~ s/:.+//;
+                                        $F[9] =~ s/:.+//;
                                         print OUT_VCF join("\t", $F[0], $F[1], $variants{$F[0]}{$F[1]}, @F[3..(@F-1)])."\n";
                                         print OUT_VARIANTS $variants{$F[0]}{$F[1]}."\n";
                                     }
@@ -151,3 +167,4 @@ while(<GVCF>){
 close GVCF;
 close OUT_VCF;
 close OUT_VARIANTS;
+close OUT_FLIP;

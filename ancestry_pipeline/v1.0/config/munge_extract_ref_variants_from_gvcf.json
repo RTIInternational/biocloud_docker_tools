@@ -67,6 +67,7 @@
                     "step": "convert_dataset_to_bfile",
                     "inputs": {
                         "file_in_vcf": "<steps.get_ref_variants_from_dataset_gvcf.outputs.sample_vcf>",
+                        "file_in_flip": "<steps.get_ref_variants_from_dataset_gvcf.outputs.flip_list>",
                         "file_out_prefix": "<inputs.output_dir>convert_dataset_to_bfile/<inputs.sample_id>"
                     }
                 },

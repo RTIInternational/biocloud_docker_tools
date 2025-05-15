@@ -141,6 +141,10 @@
                 "type": "file",
                 "value": "<inputs.file_out_prefix>_variants.txt"
             },
+            "flip_list": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_flip.txt"
+            },
             "log": {
                 "type": "file",
                 "value": "get_ref_variants_from_dataset_gvcf.log"
@@ -152,15 +156,20 @@
             "file_in_vcf": {
                 "type": "file"
             },
+            "file_in_flip": {
+                "type": "file"
+            },
             "file_out_prefix": {
                 "type": "str",
                 "default": "dataset"
             }
         },
         "cmd": [
-            "plink2",
+            "plink1.9",
             "--vcf",
             "<inputs.file_in_vcf>",
+            "--flip",
+            "<inputs.file_in_flip>",
             "--out",
             "<inputs.file_out_prefix>",
             "--make-bed"
@@ -248,10 +257,7 @@
             "file_in_ref_bim": {
                 "type": "file"
             },
-            "file_out_dataset_bim": {
-                "type": "str"
-            },
-            "file_out_extract_list": {
+            "file_out_prefix": {
                 "type": "str"
             }
         },
@@ -262,9 +268,11 @@
             "--file_in_ref_bim",
             "<inputs.file_in_ref_bim>",
             "--file_out_dataset_bim",
-            "<inputs.file_out_dataset_bim>",
+            "<inputs.file_out_prefix>.bim",
             "--file_out_extract_list",
-            "<inputs.file_out_extract_list>"
+            "<inputs.file_out_prefix>_extract.txt",
+            "--file_out_flip_list",
+            "<inputs.file_out_prefix>_flip.txt"
         ],
         "outputs": {
             "bim": {
@@ -273,7 +281,11 @@
             },
             "extract_list": {
                 "type": "file",
-                "value": "<inputs.file_out_extract_list>"
+                "value": "<inputs.file_out_prefix>_extract.txt"
+            },
+            "flip_list": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_flip.txt"
             },
             "log": {
                 "type": "file",
@@ -295,13 +307,16 @@
             "file_in_extract_list": {
                 "type": "file"
             },
+            "file_in_flip_list": {
+                "type": "file"
+            },
             "file_out_prefix": {
                 "type": "str",
                 "default": "dataset"
             }
         },
         "cmd": [
-            "plink2",
+            "plink1.9",
             "--bed",
             "<inputs.file_in_bed>",
             "--bim",
@@ -310,6 +325,8 @@
             "<inputs.file_in_fam>",
             "--out",
             "<inputs.file_out_prefix>",
+            "--flip",
+            "<inputs.file_in_flip_list>",
             "--extract",
             "<inputs.file_in_extract_list>",
             "--make-bed"

@@ -88,8 +88,7 @@
                     "inputs": {
                         "file_in_dataset_bim": "<inputs.dataset_bim>",
                         "file_in_ref_bim": "<inputs.ref_prefix>.bim",
-                        "file_out_dataset_bim": "<inputs.output_dir>assign_ids_to_dataset_bim/dataset.bim",
-                        "file_out_extract_list": "<inputs.output_dir>assign_ids_to_dataset_bim/extract_list.txt"
+                        "file_out_prefix": "<inputs.output_dir>assign_ids_to_dataset_bim/dataset"
                     }
                 },
                 "returncode_1": { 
@@ -107,6 +106,7 @@
                         "file_in_bim": "<steps.assign_ids_to_dataset_bim.outputs.bim>",
                         "file_in_fam": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
                         "file_in_extract_list": "<steps.assign_ids_to_dataset_bim.outputs.extract_list>",
+                        "file_in_flip_list": "<steps.assign_ids_to_dataset_bim.outputs.flip_list>",
                         "file_out_prefix": "<inputs.output_dir>get_variants_from_dataset_bfile/dataset"
                     }
                 },
