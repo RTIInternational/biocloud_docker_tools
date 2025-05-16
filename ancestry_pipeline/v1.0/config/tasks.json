@@ -268,7 +268,7 @@
         "outputs": {
             "bim": {
                 "type": "file",
-                "value": "<inputs.file_out_dataset_bim>"
+                "value": "<inputs.file_out_prefix>.bim"
             },
             "extract_list": {
                 "type": "file",

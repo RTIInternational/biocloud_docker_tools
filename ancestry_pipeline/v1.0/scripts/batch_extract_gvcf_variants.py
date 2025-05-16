@@ -184,4 +184,4 @@ for file, path in files_to_process.items():
 
         # Write sample plink output prefix to merge list
         with open(file_plink_merge_list, 'a') as f:
-            f.write("{}{}/{}\n".format(sample_output_dir, "convert_dataset_to_bfile", sample_id))
+            f.write("{}{}/{}\n".format(sample_output_dir, "convert_dataset_vcf_to_bfile", sample_id))
