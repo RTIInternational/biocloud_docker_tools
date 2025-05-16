@@ -65,7 +65,7 @@
             }
         },
         "get_variants_from_dataset_bfile": {
-            "task": "get_variants_from_bfile_and_flip",
+            "task": "get_variants_from_bfile",
             "check_output": {
                 "returncode_0": {
                     "step": "exit"

@@ -64,11 +64,10 @@
             "task": "get_ref_variants_from_dataset_gvcf",
             "check_output": {
                 "returncode_0": {
-                    "step": "convert_dataset_to_bfile",
+                    "step": "convert_dataset_vcf_to_bfile",
                     "inputs": {
                         "file_in_vcf": "<steps.get_ref_variants_from_dataset_gvcf.outputs.sample_vcf>",
-                        "file_in_flip": "<steps.get_ref_variants_from_dataset_gvcf.outputs.flip_list>",
-                        "file_out_prefix": "<inputs.output_dir>convert_dataset_to_bfile/<inputs.sample_id>"
+                        "file_out_prefix": "<inputs.output_dir>convert_dataset_vcf_to_bfile/<inputs.sample_id>"
                     }
                 },
                 "returncode_1": { 
@@ -76,8 +75,8 @@
                 }
             }
         },
-        "convert_dataset_to_bfile": {
-            "task": "convert_dataset_to_bfile",
+        "convert_dataset_vcf_to_bfile": {
+            "task": "convert_vcf_to_bfile",
             "check_output": {
                 "returncode_0": {
                     "step": "exit"

@@ -141,22 +141,15 @@
                 "type": "file",
                 "value": "<inputs.file_out_prefix>_variants.txt"
             },
-            "flip_list": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>_flip.txt"
-            },
             "log": {
                 "type": "file",
                 "value": "get_ref_variants_from_dataset_gvcf.log"
             }
         }
     },
-    "convert_dataset_to_bfile": {
+    "convert_vcf_to_bfile": {
         "inputs": {
             "file_in_vcf": {
-                "type": "file"
-            },
-            "file_in_flip": {
                 "type": "file"
             },
             "file_out_prefix": {
@@ -168,8 +161,6 @@
             "plink1.9",
             "--vcf",
             "<inputs.file_in_vcf>",
-            "--flip",
-            "<inputs.file_in_flip>",
             "--out",
             "<inputs.file_out_prefix>",
             "--make-bed"
@@ -193,7 +184,7 @@
             },
             "log": {
                 "type": "file",
-                "value": "convert_dataset_to_bfile.log"
+                "value": "convert_vcf_to_bfile.log"
             }
         }
     },

@@ -64,7 +64,7 @@
                         "file_out_ref_samples": "<inputs.output_dir>get_ref_samples/ref_samples.tsv"
                     }
                 },
-                "returncode_1": { 
+                "returncode_1": {
                     "step": "error"
                 }
             }
