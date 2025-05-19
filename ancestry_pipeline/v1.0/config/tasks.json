@@ -258,12 +258,8 @@
             "<inputs.file_in_dataset_bim>",
             "--file_in_ref_bim",
             "<inputs.file_in_ref_bim>",
-            "--file_out_dataset_bim",
-            "<inputs.file_out_prefix>.bim",
-            "--file_out_extract_list",
-            "<inputs.file_out_prefix>_extract.txt",
-            "--file_out_flip_list",
-            "<inputs.file_out_prefix>_flip.txt"
+            "--file_out_prefix",
+            "<inputs.file_out_prefix>"
         ],
         "outputs": {
             "bim": {
