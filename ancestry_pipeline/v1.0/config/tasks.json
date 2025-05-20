@@ -1,5 +1,5 @@
 {
-    "batch_extract_gvcf_variants": {
+    "process_gvcf_batch": {
         "inputs": {
             "output_dir": {
                 "type": "dir"
@@ -41,11 +41,31 @@
             "het_gq_threshold": {
                 "type": "int",
                 "default": 48
+            },
+            "ancestry_pop_type": {
+                "type": "str",
+                "default": "SUPERPOP"
+            },
+            "ancestries_to_include": {
+                "type": "str",
+                "default": "AFR,AMR,EAS,EUR,SAS"
+            },
+            "std_dev_cutoff": {
+                "type": "int",
+                "default": 3
+            },
+            "workflow_template": {
+                "type": "str",
+                "default": "ancestry"
+            },
+            "entrypoint": {
+                "type": "str",
+                "default": "ancestry_from_gvcf"
             }
         },
         "cmd": [
             "python3",
-            "/pipeline/scripts/batch_extract_gvcf_variants.py",
+            "/pipeline/scripts/process_gvcf_batch.py",
             "--output_dir",
             "<inputs.output_dir>",
             "--gvcf_dir",
@@ -67,7 +87,17 @@
             "--hom_gq_threshold",
             "<inputs.hom_gq_threshold>",
             "--het_gq_threshold",
-            "<inputs.het_gq_threshold>"
+            "<inputs.het_gq_threshold>",
+            "--ancestry_pop_type",
+            "<inputs.ancestry_pop_type>",
+            "--ancestries_to_include",
+            "<inputs.ancestries_to_include>",
+            "--std_dev_cutoff",
+            "<inputs.std_dev_cutoff>",
+            "--workflow_template",
+            "<inputs.workflow_template>",
+            "--entrypoint",
+            "<inputs.entrypoint>"
         ],
         "outputs": {
             "plink_merge_list": {
@@ -76,7 +106,7 @@
             },
             "log": {
                 "type": "file",
-                "value": "<inputs.output_dir>batch_extract_gvcf_variants.log"
+                "value": "<inputs.output_dir>process_gvcf_batch.log"
             }
         }
     },
@@ -845,40 +875,6 @@
             "raw_ancestry_assignment": {
                 "type": "file",
                 "value": "<inputs.dataset_name>_raw_ancestry_assignments.tsv"
-            }
-        }
-    },
-    "get_ancestry_assignment": {
-        "inputs": {
-            "file_in_raw_ancestry_assignment": {
-                "type": "file"
-            },
-            "std_dev_cutoff": {
-                "type": "int",
-                "default": 3
-            },
-            "file_out_ancestry_assignment": {
-                "type": "str",
-                "default": "ancestry_assignment.txt"
-            }
-        },
-        "cmd": [
-            "/pipeline/scripts/get_ancestry_assignment.pl",
-            "--file_in_raw_ancestry_assignment",
-            "<inputs.file_in_raw_ancestry_assignment>",
-            "--std_dev_cutoff",
-            "<inputs.std_dev_cutoff>",
-            "--file_out_ancestry_assignment",
-            "<inputs.file_out_ancestry_assignment>"
-        ],
-        "outputs": {
-            "ancestry_assignmment": {
-                "type": "file",
-                "value": "<inputs.file_out_ancestry_assignment>"
-            },
-            "log": {
-                "type": "file",
-                "value": "get_ancestry_assignment.log"
             }
         }
     }

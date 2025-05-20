@@ -290,17 +290,6 @@
                     "step": "error"
                 }
             }
-        },
-        "get_ancestry_assignment": {
-            "task": "get_ancestry_assignment",
-            "check_output": {
-                "returncode_0": {
-                    "step": "exit"
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
         }
     }
 }

@@ -75,6 +75,24 @@ parser.add_argument(
     type = int
 )
 parser.add_argument(
+    '--ancestry_pop_type',
+    help = '1000 Genomes population type',
+    default = 'SUPERPOP',
+    choices = ['SUPERPOP', 'POP']
+)
+parser.add_argument(
+    '--ancestries_to_include',
+    help = '1000 Genomes ancestries to include',
+    default = 'AFR,AMR,EAS,EUR,SAS',
+    type = str
+)
+parser.add_argument(
+    '--std_dev_cutoff',
+    help = 'Standard deviation cutoff for ancestry',
+    default = 3,
+    type = int
+)
+parser.add_argument(
     '--workflow_template',
     help = 'Workflow template to use',
     default = 'ancestry',
@@ -84,6 +102,7 @@ parser.add_argument(
     '--entrypoint',
     help = 'Entrypoint to use',
     default = 'munge-extract-ref-variants-from-gvcf',
+    choices = ['munge-extract-ref-variants-from-gvcf', 'ancestry-from-gvcf'],
     type = str
 )
 args = parser.parse_args()
@@ -147,6 +166,10 @@ for file, path in files_to_process.items():
             "hom_gq_threshold": args.hom_gq_threshold,
             "het_gq_threshold": args.het_gq_threshold
         }
+        if args.entrypoint == 'ancestry-from-gvcf':
+            wf_arguments["ancestry_pop_type"] = args.ancestry_pop_type
+            wf_arguments["ancestries_to_include"] = args.ancestries_to_include
+            wf_arguments["std_dev_cutoff"] = args.std_dev_cutoff
         file_wf_arguments = output_dir + sample_id + '.json'
         with open(file_wf_arguments, 'w', encoding='utf-8') as f:
             json.dump(wf_arguments, f)

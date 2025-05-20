@@ -6,7 +6,7 @@
             "default": "",
             "required": true
         },
-        "dataset_name": {
+        "sample_id": {
             "type": "str",
             "default": "",
             "required": true
@@ -79,10 +79,10 @@
             "task": "get_ref_variants_from_dataset_gvcf",
             "check_output": {
                 "returncode_0": {
-                    "step": "convert_dataset_to_bfile",
+                    "step": "convert_dataset_vcf_to_bfile",
                     "inputs": {
                         "file_in_vcf": "<steps.get_ref_variants_from_dataset_gvcf.outputs.sample_vcf>",
-                        "file_out_prefix": "<inputs.output_dir>convert_dataset_to_bfile/dataset"
+                        "file_out_prefix": "<inputs.output_dir>convert_dataset_vcf_to_bfile/dataset"
                     }
                 },
                 "returncode_1": { 
@@ -90,8 +90,8 @@
                 }
             }
         },
-        "convert_dataset_to_bfile": {
-            "task": "convert_dataset_to_bfile",
+        "convert_dataset_vcf_to_bfile": {
+            "task": "convert_vcf_to_bfile",
             "check_output": {
                 "returncode_0": {
                     "step": "get_ref_samples",
@@ -114,7 +114,7 @@
                 "returncode_0": {
                     "step": "add_pop_ids_to_fam_files",
                     "inputs": {
-                        "file_in_dataset_fam": "<steps.convert_dataset_to_bfile.outputs.fam>",
+                        "file_in_dataset_fam": "<steps.convert_dataset_vcf_to_bfile.outputs.fam>",
                         "file_in_ref_fam": "<inputs.ref_prefix>.fam",
                         "file_in_ref_samples": "<steps.get_ref_samples.outputs.ref_samples>",
                         "file_out_dataset_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/dataset.fam",
@@ -154,8 +154,8 @@
                         "bed_1": "<steps.get_ref_genotypes.outputs.bed>",
                         "bim_1": "<steps.get_ref_genotypes.outputs.bim>",
                         "fam_1": "<steps.get_ref_genotypes.outputs.fam>",
-                        "bed_2": "<steps.convert_dataset_to_bfile.outputs.bed>",
-                        "bim_2": "<steps.convert_dataset_to_bfile.outputs.bim>",
+                        "bed_2": "<steps.convert_dataset_vcf_to_bfile.outputs.bed>",
+                        "bim_2": "<steps.convert_dataset_vcf_to_bfile.outputs.bim>",
                         "fam_2": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
                         "file_out_prefix": "<inputs.output_dir>get_merge_conflicts/dataset_ref"
                     }
@@ -175,7 +175,7 @@
                         "file_in_bim": "<steps.get_merge_conflicts.outputs.bim>",
                         "file_in_fam": "<steps.get_merge_conflicts.outputs.fam>",
                         "file_in_pop_id_xref": "<steps.get_ref_samples.outputs.ancestry_id_xref>",
-                        "dataset_name": "<inputs.dataset_name>",
+                        "dataset_name": "<inputs.sample_id>",
                         "ref_pops": "<inputs.ancestries_to_include>",
                         "file_out_prefix": "<inputs.output_dir>prepare_smartpca_input/dataset_ref_smartpca",
                         "smartpca_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca"
@@ -202,8 +202,8 @@
                         "bed_1": "<steps.flip_ref.outputs.bed>",
                         "bim_1": "<steps.flip_ref.outputs.bim>",
                         "fam_1": "<steps.flip_ref.outputs.fam>",
-                        "bed_2": "<steps.convert_dataset_to_bfile.outputs.bed>",
-                        "bim_2": "<steps.convert_dataset_to_bfile.outputs.bim>",
+                        "bed_2": "<steps.convert_dataset_vcf_to_bfile.outputs.bed>",
+                        "bim_2": "<steps.convert_dataset_vcf_to_bfile.outputs.bim>",
                         "fam_2": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
                         "file_out_prefix": "<inputs.output_dir>merge_dataset_ref/dataset_ref"
                     }
@@ -223,7 +223,7 @@
                         "file_in_bim": "<steps.merge_dataset_ref.outputs.bim>",
                         "file_in_fam": "<steps.merge_dataset_ref.outputs.fam>",
                         "file_in_pop_id_xref": "<steps.get_ref_samples.outputs.ancestry_id_xref>",
-                        "dataset_name": "<inputs.dataset_name>",
+                        "dataset_name": "<inputs.sample_id>",
                         "ref_pops": "<inputs.ancestries_to_include>",
                         "file_out_prefix": "<inputs.output_dir>prepare_smartpca_input/dataset_ref_smartpca",
                         "smartpca_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca"
@@ -276,7 +276,7 @@
                     "inputs": {
                         "file_in_evec": "<steps.process_smartpca_results.outputs.evec>",
                         "ref_ancestries": "<inputs.ancestries_to_include>",
-                        "dataset_name": "<inputs.dataset_name>",
+                        "dataset_name": "<inputs.sample_id>",
                         "std_dev_cutoff": "<inputs.std_dev_cutoff>",
                         "out_dir": "<inputs.output_dir>assign_ancestry_mahalanobis/"
                     }
@@ -296,17 +296,6 @@
                         "std_dev_cutoff": "<inputs.std_dev_cutoff>",
                         "file_out_ancestry_assignment": "<inputs.output_dir>ancestry_assignment.txt"
                     }
-                },
-                "returncode_1": { 
-                    "step": "error"
-                }
-            }
-        },
-        "get_ancestry_assignment": {
-            "task": "get_ancestry_assignment",
-            "check_output": {
-                "returncode_0": {
-                    "step": "exit"
                 },
                 "returncode_1": { 
                     "step": "error"

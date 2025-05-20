@@ -1,5 +1,5 @@
 {
-    "name": "munge_extract_ref_variants_from_gvcfs",
+    "name": "ancestry_from_gvcfs",
     "inputs": {
         "output_dir": {
             "type": "dir",
@@ -55,6 +55,21 @@
             "type": "int",
             "default": 48,
             "required": false
+        },
+        "ancestry_pop_type": {
+            "type": "str",
+            "default": "SUPERPOP",
+            "required": false
+        },
+        "ancestries_to_include": {
+            "type": "str",
+            "default": "AFR,AMR,EAS,EUR,SAS",
+            "required": false
+        },
+        "std_dev_cutoff": {
+            "type": "int",
+            "default": 3,
+            "required": false
         }
     },
     "outputs": {
@@ -76,8 +91,11 @@
         "filter_by_gq": "<inputs.filter_by_gq>",
         "hom_gq_threshold": "<inputs.hom_gq_threshold>",
         "het_gq_threshold": "<inputs.het_gq_threshold>",
+        "ancestry_pop_type": "<inputs.ancestry_pop_type>",
+        "ancestries_to_include": "<inputs.ancestries_to_include>",
+        "std_dev_cutoff": "<inputs.std_dev_cutoff>",
         "workflow_template": "ancestry",
-        "entrypoint": "munge-extract-ref-variants-from-gvcfs"
+        "entrypoint": "ancestry-from-gvcf"
     },
     "pipeline": {
         "process_gvcf_batch": {
