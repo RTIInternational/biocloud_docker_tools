@@ -1,5 +1,0 @@
-__BED__	s3://rti-common/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bed
-__BIM__	s3://rti-common/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.bim
-__FAM__	s3://rti-common/ancestry/smartpca_mahal_pipeline/all_phase3_unique_grch37_dbsnp_b153_ld_pruned.fam
-__PSAM__	s3://rti-common/ancestry/smartpca_mahal_pipeline/phase3_orig.psam
-__VARIANT_LIST__	s3://rti-common/ancestry/smartpca_mahal_pipeline/1000g_variants.tsv

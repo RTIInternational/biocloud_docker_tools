@@ -1,0 +1,41 @@
+{
+    "name": "munge_merge_bfiles",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "bfile_merge_list": {
+            "type": "file",
+            "default": "",
+            "required": true
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>munge_merge_bfiles.log"
+        }
+    },
+    "entry_point": "merge_bfiles",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>merge_bfiles",
+        "bfile_merge_list": "<inputs.bfile_merge_list>",
+        "out_prefix": "<inputs.output_dir>merge_bfiles/merged_samples",
+        "geno": "0"
+    },
+    "pipeline": {
+        "merge_bfiles": {
+            "task": "merge_bfiles",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

@@ -70,14 +70,7 @@ ADD pipeline_config/* /pipeline/config/
 # Add scripts
 ADD scripts/* /opt/
 # Change permissions
-RUN chmod 755 /opt/batch_extract_gvcf_variants.py
-RUN chmod 755 /opt/download_gvcfs_from_revvity_sftp.py
-RUN chmod 755 /opt/entrypoint.sh
-RUN chmod 755 /opt/extract_gvcf_variants.pl
-RUN chmod 755 /opt/generate_file_for_export.pl
-RUN chmod 755 /opt/merge_file_rows.sh
-RUN chmod 755 /opt/run_pipeline.py
-RUN chmod 755 /opt/sftp_results.py
+RUN chmod -R 755 /opt/
 
 WORKDIR /data
 RUN chown -R docker:staff /data

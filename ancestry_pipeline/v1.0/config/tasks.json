@@ -1,31 +1,166 @@
 {
-    "get_dataset_variants": {
+    "process_gvcf_batch": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "gvcf_dir": {
+                "type": "dir"
+            },
+            "ref_prefix": {
+                "type": "str"
+            },
+            "sequencing_provider": {
+                "type": "str",
+                "default": "revvity"
+            },
+            "argo_api_url": {
+                "type": "str",
+                "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1"
+            },
+            "simultaneous_jobs": {
+                "type": "int",
+                "default": 50
+            },
+            "include_monomorphic_positions": {
+                "type": "int",
+                "default": 0
+            },
+            "filter_by_qual": {
+                "type": "int",
+                "default": 0
+            },
+            "filter_by_gq": {
+                "type": "int",
+                "default": 0
+            },
+            "hom_gq_threshold": {
+                "type": "int",
+                "default": 99
+            },
+            "het_gq_threshold": {
+                "type": "int",
+                "default": 48
+            },
+            "ancestry_pop_type": {
+                "type": "str",
+                "default": "SUPERPOP"
+            },
+            "ancestries_to_include": {
+                "type": "str",
+                "default": "AFR,AMR,EAS,EUR,SAS"
+            },
+            "std_dev_cutoff": {
+                "type": "int",
+                "default": 3
+            },
+            "workflow_template": {
+                "type": "str",
+                "default": "ancestry"
+            },
+            "entrypoint": {
+                "type": "str",
+                "default": "ancestry_from_gvcf"
+            }
+        },
+        "cmd": [
+            "python3",
+            "/pipeline/scripts/process_gvcf_batch.py",
+            "--output_dir",
+            "<inputs.output_dir>",
+            "--gvcf_dir",
+            "<inputs.gvcf_dir>",
+            "--ref_prefix",
+            "<inputs.ref_prefix>",
+            "--sequencing_provider",
+            "<inputs.sequencing_provider>",
+            "--argo_api_url",
+            "<inputs.argo_api_url>",
+            "--simultaneous_jobs",
+            "<inputs.simultaneous_jobs>",
+            "--include_monomorphic_positions",
+            "<inputs.include_monomorphic_positions>",
+            "--filter_by_qual",
+            "<inputs.filter_by_qual>",
+            "--filter_by_gq",
+            "<inputs.filter_by_gq>",
+            "--hom_gq_threshold",
+            "<inputs.hom_gq_threshold>",
+            "--het_gq_threshold",
+            "<inputs.het_gq_threshold>",
+            "--ancestry_pop_type",
+            "<inputs.ancestry_pop_type>",
+            "--ancestries_to_include",
+            "<inputs.ancestries_to_include>",
+            "--std_dev_cutoff",
+            "<inputs.std_dev_cutoff>",
+            "--workflow_template",
+            "<inputs.workflow_template>",
+            "--entrypoint",
+            "<inputs.entrypoint>"
+        ],
+        "outputs": {
+            "plink_merge_list": {
+                "type": "file",
+                "value": "<inputs.output_dir>plink_merge_list.txt"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>process_gvcf_batch.log"
+            }
+        }
+    },
+    "get_ref_variants_from_dataset_gvcf": {
         "inputs": {
             "file_in_gvcf": {
                 "type": "file"
             },
-            "file_in_pos_list": {
+            "file_in_ref_bim": {
                 "type": "file"
             },
             "file_out_prefix": {
                 "type": "str",
                 "default": "dataset"
             },
-            "monomorphic_positions": {
-                "type": "str",
+            "include_monomorphic_positions": {
+                "type": "o",
                 "default": "include"
+            },
+            "filter_by_qual": {
+                "type": "int",
+                "default": 0
+            },
+            "filter_by_gq": {
+                "type": "int",
+                "default": 0
+            },
+            "hom_gq_threshold": {
+                "type": "int",
+                "default": 99
+            },
+            "het_gq_threshold": {
+                "type": "int",
+                "default": 48
             }
         },
         "cmd": [
-            "/opt/get_dataset_variants.pl",
+            "/pipeline/scripts/get_ref_variants_from_dataset_gvcf.pl",
             "--file_in_gvcf",
             "<inputs.file_in_gvcf>",
-            "--file_in_pos_list",
-            "<inputs.file_in_pos_list>",
+            "--file_in_ref_bim",
+            "<inputs.file_in_ref_bim>",
             "--file_out_prefix",
             "<inputs.file_out_prefix>",
-            "--monomorphic_positions",
-            "<inputs.monomorphic_positions>"
+            "--include_monomorphic_positions",
+            "<inputs.include_monomorphic_positions>",
+            "--filter_by_qual",
+            "<inputs.filter_by_qual>",
+            "--filter_by_gq",
+            "<inputs.filter_by_gq>",
+            "--hom_gq_threshold",
+            "<inputs.hom_gq_threshold>",
+            "--het_gq_threshold",
+            "<inputs.het_gq_threshold>"
         ],
         "outputs": {
             "sample_vcf": {
@@ -38,11 +173,11 @@
             },
             "log": {
                 "type": "file",
-                "value": "get_dataset_variants.log"
+                "value": "get_ref_variants_from_dataset_gvcf.log"
             }
         }
     },
-    "convert_dataset_to_bfile": {
+    "convert_vcf_to_bfile": {
         "inputs": {
             "file_in_vcf": {
                 "type": "file"
@@ -50,21 +185,15 @@
             "file_out_prefix": {
                 "type": "str",
                 "default": "dataset"
-            },
-            "threads": {
-                "type": "int",
-                "default": 1
             }
         },
         "cmd": [
-            "plink2",
+            "plink1.9",
             "--vcf",
             "<inputs.file_in_vcf>",
             "--out",
             "<inputs.file_out_prefix>",
-            "--make-bed",
-            "--threads",
-            "<inputs.threads>"
+            "--make-bed"
         ],
         "outputs": {
             "bed": {
@@ -85,7 +214,221 @@
             },
             "log": {
                 "type": "file",
-                "value": "convert_dataset_to_bfile.log"
+                "value": "convert_vcf_to_bfile.log"
+            }
+        }
+    },
+    "merge_bfiles": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "bfile_merge_list": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            },
+            "geno": {
+                "type": "float"
+            }
+        },
+        "cmd": [
+            "plink1.9",
+            "--merge-list",
+            "<inputs.bfile_merge_list>",
+            "--geno",
+            "0",
+            "--out",
+            "<inputs.out_prefix>",
+            "--make-bed"
+        ],
+        "outputs": {
+            "bfile": {
+                "type": "str",
+                "value": "<inputs.out_prefix>"
+            },
+            "bed": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>merge_bfile_with_reference.log"
+            }
+        }
+    },
+    "assign_ids_to_dataset_bim": {
+        "inputs": {
+            "file_in_dataset_bim": {
+                "type": "file"
+            },
+            "file_in_ref_bim": {
+                "type": "file"
+            },
+            "file_out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "/pipeline/scripts/assign_ids_to_dataset_bim.pl",
+            "--file_in_dataset_bim",
+            "<inputs.file_in_dataset_bim>",
+            "--file_in_ref_bim",
+            "<inputs.file_in_ref_bim>",
+            "--file_out_prefix",
+            "<inputs.file_out_prefix>"
+        ],
+        "outputs": {
+            "bim": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bim"
+            },
+            "extract_list": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_extract.txt"
+            },
+            "flip_list": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>_flip.txt"
+            },
+            "log": {
+                "type": "file",
+                "value": "assign_ids_to_dataset_bim.log"
+            }
+        }
+    },
+    "get_variants_from_bfile": {
+        "inputs": {
+            "file_in_bed": {
+                "type": "file"
+            },
+            "file_in_bim": {
+                "type": "file"
+            },
+            "file_in_fam": {
+                "type": "file"
+            },
+            "file_in_extract_list": {
+                "type": "file"
+            },
+            "file_in_flip_list": {
+                "type": "file"
+            },
+            "file_out_prefix": {
+                "type": "str",
+                "default": "dataset"
+            }
+        },
+        "cmd": [
+            "plink1.9",
+            "--bed",
+            "<inputs.file_in_bed>",
+            "--bim",
+            "<inputs.file_in_bim>",
+            "--fam",
+            "<inputs.file_in_fam>",
+            "--out",
+            "<inputs.file_out_prefix>",
+            "--flip",
+            "<inputs.file_in_flip_list>",
+            "--extract",
+            "<inputs.file_in_extract_list>",
+            "--make-bed"
+        ],
+        "outputs": {
+            "bed": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "get_ref_variants_from_dataset_bim.log"
+            }
+        }
+    },
+    "get_variants_and_samples_from_bfile": {
+        "inputs": {
+            "bed": {
+                "type": "file"
+            },
+            "bim": {
+                "type": "file"
+            },
+            "fam": {
+                "type": "file"
+            },
+            "keep": {
+                "type": "file"
+            },
+            "extract": {
+                "type": "file"
+            },
+            "file_out_prefix": {
+                "type": "str",
+                "default": "ref"
+            }
+        },
+        "cmd": [
+            "plink1.9",
+            "--bed",
+            "<inputs.bed>",
+            "--bim",
+            "<inputs.bim>",
+            "--fam",
+            "<inputs.fam>",
+            "--keep",
+            "<inputs.keep>",
+            "--extract",
+            "<inputs.extract>",
+            "--make-bed",
+            "--out",
+            "<inputs.file_out_prefix>"
+        ],
+        "outputs": {
+            "bed": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.file_out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "get_variants_and_samples_from_bfile.log"
             }
         }
     },
@@ -112,7 +455,7 @@
             }
         },
         "cmd": [
-            "/opt/get_ref_samples.pl",
+            "/pipeline/scripts/get_ref_samples.pl",
             "--file_in_psam",
             "<inputs.file_in_psam>",
             "--pop_type",
@@ -158,7 +501,7 @@
             }
         },
         "cmd": [
-            "/opt/add_pop_ids_to_fam_files.pl",
+            "/pipeline/scripts/add_pop_ids_to_fam_files.pl",
             "--file_in_dataset_fam",
             "<inputs.file_in_dataset_fam>",
             "--file_in_ref_fam",
@@ -185,73 +528,6 @@
             }
         }
     },
-    "get_ref_genotypes": {
-        "inputs": {
-            "bed": {
-                "type": "file"
-            },
-            "bim": {
-                "type": "file"
-            },
-            "fam": {
-                "type": "file"
-            },
-            "keep": {
-                "type": "file"
-            },
-            "extract": {
-                "type": "file"
-            },
-            "file_out_prefix": {
-                "type": "str",
-                "default": "ref"
-            },
-            "threads": {
-                "type": "int",
-                "default": 1
-            }
-        },
-        "cmd": [
-            "plink1.9",
-            "--bed",
-            "<inputs.bed>",
-            "--bim",
-            "<inputs.bim>",
-            "--fam",
-            "<inputs.fam>",
-            "--keep",
-            "<inputs.keep>",
-            "--extract",
-            "<inputs.extract>",
-            "--make-bed",
-            "--out",
-            "<inputs.file_out_prefix>",
-            "--threads",
-            "<inputs.threads>"
-        ],
-        "outputs": {
-            "bed": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.bed"
-            },
-            "bim": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.bim"
-            },
-            "fam": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.fam"
-            },
-            "plink_log": {
-                "type": "file",
-                "value": "<inputs.file_out_prefix>.log"
-            },
-            "log": {
-                "type": "file",
-                "value": "get_ref_genotypes.log"
-            }
-        }
-    },
     "merge_genotypes": {
         "inputs": {
             "bed_1": {
@@ -275,10 +551,6 @@
             "file_out_prefix": {
                 "type": "str",
                 "default": "merged"
-            },
-            "threads": {
-                "type": "int",
-                "default": 1
             }
         },
         "cmd": [
@@ -296,9 +568,7 @@
             "--make-bed",
             "--allow-no-sex",
             "--out",
-            "<inputs.file_out_prefix>",
-            "--threads",
-            "<inputs.threads>"
+            "<inputs.file_out_prefix>"
         ],
         "outputs": {
             "bed": {
@@ -343,10 +613,6 @@
             },
             "file_out_prefix": {
                 "type": "str"
-            },
-            "threads": {
-                "type": "int",
-                "default": 1
             }
         },
         "cmd": [
@@ -361,9 +627,7 @@
             "<inputs.flip>",
             "--make-bed",
             "--out",
-            "<inputs.file_out_prefix>",
-            "--threads",
-            "<inputs.threads>"
+            "<inputs.file_out_prefix>"
         ],
         "outputs": {
             "bed": {
@@ -416,14 +680,10 @@
             "smartpca_out_prefix": {
                 "type": "str",
                 "default": "smartpca"
-            },
-            "threads": {
-                "type": "int",
-                "default": 1
             }
         },
         "cmd": [
-            "/opt/prepare_smartpca_input.pl",
+            "/pipeline/scripts/prepare_smartpca_input.pl",
             "--file_in_bed",
             "<inputs.file_in_bed>",
             "--file_in_bim",
@@ -439,9 +699,7 @@
             "--file_out_prefix",
             "<inputs.file_out_prefix>",
             "--smartpca_out_prefix",
-            "<inputs.smartpca_out_prefix>",
-            "--threads",
-            "<inputs.threads>"
+            "<inputs.smartpca_out_prefix>"
         ],
         "outputs": {
             "bim": {
@@ -531,7 +789,7 @@
             }
         },
         "cmd": [
-            "/opt/process_smartpca_results.pl",
+            "/pipeline/scripts/process_smartpca_results.pl",
             "--file_in_evec",
             "<inputs.file_in_evec>",
             "--file_in_eval",
@@ -570,23 +828,23 @@
                 "type": "file"
             },
             "ref_ancestries": {
-                "type": "file",
+                "type": "str",
                 "default": "AFR,AMR,EAS,EUR,SAS"
             },
             "dataset_name": {
-                "type": "file"
+                "type": "str"
             },
             "std_dev_cutoff": {
                 "type": "int",
                 "default": 3
             },
             "out_dir": {
-                "type": "str"
+                "type": "dir"
             }
         },
         "cmd": [
             "Rscript",
-            "/opt/assign_ancestry_mahalanobis.R",
+            "/pipeline/scripts/assign_ancestry_mahalanobis.R",
             "--file-pcs",
             "<inputs.file_in_evec>",
             "--pc-count",
@@ -617,40 +875,6 @@
             "raw_ancestry_assignment": {
                 "type": "file",
                 "value": "<inputs.dataset_name>_raw_ancestry_assignments.tsv"
-            }
-        }
-    },
-    "get_ancestry_assignment": {
-        "inputs": {
-            "file_in_raw_ancestry_assignment": {
-                "type": "file"
-            },
-            "std_dev_cutoff": {
-                "type": "int",
-                "default": 3
-            },
-            "file_out_ancestry_assignment": {
-                "type": "str",
-                "default": "ancestry_assignment.txt"
-            }
-        },
-        "cmd": [
-            "/opt/get_ancestry_assignment.pl",
-            "--file_in_raw_ancestry_assignment",
-            "<inputs.file_in_raw_ancestry_assignment>",
-            "--std_dev_cutoff",
-            "<inputs.std_dev_cutoff>",
-            "--file_out_ancestry_assignment",
-            "<inputs.file_out_ancestry_assignment>"
-        ],
-        "outputs": {
-            "ancestry_assignmment": {
-                "type": "file",
-                "value": "<inputs.file_out_ancestry_assignment>"
-            },
-            "log": {
-                "type": "file",
-                "value": "get_ancestry_assignment.log"
             }
         }
     }

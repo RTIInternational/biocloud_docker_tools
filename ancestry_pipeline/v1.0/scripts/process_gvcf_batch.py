@@ -20,26 +20,9 @@ parser.add_argument(
     type = str
 )
 parser.add_argument(
-    '--control_gvcf_dir',
-    help = 'Dir containing control gvcf files from which to extract variants',
-    type = str
-)
-parser.add_argument(
-    '--variant_list',
+    '--ref_prefix',
     required = True,
-    help = 'List of variants to extract',
-    type = str
-)
-parser.add_argument(
-    '--hladq_variants_file',
-    required = True,
-    help = 'File listing HLA variants used for DQ imputation',
-    type = str
-)
-parser.add_argument(
-    '--non_hladq_variants_file',
-    required = True,
-    help = 'File listing HLA variants not used for DQ imputation',
+    help = 'Prefix for reference files',
     type = str
 )
 parser.add_argument(
@@ -62,8 +45,14 @@ parser.add_argument(
     type = int
 )
 parser.add_argument(
+    '--include_monomorphic_positions',
+    help = 'Include non-variant positions',
+    default = 0,
+    type = int
+)
+parser.add_argument(
     '--filter_by_qual',
-    help = 'Limit extraction to variants designated PASS',
+    help = 'Limit extraction to variants with QUAL=PASS',
     default = 0,
     type = int
 )
@@ -86,15 +75,34 @@ parser.add_argument(
     type = int
 )
 parser.add_argument(
+    '--ancestry_pop_type',
+    help = '1000 Genomes population type',
+    default = 'SUPERPOP',
+    choices = ['SUPERPOP', 'POP']
+)
+parser.add_argument(
+    '--ancestries_to_include',
+    help = '1000 Genomes ancestries to include',
+    default = 'AFR,AMR,EAS,EUR,SAS',
+    type = str
+)
+parser.add_argument(
+    '--std_dev_cutoff',
+    help = 'Standard deviation cutoff for ancestry',
+    default = 3,
+    type = int
+)
+parser.add_argument(
     '--workflow_template',
     help = 'Workflow template to use',
-    default = 't1dgrs2-revvity',
+    default = 'ancestry',
     type = str
 )
 parser.add_argument(
     '--entrypoint',
     help = 'Entrypoint to use',
-    default = 'extract-gvcf-variants',
+    default = 'munge-extract-ref-variants-from-gvcf',
+    choices = ['munge-extract-ref-variants-from-gvcf', 'ancestry-from-gvcf'],
     type = str
 )
 args = parser.parse_args()
@@ -113,44 +121,26 @@ gvcf_dir = args.gvcf_dir if (args.gvcf_dir[-1] == "/") else (args.gvcf_dir + "/"
 os.system("mkdir -p {}".format(gvcf_dir))
 output_dir = args.output_dir if (args.output_dir[-1] == "/") else (args.output_dir + "/")
 os.system("mkdir -p {}".format(output_dir))
-if args.control_gvcf_dir is None or args.control_gvcf_dir == '':
-    control_gvcf_dir = None
-else:
-    control_gvcf_dir = args.control_gvcf_dir if (args.control_gvcf_dir[-1] == "/") else (args.control_gvcf_dir + "/")
-    os.system("mkdir -p {}".format(control_gvcf_dir))
 
 # Get a list of all gvcf files to process
 files = os.listdir(gvcf_dir)
 files_with_paths = [gvcf_dir + file for file in files]
-sample_files_to_process = dict(zip(files, files_with_paths))
-if len(sample_files_to_process) == 0:
+files_to_process = dict(zip(files, files_with_paths))
+if len(files_to_process) == 0:
     sys.exit("No files to process")
-
-# Get list of control gvcfs to process
-if control_gvcf_dir is not None:
-    files = os.listdir(control_gvcf_dir)
-    files_with_paths = [control_gvcf_dir + file for file in files]
-    control_files_to_process = dict(zip(files, files_with_paths))
-    files_to_process = sample_files_to_process | control_files_to_process
-else:
-    files_to_process = sample_files_to_process.copy()
 
 # Loop over all files
 file_plink_merge_list = "{}plink_merge_list.txt".format(output_dir)
-file_missingness_merge_list = "{}missingness_merge_list.txt".format(output_dir)
 for file, path in files_to_process.items():
     if "gvcf.gz" not in file:
         continue
     if "md5" in file or "tbi" in file:
         continue
 
-    if control_gvcf_dir is not None and control_gvcf_dir in path:
+    if args.sequencing_provider == 'revvity':
+        result = re.search(r'^\S+\-(\d+)_\d+-WGS.+\.hard-filtered.gvcf.gz$', file)
+    elif args.sequencing_provider == 'genedx':
         result = re.search(r'^(\S+).hard-filtered.gvcf.gz$', file)
-    else:
-        if args.sequencing_provider == 'revvity':
-            result = re.search(r'^\S+\-(\d+)_\d+-WGS.+\.hard-filtered.gvcf.gz$', file)
-        elif args.sequencing_provider == 'genedx':
-            result = re.search(r'^(\S+).hard-filtered.gvcf.gz$', file)
     
     if result:
         sample_id = result.group(1)
@@ -169,14 +159,17 @@ for file, path in files_to_process.items():
             "output_dir": sample_output_dir,
             "sample_id": sample_id,
             "gvcf": path,
-            "variant_list": args.variant_list,
-            "hladq_variants_file": args.hladq_variants_file,
-            "non_hladq_variants_file": args.non_hladq_variants_file,
+            "ref_prefix": args.ref_prefix,
+            "include_monomorphic_positions": args.include_monomorphic_positions,
             "filter_by_qual": args.filter_by_qual,
             "filter_by_gq": args.filter_by_gq,
             "hom_gq_threshold": args.hom_gq_threshold,
             "het_gq_threshold": args.het_gq_threshold
         }
+        if args.entrypoint == 'ancestry-from-gvcf':
+            wf_arguments["ancestry_pop_type"] = args.ancestry_pop_type
+            wf_arguments["ancestries_to_include"] = args.ancestries_to_include
+            wf_arguments["std_dev_cutoff"] = args.std_dev_cutoff
         file_wf_arguments = output_dir + sample_id + '.json'
         with open(file_wf_arguments, 'w', encoding='utf-8') as f:
             json.dump(wf_arguments, f)
@@ -214,8 +207,4 @@ for file, path in files_to_process.items():
 
         # Write sample plink output prefix to merge list
         with open(file_plink_merge_list, 'a') as f:
-            f.write("{}{}/{}\n".format(sample_output_dir, "convert_vcf_to_bfile", sample_id))
-
-        # Write sample missing summary tsv path to list
-        with open(file_missingness_merge_list, 'a') as f:
-            f.write("{}{}/{}_missing_summary.tsv\n".format(sample_output_dir, "extract_gvcf_variants", sample_id))
+            f.write("{}{}/{}\n".format(sample_output_dir, "convert_dataset_vcf_to_bfile", sample_id))

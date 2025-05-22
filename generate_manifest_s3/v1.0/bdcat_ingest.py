@@ -96,7 +96,7 @@ def add_gs_manifest_metadata(fields, blob, gs_path, input_file_path):
 		if (not fields['ga4gh_drs_uri'].startswith("drs://")):
 			add_drs_uri_from_path(fields, gs_path)
 
-def generate_dict_from_s3_bucket(s3_bucket, study_id, consent_group):
+def generate_dict_from_s3_bucket(s3_bucket, prefix, study_id, consent_group):
 	od = OrderedDict()
 
 	print(f"s3-bucket: {s3_bucket}")
@@ -104,7 +104,7 @@ def generate_dict_from_s3_bucket(s3_bucket, study_id, consent_group):
 	aws_client = boto3.client('s3')	
 
 	paginator = aws_client.get_paginator('list_objects_v2')
-	pages = paginator.paginate(Bucket=s3_bucket, Prefix='')
+	pages = paginator.paginate(Bucket=s3_bucket, Prefix=prefix)
 
 	for page in pages:
 		for obj in page['Contents']:

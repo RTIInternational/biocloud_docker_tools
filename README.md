@@ -64,19 +64,25 @@ When adding new Dockerfiles, the GitHub action will automatically build and push
 
 To create AWS ECR images from Docker images in Docker Hub, run the following code:
 ``` shell
-# Pull image to be transferred to local system
-docker pull <IMAGE_ID or REPOSITORY:TAG>
+aws_account_id=<AWS_ACCOUNT_ID>
+aws_region=<AWS_REGION>
+aws_profile=<AWS_PROFILE>
+image_id=<IMAGE_ID>
+repository_tag=<REPOSITORY_TAG>
 
-# Authenticate your Docker client to the Amazon ECR registry
-aws ecr get-login-password --region <REGION> | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com
+# Pull image to be transferred to local system
+docker pull $repository_tag
+
+# Tag image
+docker tag $image_id $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_tag
 
 # Create repository in ECR for image
 
-# Tag image
-docker tag <IMAGE_ID> <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/<REPO>:<TAG>
+# Authenticate your Docker client to the Amazon ECR registry
+aws ecr get-login-password --region $aws_region --profile $aws_profile | docker login --username AWS --password-stdin $aws_account_id.dkr.ecr.$aws_region.amazonaws.com
 
 # Push image
-docker push <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/<REPO>:<TAG>
+docker push $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_tag
 ```
 <br><br>
 

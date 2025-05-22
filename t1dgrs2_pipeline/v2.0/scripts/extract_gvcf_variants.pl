@@ -15,7 +15,7 @@ my $variant_list = '';
 my $hladq_variants_file = '';
 my $non_hladq_variants_file = '';
 my $out_prefix;
-my $pass_only = 0;
+my $filter_by_qual = 0;
 my $filter_by_gq = 0;
 my $hom_gq_threshold = 99;
 my $het_gq_threshold = 48;
@@ -27,7 +27,7 @@ GetOptions (
     'hladq_variants_file=s' => \$hladq_variants_file,
     'non_hladq_variants_file=s' => \$non_hladq_variants_file,
     'out_prefix=s' => \$out_prefix,
-    'pass_only:i' => \$pass_only,
+    'filter_by_qual:i' => \$filter_by_qual,
     'filter_by_gq:i' => \$filter_by_gq,
     'hom_gq_threshold:i' => \$hom_gq_threshold,
     'het_gq_threshold:i' => \$het_gq_threshold,
@@ -92,7 +92,7 @@ while(<GVCF>){
         chomp;
         @F =split("\t");
         if (
-            !$pass_only
+            !$filter_by_qual
             || (uc($F[6]) eq "PASS")
         ) {
             if ($F[0] =~ /(\d+)$/) {

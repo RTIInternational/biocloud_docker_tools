@@ -1,0 +1,295 @@
+{
+    "name": "ancestry_from_bfile",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "dataset_name": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "dataset_bed": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "dataset_bim": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "dataset_fam": {
+            "type": "file",
+            "default": "",
+            "required": true
+        },
+        "ref_prefix": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "ancestry_pop_type": {
+            "type": "str",
+            "default": "SUPERPOP",
+            "required": false
+        },
+        "ancestries_to_include": {
+            "type": "str",
+            "default": "AFR,AMR,EAS,EUR,SAS",
+            "required": false
+        },
+        "std_dev_cutoff": {
+            "type": "int",
+            "default": 3,
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>ancestry_from_bfile.log"
+        }
+    },
+    "entry_point": "get_ref_samples",
+    "entry_point_inputs": {
+        "file_in_psam": "<inputs.ref_prefix>.psam",
+        "ancestry_pop_type": "<inputs.ancestry_pop_type>",
+        "ancestries_to_include": "<inputs.ancestries_to_include>",
+        "file_out_ancestry_id_xref": "<inputs.output_dir>get_ref_samples/ancestry_id_xref.tsv",
+        "file_out_ref_samples": "<inputs.output_dir>get_ref_samples/ref_samples.tsv"
+    },
+    "pipeline": {
+        "get_ref_samples": {
+            "task": "get_ref_samples",
+            "check_output": {
+                "returncode_0": {
+                    "step": "add_pop_ids_to_fam_files",
+                    "inputs": {
+                        "file_in_dataset_fam": "<inputs.dataset_fam>",
+                        "file_in_ref_fam": "<inputs.ref_prefix>.fam",
+                        "file_in_ref_samples": "<steps.get_ref_samples.outputs.ref_samples>",
+                        "file_out_dataset_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/dataset.fam",
+                        "file_out_ref_fam": "<inputs.output_dir>add_pop_ids_to_fam_files/ref.fam"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "add_pop_ids_to_fam_files": {
+            "task": "add_pop_ids_to_fam_files",
+            "check_output": {
+                "returncode_0": {
+                    "step": "assign_ids_to_dataset_bim",
+                    "inputs": {
+                        "file_in_dataset_bim": "<inputs.dataset_bim>",
+                        "file_in_ref_bim": "<inputs.ref_prefix>.bim",
+                        "file_out_prefix": "<inputs.output_dir>assign_ids_to_dataset_bim/dataset"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "assign_ids_to_dataset_bim": {
+            "task": "assign_ids_to_dataset_bim",
+            "check_output": {
+                "returncode_0": {
+                    "step": "get_variants_from_dataset_bfile",
+                    "inputs": {
+                        "file_in_bed": "<inputs.dataset_bed>",
+                        "file_in_bim": "<steps.assign_ids_to_dataset_bim.outputs.bim>",
+                        "file_in_fam": "<steps.add_pop_ids_to_fam_files.outputs.dataset_fam>",
+                        "file_in_extract_list": "<steps.assign_ids_to_dataset_bim.outputs.extract_list>",
+                        "file_in_flip_list": "<steps.assign_ids_to_dataset_bim.outputs.flip_list>",
+                        "file_out_prefix": "<inputs.output_dir>get_variants_from_dataset_bfile/dataset"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "get_variants_from_dataset_bfile": {
+            "task": "get_variants_from_bfile",
+            "check_output": {
+                "returncode_0": {
+                    "step": "get_ref_genotypes",
+                    "inputs": {
+                        "bed": "<inputs.ref_prefix>.bed",
+                        "bim": "<inputs.ref_prefix>.bim",
+                        "fam": "<steps.add_pop_ids_to_fam_files.outputs.ref_fam>",
+                        "keep": "<steps.get_ref_samples.outputs.ref_samples>",
+                        "extract": "<steps.assign_ids_to_dataset_bim.outputs.extract_list>",
+                        "file_out_prefix": "<inputs.output_dir>get_ref_genotypes/ref"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "get_ref_genotypes": {
+            "task": "get_variants_and_samples_from_bfile",
+            "check_output": {
+                "returncode_0": {
+                    "step": "get_merge_conflicts",
+                    "inputs": {
+                        "bed_1": "<steps.get_ref_genotypes.outputs.bed>",
+                        "bim_1": "<steps.get_ref_genotypes.outputs.bim>",
+                        "fam_1": "<steps.get_ref_genotypes.outputs.fam>",
+                        "bed_2": "<steps.get_variants_from_dataset_bfile.outputs.bed>",
+                        "bim_2": "<steps.get_variants_from_dataset_bfile.outputs.bim>",
+                        "fam_2": "<steps.get_variants_from_dataset_bfile.outputs.fam>",
+                        "file_out_prefix": "<inputs.output_dir>get_merge_conflicts/dataset_ref"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "get_merge_conflicts": {
+            "task": "merge_genotypes",
+            "check_output": {
+                "returncode_0": {
+                    "step": "prepare_smartpca_input",
+                    "inputs": {
+                        "file_in_bed": "<steps.get_merge_conflicts.outputs.bed>",
+                        "file_in_bim": "<steps.get_merge_conflicts.outputs.bim>",
+                        "file_in_fam": "<steps.get_merge_conflicts.outputs.fam>",
+                        "file_in_pop_id_xref": "<steps.get_ref_samples.outputs.ancestry_id_xref>",
+                        "dataset_name": "<inputs.dataset_name>",
+                        "ref_pops": "<inputs.ancestries_to_include>",
+                        "file_out_prefix": "<inputs.output_dir>prepare_smartpca_input/dataset_ref_smartpca",
+                        "smartpca_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "flip_ref",
+                    "inputs": {
+                        "bed": "<steps.get_ref_genotypes.outputs.bed>",
+                        "bim": "<steps.get_ref_genotypes.outputs.bim>",
+                        "fam": "<steps.get_ref_genotypes.outputs.fam>",
+                        "flip": "<steps.get_merge_conflicts.outputs.missnp>",
+                        "file_out_prefix": "<inputs.output_dir>flip_ref/ref"
+                    }
+                }
+            }
+        },
+        "flip_ref": {
+            "task": "flip_genotypes",
+            "check_output": {
+                "returncode_0": {
+                    "step": "merge_dataset_ref",
+                    "inputs": {
+                        "bed_1": "<steps.flip_ref.outputs.bed>",
+                        "bim_1": "<steps.flip_ref.outputs.bim>",
+                        "fam_1": "<steps.flip_ref.outputs.fam>",
+                        "bed_2": "<steps.get_variants_from_dataset_bfile.outputs.bed>",
+                        "bim_2": "<steps.get_variants_from_dataset_bfile.outputs.bim>",
+                        "fam_2": "<steps.get_variants_from_dataset_bfile.outputs.dataset_fam>",
+                        "file_out_prefix": "<inputs.output_dir>merge_dataset_ref/dataset_ref"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "merge_dataset_ref": {
+            "task": "merge_dataset_ref",
+            "check_output": {
+                "returncode_0": {
+                    "step": "prepare_smartpca_input",
+                    "inputs": {
+                        "file_in_bed": "<steps.merge_dataset_ref.outputs.bed>",
+                        "file_in_bim": "<steps.merge_dataset_ref.outputs.bim>",
+                        "file_in_fam": "<steps.merge_dataset_ref.outputs.fam>",
+                        "file_in_pop_id_xref": "<steps.get_ref_samples.outputs.ancestry_id_xref>",
+                        "dataset_name": "<inputs.dataset_name>",
+                        "ref_pops": "<inputs.ancestries_to_include>",
+                        "file_out_prefix": "<inputs.output_dir>prepare_smartpca_input/dataset_ref_smartpca",
+                        "smartpca_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "prepare_smartpca_input": {
+            "task": "prepare_smartpca_input",
+            "check_output": {
+                "returncode_0": {
+                    "step": "smartpca",
+                    "inputs": {
+                        "file_in_par": "<steps.prepare_smartpca_input.outputs.par>",
+                        "file_out_prefix": "<inputs.output_dir>smartpca/dataset_ref_smartpca"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "smartpca": {
+            "task": "smartpca",
+            "check_output": {
+                "returncode_0": {
+                    "step": "process_smartpca_results",
+                    "inputs": {
+                        "file_in_evec": "<steps.smartpca.outputs.evec>",
+                        "file_in_eval": "<steps.smartpca.outputs.eval>",
+                        "file_in_snpweight": "<steps.smartpca.outputs.snpweight>",
+                        "file_in_bim_id_xref": "<steps.prepare_smartpca_input.outputs.bim_xref>",
+                        "file_in_fam_id_xref": "<steps.prepare_smartpca_input.outputs.fam_xref>",
+                        "file_out_prefix": "<inputs.output_dir>process_smartpca_results/dataset_ref_smartpca"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "process_smartpca_results": {
+            "task": "process_smartpca_results",
+            "check_output": {
+                "returncode_0": {
+                    "step": "assign_ancestry_mahalanobis",
+                    "inputs": {
+                        "file_in_evec": "<steps.process_smartpca_results.outputs.evec>",
+                        "ref_ancestries": "<inputs.ancestries_to_include>",
+                        "dataset_name": "<inputs.dataset_name>",
+                        "std_dev_cutoff": "<inputs.std_dev_cutoff>",
+                        "out_dir": "<inputs.output_dir>assign_ancestry_mahalanobis/"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        },
+        "assign_ancestry_mahalanobis": {
+            "task": "assign_ancestry_mahalanobis",
+            "check_output": {
+                "returncode_0": {
+                    "step": "get_ancestry_assignment",
+                    "inputs": {
+                        "file_in_raw_ancestry_assignment": "<steps.assign_ancestry_mahalanobis.outputs.raw_ancestry_assignment>",
+                        "std_dev_cutoff": "<inputs.std_dev_cutoff>",
+                        "file_out_ancestry_assignment": "<inputs.output_dir>ancestry_assignment.txt"
+                    }
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}

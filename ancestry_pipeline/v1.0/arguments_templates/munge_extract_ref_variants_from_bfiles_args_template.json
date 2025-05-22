@@ -1,0 +1,7 @@
+{
+    "output_dir": "<OUTPUT_DIR>",
+    "bfile_list": "<BFILE_LIST>",
+    "ref_prefix": "<REF_PREFIX>",
+    "argo_api_url": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+    "simultaneous_jobs": 50
+}
