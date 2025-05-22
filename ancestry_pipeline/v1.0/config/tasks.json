@@ -22,7 +22,7 @@
                 "type": "int",
                 "default": 50
             },
-            "include_monomorphic_positions": {
+            "include_homozygous_ref": {
                 "type": "int",
                 "default": 0
             },
@@ -78,8 +78,8 @@
             "<inputs.argo_api_url>",
             "--simultaneous_jobs",
             "<inputs.simultaneous_jobs>",
-            "--include_monomorphic_positions",
-            "<inputs.include_monomorphic_positions>",
+            "--include_homozygous_ref",
+            "<inputs.include_homozygous_ref>",
             "--filter_by_qual",
             "<inputs.filter_by_qual>",
             "--filter_by_gq",
@@ -122,7 +122,7 @@
                 "type": "str",
                 "default": "dataset"
             },
-            "include_monomorphic_positions": {
+            "include_homozygous_ref": {
                 "type": "o",
                 "default": "include"
             },
@@ -151,8 +151,8 @@
             "<inputs.file_in_ref_bim>",
             "--file_out_prefix",
             "<inputs.file_out_prefix>",
-            "--include_monomorphic_positions",
-            "<inputs.include_monomorphic_positions>",
+            "--include_homozygous_ref",
+            "<inputs.include_homozygous_ref>",
             "--filter_by_qual",
             "<inputs.filter_by_qual>",
             "--filter_by_gq",

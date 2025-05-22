@@ -45,8 +45,8 @@ parser.add_argument(
     type = int
 )
 parser.add_argument(
-    '--include_monomorphic_positions',
-    help = 'Include non-variant positions',
+    '--include_homozygous_ref',
+    help = 'Include positions that are homozygous reference',
     default = 0,
     type = int
 )
@@ -160,7 +160,7 @@ for file, path in files_to_process.items():
             "sample_id": sample_id,
             "gvcf": path,
             "ref_prefix": args.ref_prefix,
-            "include_monomorphic_positions": args.include_monomorphic_positions,
+            "include_homozygous_ref": args.include_homozygous_ref,
             "filter_by_qual": args.filter_by_qual,
             "filter_by_gq": args.filter_by_gq,
             "hom_gq_threshold": args.hom_gq_threshold,
