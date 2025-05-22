@@ -290,12 +290,7 @@
             "task": "assign_ancestry_mahalanobis",
             "check_output": {
                 "returncode_0": {
-                    "step": "get_ancestry_assignment",
-                    "inputs": {
-                        "file_in_raw_ancestry_assignment": "<steps.assign_ancestry_mahalanobis.outputs.raw_ancestry_assignment>",
-                        "std_dev_cutoff": "<inputs.std_dev_cutoff>",
-                        "file_out_ancestry_assignment": "<inputs.output_dir>ancestry_assignment.txt"
-                    }
+                    "step": "exit"
                 },
                 "returncode_1": { 
                     "step": "error"

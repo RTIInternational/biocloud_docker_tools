@@ -56,6 +56,8 @@ sub add_variant_to_output {
     my @F = @{$opt{F}};
     my $OUT_VCF = $opt{OUT_VCF};
     my $OUT_VARIANTS = $opt{OUT_VARIANTS};
+    $F[5] = ".";
+    $F[6] = ".";
     $F[7] = ".";
     $F[8] =~ s/:.+//;
     $F[9] =~ s/:.+//;
@@ -131,6 +133,7 @@ while(<GVCF>){
                             for (my $i=$F[1]; $i<=$end; $i++) {
                                 if (exists($variants{$F[0]})) {
                                     if (exists($variants{$F[0]}{$i})) {
+                                        $F[1] = $i;
                                         $F[2] = $variants{$F[0]}{$i};
                                         $F[3] = $ref_alleles{$F[0]}{$i};
                                         $F[4] = $alt_alleles{$F[0]}{$i};
