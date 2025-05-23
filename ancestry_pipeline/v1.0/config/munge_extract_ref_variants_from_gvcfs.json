@@ -77,7 +77,7 @@
         "hom_gq_threshold": "<inputs.hom_gq_threshold>",
         "het_gq_threshold": "<inputs.het_gq_threshold>",
         "workflow_template": "ancestry",
-        "entrypoint": "munge-extract-ref-variants-from-gvcfs"
+        "entrypoint": "munge-extract-ref-variants-from-gvcf"
     },
     "pipeline": {
         "process_gvcf_batch": {
