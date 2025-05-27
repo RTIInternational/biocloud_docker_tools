@@ -4,7 +4,7 @@ LABEL description="This Docker image contains the tool miRdeep2 for discovering 
 LABEL base-image="conda/miniconda3:latest"
 LABEL software-version="1.0"
 
-
+# Create conda environment, install mirdeep2
 RUN conda config --add channels bioconda
 RUN conda config --add channels conda-forge
 RUN conda config --set channel_priority strict
