@@ -21,7 +21,7 @@
             "default": "",
             "required": true
         },
-        "include_monomorphic_positions": {
+        "include_homozygous_ref": {
             "type": "int",
             "default": 0
         },
@@ -68,7 +68,7 @@
         "file_in_gvcf": "<inputs.gvcf>",
         "file_in_ref_bim": "<inputs.ref_prefix>.bim",
         "file_out_prefix": "<inputs.output_dir>get_ref_variants_from_dataset_gvcf/dataset",
-        "include_monomorphic_positions": "<inputs.include_monomorphic_positions>",
+        "include_homozygous_ref": "<inputs.include_homozygous_ref>",
         "filter_by_qual": "<inputs.filter_by_qual>",
         "filter_by_gq": "<inputs.filter_by_gq>",
         "hom_gq_threshold": "<inputs.hom_gq_threshold>",
@@ -290,12 +290,7 @@
             "task": "assign_ancestry_mahalanobis",
             "check_output": {
                 "returncode_0": {
-                    "step": "get_ancestry_assignment",
-                    "inputs": {
-                        "file_in_raw_ancestry_assignment": "<steps.assign_ancestry_mahalanobis.outputs.raw_ancestry_assignment>",
-                        "std_dev_cutoff": "<inputs.std_dev_cutoff>",
-                        "file_out_ancestry_assignment": "<inputs.output_dir>ancestry_assignment.txt"
-                    }
+                    "step": "exit"
                 },
                 "returncode_1": { 
                     "step": "error"

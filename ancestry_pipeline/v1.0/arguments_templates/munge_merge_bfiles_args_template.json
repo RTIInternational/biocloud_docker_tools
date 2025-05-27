@@ -1,4 +1,5 @@
 {
     "output_dir" : "<OUTPUT_DIR>",
-    "bfile_merge_list" : "<BFILE_MERGE_LIST>"
+    "bfile_merge_list" : "<BFILE_MERGE_LIST>",
+    "geno" : "<GENO>"
 }
