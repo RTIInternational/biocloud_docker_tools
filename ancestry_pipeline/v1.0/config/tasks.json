@@ -238,7 +238,7 @@
             "--merge-list",
             "<inputs.bfile_merge_list>",
             "--geno",
-            "0",
+            "<inputs.geno>",
             "--out",
             "<inputs.out_prefix>",
             "--make-bed"
