@@ -170,7 +170,7 @@ for file, path in files_to_process.items():
             wf_arguments["ancestry_pop_type"] = args.ancestry_pop_type
             wf_arguments["ancestries_to_include"] = args.ancestries_to_include
             wf_arguments["std_dev_cutoff"] = args.std_dev_cutoff
-        file_wf_arguments = output_dir + sample_id + '.json'
+        file_wf_arguments = sample_output_dir + args.entrypoint.replace('-', '_') + '.json'
         with open(file_wf_arguments, 'w', encoding='utf-8') as f:
             json.dump(wf_arguments, f)
         
