@@ -39,13 +39,14 @@ my $filter_by_qual = 0;
 my $filter_by_gq = 0;
 my $hom_gq_threshold = 99;
 my $het_gq_threshold = 48;
+my $sequencing_provider = 'revvity';
 
 GetOptions (
     'file_in_gvcf=s' => \$file_in_gvcf,
     'file_in_ref_bim=s' => \$file_in_ref_bim,
     'file_out_prefix=s' => \$file_out_prefix,
     'include_homozygous_ref:i' => \$include_homozygous_ref,
-    'filter_by_qual:i' => \$filter_by_qual,
+    'filter_by_qual:i' => \$filter_by_qual, 
     'filter_by_gq:i' => \$filter_by_gq,
     'hom_gq_threshold:i' => \$hom_gq_threshold,
     'het_gq_threshold:i' => \$het_gq_threshold
@@ -94,7 +95,15 @@ if ($file_in_gvcf =~ /gz$/) {
     open(GVCF, $file_in_gvcf);
 }
 while(<GVCF>){
-    if (/^#/) {
+    if (/^#CHROM/) {
+        chomp;
+        @F =split();
+        if ($F[9] =~ /^\S+\-(\d+)_\d+-WGS/) {
+            $F[9] = $1;
+        }
+        $F[0] =~ s/_/-/g;
+        print OUT_VCF join("\t", @F)."\n";
+    } elsif (/^#/) {
         print OUT_VCF;
     } else {
         chomp;
