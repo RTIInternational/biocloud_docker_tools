@@ -848,8 +848,8 @@
                 "type": "dir"
             },
             "scale_to_ref": {
-                "type": "bool",
-                "default": false
+                "type": "int",
+                "default": 1
             }
         },
         "cmd": [
