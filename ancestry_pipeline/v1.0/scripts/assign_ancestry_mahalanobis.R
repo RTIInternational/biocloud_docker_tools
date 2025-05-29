@@ -76,8 +76,9 @@ option_list = list(
     ),
     make_option(
         c('--scale-to-ref'),
-        action='store_true',
-        default=FALSE,
+        action='store',
+        default=1,
+        type='integer',
         help="Scale Mahalanobis distance to reference for SD cutoffs rather than within scaling within dataset"
     )
 )

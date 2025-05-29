@@ -54,6 +54,10 @@
                 "type": "int",
                 "default": 3
             },
+            "scale_to_ref": {
+                "type": "int",
+                "default": 1
+            },
             "workflow_template": {
                 "type": "str",
                 "default": "ancestry"
@@ -94,6 +98,8 @@
             "<inputs.ancestries_to_include>",
             "--std_dev_cutoff",
             "<inputs.std_dev_cutoff>",
+            "--scale_to_ref",
+            "<inputs.scale_to_ref>",
             "--workflow_template",
             "<inputs.workflow_template>",
             "--entrypoint",
@@ -840,6 +846,10 @@
             },
             "out_dir": {
                 "type": "dir"
+            },
+            "scale_to_ref": {
+                "type": "bool",
+                "default": false
             }
         },
         "cmd": [
@@ -865,7 +875,8 @@
             "median",
             "--std-dev-cutoff",
             "<inputs.std_dev_cutoff>",
-            "--scale-to-ref"
+            "--scale-to-ref",
+            "<inputs.scale_to_ref>"
         ],
         "outputs": {
             "log": {

@@ -70,6 +70,11 @@
             "type": "int",
             "default": 3,
             "required": false
+        },
+        "scale_to_ref": {
+            "type": "int",
+            "default": 1,
+            "required": false
         }
     },
     "outputs": {
@@ -94,6 +99,7 @@
         "ancestry_pop_type": "<inputs.ancestry_pop_type>",
         "ancestries_to_include": "<inputs.ancestries_to_include>",
         "std_dev_cutoff": "<inputs.std_dev_cutoff>",
+        "scale_to_ref": "<inputs.scale_to_ref>",
         "workflow_template": "ancestry",
         "entrypoint": "ancestry-from-gvcf"
     },

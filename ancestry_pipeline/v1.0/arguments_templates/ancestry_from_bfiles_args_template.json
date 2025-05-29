@@ -5,5 +5,6 @@
     "ref_prefix": "<REF_PREFIX>",
     "ancestry_pop_type": "SUPERPOP",
     "ancestries_to_include": "AFR,AMR,EAS,EUR,SAS",
-    "std_dev_cutoff": 3
+    "std_dev_cutoff": 3,
+    "scale_to_ref": 1
 }

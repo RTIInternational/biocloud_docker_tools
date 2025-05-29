@@ -45,6 +45,11 @@
             "type": "int",
             "default": 3,
             "required": false
+        },
+        "scale_to_ref": {
+            "type": "int",
+            "default": 1,
+            "required": false
         }
     },
     "outputs": {
@@ -267,7 +272,8 @@
                         "ref_ancestries": "<inputs.ancestries_to_include>",
                         "dataset_name": "<inputs.dataset_name>",
                         "std_dev_cutoff": "<inputs.std_dev_cutoff>",
-                        "out_dir": "<inputs.output_dir>assign_ancestry_mahalanobis/"
+                        "out_dir": "<inputs.output_dir>assign_ancestry_mahalanobis/",
+                        "scale_to_ref": "<inputs.scale_to_ref>"
                     }
                 },
                 "returncode_1": { 
