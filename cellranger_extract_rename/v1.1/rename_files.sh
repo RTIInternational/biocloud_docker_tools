@@ -252,7 +252,7 @@ if [[ ${COMPRESSED_INPUT} == true ]]; then
 fi
 if [[ ${COMPRESSED_INPUT} == false ]]; then
      echo_verbose "INFO: Extracting all files from '${INPUT}'"
-     cp $INPUT/* ${OUTPUT_DIR} 
+     cp -r $INPUT/* ${OUTPUT_DIR} 
 fi
 
 #rename all files with linker prefix
