@@ -261,7 +261,7 @@ prefix="${LINKER}"  # Replace with the desired prefix
 find ${OUTPUT_DIR} -type f -print0 | while IFS= read -r -d $'\0' file; do
   dir_path=$(dirname "$file")
   file_name=$(basename "$file")
-  cp "$file" "$dir_path/${prefix}_${file_name}"
+  mv "$file" "$dir_path/${prefix}_${file_name}"
   echo_verbose "Renamed file '$file' to '${prefix}_${file_name}'"
 done
 
