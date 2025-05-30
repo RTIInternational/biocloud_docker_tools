@@ -1,6 +1,6 @@
 # Description
 
-This Docker image contains an in-house script written to extract and rename key files from the large 'outs.zip' file or large 'outs' directory from the Cell Ranger process.  Its purpose is to fit in the single cell RNA sequencing workflow, as well as ATACseq and potentially GUIDEseq, in the RMIP project.  The Input to this should be a ZIP file or directory coming from a Cell Ranger run, and the output is an output directory with renamed files and a renamed copy of the input 'outs.zip' file (if given).  Files and relative paths within the 'outs.zip' file are listed in the table below:
+This Docker image contains an in-house script written to extract and rename all files from the large 'outs.zip' file or large 'outs' directory from the Cell Ranger process.  Its purpose is to fit in the single cell RNA sequencing workflow, as well as ATACseq and potentially GUIDEseq, in the RMIP project.  The Input to this should be a ZIP file or directory coming from a Cell Ranger run, and the output is an output directory with renamed files and a renamed copy of the input 'outs.zip' file (if compressed flag is used).  Files and relative paths within the 'outs.zip' file are listed in the table below:
 
 | Directory | Filename | Description | Link |
 | -- | -- | -- | -- |
@@ -43,6 +43,7 @@ Options:
  -h, --help             Display this help message
  -v, --verbose          Enable verbose mode
  -p, --pilot            Enable pilot mode
+ -c, --compressed_output_mode   Enable compress output mode (compress all files except extracted files list)
  -l, --linker           STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required
                           e.g. linker='RMIP_001_allo1_A_001_A'
                           Note that the Vial Identifier (last letter) is optional
@@ -69,3 +70,4 @@ Example usage
 If you have any questions or feedback, please feel free to contact the maintainers of this project:
 
 - David Williams, email: dnwilliams@rti.org
+- Caryn Willis, email: cdwillis@rti.org

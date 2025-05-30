@@ -7,6 +7,7 @@ usage() {
  echo " -h, --help             Display this help message"
  echo " -v, --verbose          Enable verbose mode"
  echo " -p, --pilot            Enable pilot mode"
+ echo " -c, --compressed_output_mode            Enable compressing output, default FALSE"
  echo " -l, --linker           STRING Specify name of linker to prepend to extracted files (format 'RMIP_<ddd>_<alphanum>_<w>_<ddd>_<w>') - Required"
  echo "                          e.g. linker='RMIP_001_allo1_A_001_A'"
  echo "                          Note that the Vial Identifier (last letter) is optional"
@@ -46,6 +47,9 @@ handle_options() {
         ;;
       -v | --verbose)
         VERBOSE_MODE=true
+        ;;
+      -c | --compress_output_mode)
+        COMPRESSED_OUTPUT_MODE=true
         ;;
       -p | --pilot)
         PILOT_MODE=true
@@ -241,71 +245,28 @@ fi
 echo_verbose ""
 
 FILE_LIST=($INPUT_NAME/web_summary.html $INPUT_NAME/metrics_summary.csv $INPUT_NAME/raw_feature_bc_matrix.h5 $INPUT_NAME/possorted_genome_bam.bam $INPUT_NAME/possorted_genome_bam.bam.bai $INPUT_NAME/filtered_feature_bc_matrix.h5)
-# FILE_LIST=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai filtered_feature_bc_matrix.h5)
-# FILE_LIST=(web_summary.html metrics_summary.csv raw_feature_bc_matrix.h5 possorted_genome_bam.bam possorted_genome_bam.bam.bai raw_feature_bc_matrix/matrix.mtx.gz raw_feature_bc_matrix/features.tsv.gz raw_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/matrix.mtx.gz filtered_feature_bc_matrix/barcodes.tsv.gz filtered_feature_bc_matrix/features.tsv.gz)
+# unzip outs folder if in compressed mode.
+if [[ ${COMPRESSED_INPUT} == true ]]; then
+     echo_verbose "INFO: Extracting all files from '${INPUT}'"
+     unzip -j $INPUT -d ${OUTPUT_DIR}
+fi
+if [[ ${COMPRESSED_INPUT} == false ]]; then
+     echo_verbose "INFO: Extracting all files from '${INPUT}'"
+     cp $INPUT/* ${OUTPUT_DIR} 
+fi
 
-# Extracting and renaming files
-for FILE in ${FILE_LIST[@]}; do
-  echo_verbose $FILE;
+#rename all files with linker prefix
+prefix="${LINKER}"  # Replace with the desired prefix
 
-  if [[ ${COMPRESSED_INPUT} == true ]]; then
-    echo_verbose "INFO: Running in COMPRESSED mode"
-    # Extracting basename from ZIP file name
-    FILE_NAME=$(basename -- "$FILE")
-    FILE_NAME="${FILE_NAME%.*}"
-    FILE_NAME_EXTENSION="${FILE##*.}"
-    echo_verbose "INFO: File name extracted '${FILE_NAME}'"
-    echo_verbose "INFO: File name extension extracted '${FILE_NAME_EXTENSION}'"
-    FILE_NAME_COMB=$FILE_NAME\.$FILE_NAME_EXTENSION
-
-    unzip -l $INPUT | grep -q $FILE;
-    if [[ "$?" == "0" ]]; then
-      unzip -p $INPUT $FILE >${TMP_OUTPUT_DIR}/$FILE_NAME_COMB;
-      
-      # Removing "_bam" from filename
-      if [[ $FILE_NAME_COMB == *"_bam"* ]]; then
-        echo_verbose "INFO: Found '_bam' in '${FILE_NAME_COMB}'"
-        NEW_FILE=${FILE_NAME_COMB//"_bam"/}
-        echo_verbose "INFO: Removed '_bam' to make '${NEW_FILE}'"
-        echo_verbose "INFO: Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${NEW_FILE}'";
-        echo_verbose ""
-        mv ${TMP_OUTPUT_DIR}/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${NEW_FILE};
-      else
-        echo_verbose "INFO: Moving '${TMP_OUTPUT_DIR}/${FILE_NAME_COMB}' to '$OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB}'";
-        echo_verbose ""
-        mv ${TMP_OUTPUT_DIR}/${FILE_NAME_COMB} $OUTPUT_DIR/${LINKER}_${FILE_NAME_COMB};
-      fi
-    else
-      echo "INFO: File '${FILE}' not found in ZIP file. Skipping"
-    fi
-  elif [[ ${COMPRESSED_INPUT} == false ]]; then
-    echo_verbose "INFO: Running in UNCOMPRESSED mode"
-
-    if [[ ! -f ${FILE} ]]; then
-      echo "INFO: File '${FILE}' not found, skipping"
-      echo ""
-    else
-      FILE=${FILE#${INPUT_NAME}/}
-
-      if [[ $FILE == *"_bam"* ]]; then
-        echo_verbose "INFO: Found '_bam' in '${FILE}'"
-        NEW_FILE=${FILE//"_bam"/}
-        echo_verbose "INFO: Removed '_bam' to make '${NEW_FILE}'"
-        cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${NEW_FILE}"
-        echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${NEW_FILE}'"
-        echo_verbose ""
-      else
-        echo_verbose "INFO: Copying '${FILE}' to '${OUTPUT_DIR}/${LINKER}_${FILE}'"
-        echo_verbose ""
-        cp ${INPUT_NAME}/${FILE} "${OUTPUT_DIR}/${LINKER}_${FILE}"
-      fi
-    fi
-  fi
+find ${OUTPUT_DIR} -type f -print0 | while IFS= read -r -d $'\0' file; do
+  dir_path=$(dirname "$file")
+  file_name=$(basename "$file")
+  mv "$file" "$dir_path/${prefix}_${file_name}"
+  echo_verbose "Renamed file '$file' to '${prefix}_${file_name}'"
 done
 
-[[ ${COMPRESSED_INPUT} == true ]] && echo_verbose "INFO: Copying ZIP file to output directory: $INPUT -> ${OUTPUT_DIR}/${LINKER}_${INPUT}"
-[[ ${COMPRESSED_INPUT} == true ]] && cp $INPUT ${OUTPUT_DIR}/${LINKER}_${INPUT_NAME}.zip
-[[ ${COMPRESSED_INPUT} == false ]] && zip -r ${OUTPUT_DIR}/${LINKER}_outs.zip ${INPUT_NAME} -x "${FILE_LIST[@]}"
+#compress all files but file list if in compressed mode.
+[[ ${COMPRESSED_OUTPUT_MODE} == true ]] && zip -r ${OUTPUT_DIR}/${LINKER}_outs.zip ${INPUT_NAME} -x "${FILE_LIST[@]}"
 
 if [[ ${TMP_OUTPUT_DIR_EXISTS} == true ]]; then
   echo_verbose "INFO: Removing TMP_OUTPUT_DIR"
