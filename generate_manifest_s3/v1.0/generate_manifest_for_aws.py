@@ -46,7 +46,7 @@ def main():
 
 def parse_args():
 	parser = argparse.ArgumentParser(description='Generate TSV file for S3 Bucket.')
-	parser.add_argument('--bucket', required=True , help='s3 bucket name')
+    parser.add_argument('--bucket', required=True , help='s3 bucket name')
     parser.add_argument('--prefix', type=str, default='' , help='s3 bucket prefix to directory')
 	parser.add_argument('--study_id', type=str, default='', help='study_id')
 	parser.add_argument('--consent_group', type=str, default='', help='consent group')
