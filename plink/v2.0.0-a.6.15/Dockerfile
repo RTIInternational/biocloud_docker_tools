@@ -19,9 +19,10 @@ RUN apt update && apt install -y \
 
 #### Install Plink dependencies and Plink ####
 RUN wget https://s3.amazonaws.com/plink2-assets/alpha6/plink2_linux_amd_avx2_20250604.zip \
-    && unzip /plink2_linux_amd_avx2_20250604.zip -d plink_tmp \
+    && unzip plink2_linux_amd_avx2_20250604.zip -d plink_tmp \
     && cp /plink_tmp/plink2 /opt/ \
-    && rm -rf plink2_linux_x86_64_20250604.zip plink_tmp
+    && rm -rf plink2_linux_amd_avx2_20250604.zip plink_tmp
+
 
 # Set working directory and path
 WORKDIR /
