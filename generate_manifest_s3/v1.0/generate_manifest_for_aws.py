@@ -45,17 +45,17 @@ def main():
 	print("Done. Receipt manifest located at", out_file.name)
 
 def parse_args():
-	parser = argparse.ArgumentParser(description='Generate TSV file for S3 Bucket.')
+    parser = argparse.ArgumentParser(description='Generate TSV file for S3 Bucket.')
     parser.add_argument('--bucket', required=True , help='s3 bucket name')
     parser.add_argument('--prefix', type=str, default='' , help='s3 bucket prefix to directory')
-	parser.add_argument('--study_id', type=str, default='', help='study_id')
-	parser.add_argument('--consent_group', type=str, default='', help='consent group')
-	parser.add_argument('--checksum_threads', type=int, default=os.cpu_count(), help='number of concurrent checksum threads (default: number of CPUs on machine)')
-			
-	args = parser.parse_args()
-	if (len(sys.argv) == 0):
-		parser.print_help()		
-	return args
+    parser.add_argument('--study_id', type=str, default='', help='study_id')
+    parser.add_argument('--consent_group', type=str, default='', help='consent group')
+    parser.add_argument('--checksum_threads', type=int, default=os.cpu_count(), help='number of concurrent checksum threads (default: number of CPUs on machine)')
+
+    args = parser.parse_args()
+    if (len(sys.argv) == 0):
+        parser.print_help()
+    return args
 
 def exit_and_write_manifest_file(signum, frame):
 	logging.info(f"Signal {signum} received. Exiting and writing manifest file.")
