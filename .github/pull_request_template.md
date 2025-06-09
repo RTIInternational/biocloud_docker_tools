@@ -7,7 +7,7 @@ _Provide an overview..._
 ### Dockerfile Structure and Organization:
 - [ ] Does the Dockerfile build?
 - [ ] Is tool organized according to [Repository Structure](https://github.com/RTIInternational/biocloud_docker_tools/blob/master/README.md#repository-structure)? 
-- [ ] Specific base image with a version tag, e.g., `FROM ubuntu:20.04` instead of `FROM ubuntu`.
+- [ ] Specific base image with a version tag, e.g., `FROM ubuntu:24.04` instead of `FROM ubuntu`.
 - [ ] Add comments to describe each Dockerfile step.
 
 <br>
@@ -15,7 +15,7 @@ _Provide an overview..._
 ### Metadata
 Include the following LABELs:
 - [ ] `LABEL maintainer="Your Name <your.email@rti.org>"`
-- [ ] `LABEL base-image="ubuntu:22.04"`
+- [ ] `LABEL base-image="ubuntu:24.04"`
 - [ ] `LABEL description="Short description of the purpose of this image"`
 - [ ] `LABEL software-website="https://example.com"`
 - [ ] `LABEL software-version="1.0.0"`
