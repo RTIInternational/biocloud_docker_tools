@@ -58,11 +58,15 @@ Running this command will build a Docker image with the name `bdc_tutorial:v1.0.
 
 ## Rscript Output
 A file with the translated sequence with the following structure
+
 ```
 STICK
 ```
+
 <br>
+
 If the --three flag was used the output will use this example format
+
 ```
 Ser-Thr-Ile-Cys-Lys
 ```
