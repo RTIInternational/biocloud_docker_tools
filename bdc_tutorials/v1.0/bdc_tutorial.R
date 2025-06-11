@@ -23,11 +23,17 @@ if(!require('getopt')){install.packages('getopt', dependencies = T); library(get
 #-----------------------------------------------------
 # Setup logging
 #-----------------------------------------------------
-add_to_log <- function(lvl, func, message){
+# Initialize the logbook
+logbook <- data.frame(stringsAsFactors = F)
+
+add_to_log <- function(lvl, func, message, printmsg = T){
   # <Date> <function> <level> <information>
   timestamp <- paste0("[",Sys.time(),"]")
   entry <- paste(timestamp, func, toupper(lvl), message, sep = " - ") 
-  message(paste0(entry, "\n"))
+  if (printmsg){
+    message(paste0(entry, "\n"))  
+  }
+  logbook <<- rbind(logbook, data.frame("timestamp" = timestamp, "level"= lvl, "function" = func, "message" = message, stringsAsFactors = F))
 }
 
 #-----------------------------------------------------
@@ -35,14 +41,14 @@ add_to_log <- function(lvl, func, message){
 #-----------------------------------------------------
 
 argString <- commandArgs(trailingOnly = T) # Read in command line arguments
-print(argString)
+#print(argString)
 
 usage <- paste("Usage: bdc_tutorial.R
              -- Required Parameters --
               
              -- Optional Parameters -- 
               [-i | --input]        <input RNA sequence to translate to amino acid> (string, default = 'CAUAUCUAA')
-              [-o | --output]       <The output file name> (string, default = tutorial_output.tsv)
+              [-o | --outfile]      <The output file name> (string, default = tutorial_output.tsv)
              -- Optional Flags --   
               [-3 | --three]        <Write the output using three letter amino acid abbreviations> (default = FALSE)
               [-w | --write]        <Write the results to file> (default=FALSE)
@@ -50,20 +56,19 @@ usage <- paste("Usage: bdc_tutorial.R
              -- Help Flag --  
               [-h | --help]         <Displays this help message>
              Example:
-             Rscript bdc_tutorial.R -i moon -v
+             Rscript bdc_tutorial.R -i ATGTAUCTAUCT -v -3 -w
               \n",sep="")
 
 #0=no-arg, 1=required-arg, 2=optional-arg
 spec <- matrix(c(
   'input',    'i', 2, "character",
-  'output',   'o', 2, "character",
+  'outfile',  'o', 2, "character",
   'verbose',  'v', 0, "logical",
   'write',    'w', 0, "logical",
   'three',    '3', 0, "logical",
   'help',     'h', 0, "logical"
 ), byrow=TRUE, ncol=4);
 
-#argString <- c("-i", "CAUAUCUAA", "-3", "-v", "-o", "testfile.tsv")
 args=getopt( spec, argString)
 
 if ( !is.null(args$help) ) {
@@ -72,10 +77,22 @@ if ( !is.null(args$help) ) {
   q(save="no",status=1,runLast=FALSE)
 }
 
+# Assign the default values
 if(is.null(args$input)){args$input <- "CAUAUCUAA"}
-if(is.null(args$output)){args$output <- F} else {args$outfile <- "tutorial_output.tsv"}
 if(is.null(args$three)){args$three <- F}
 if(is.null(args$verbose)){args$verbose <- F}
+if(is.null(args$write)){args$write <- F}
+if(is.null(args$outfile)){
+  args$outfile <- "tutorial_output.txt"
+} else {
+  # check the extension and update if necessary
+  ext <- substr(args$outfile, nchar(args$outfile) - 3, nchar(args$outfile))
+  if (ext %in% c(".csv", ".tsv", ".txt")){
+    args$outfile <- paste0(substr(args$outfile, 1, nchar(args$outfile)-4), ".txt")
+  } else {
+    args$outfile <- paste0(args$outfile, ".txt")
+  }
+}
 
 #-----------------------------------------------------
 # Required Functions
@@ -85,13 +102,13 @@ format_seq <- function(x=args$input){
   # Must include complete codons
   if(nchar(x) %% 3 != 0){
     add_to_log(lvl="error", func="format_seq", message = "Provided input contains an incomplete codon, check the sequence and rerun.")
-    q(save="no",status=1,runLast=FALSE)
+    safe_exit()
   }
   
   # Must only consist of ACGT
   if(grepl("[^ACGU$]+", toupper(x))){
     add_to_log(lvl="error", func="format_seq", message = "Provided input contains characters other than ACGU, check the sequence and rerun.")
-    q(save="no",status=1,runLast=FALSE)
+    safe_exit()
   }
   
   return(split2codons(x))
@@ -201,21 +218,31 @@ three2one <- function(x){
          NA)
 }
 
+write.log <- function(f = args$outfile){
+  logname <- gsub(".txt$", ".log", f, perl = T)
+  write.table(x = logbook, file = logname, row.names = F, col.names = T, sep = '\t', quote = F)
+}
+
+safe_exit <- function(){
+  write.log()
+  q(save="no",status=1,runLast=FALSE)
+}
+
 #-----------------------------------------------------
 # Main
 #----------------------------------------------------- 
 #---------------------------------
 # Gather System Information
 #---------------------------------
-add_to_log(lvl = "info", func="main", message=paste0("User: ", Sys.info()[['effective_user']]))
-add_to_log(lvl = "info", func="main", message=paste0("Running from: ", Sys.info()[['nodename']]))
-add_to_log(lvl = "info", func="main", message=paste0("Platform: ", sessionInfo()["platform"]))
-add_to_log(lvl = "info", func="main", message=paste0("R version: ", R.version.string ))
-add_to_log(lvl = "info", func="main", message=paste0("R packages loaded: ",  paste(names(sessionInfo()$otherPkgs), collapse=", ")))
-add_to_log(lvl = "info", func="main", message=paste0("Rscript: ", gsub("--file=", "", grep(pattern = "^--file", commandArgs(trailingOnly = F), value = T))))
-add_to_log(lvl = "info", func="getopt", message=paste0("CommandLine: ", paste(commandArgs(trailingOnly = T), collapse=" ")))
-add_to_log(lvl = "info", func="getopt", message=paste0("Arguments: ", paste(names(args), args, sep=" = ")))
-add_to_log(lvl = "info", func="main", message=paste0("Current Working Directory: ", getwd()))
+add_to_log(lvl = "info", func="main", message=paste0("User: ", Sys.info()[['effective_user']]), printmsg = args$verbose)
+add_to_log(lvl = "info", func="main", message=paste0("Running from: ", Sys.info()[['nodename']]), printmsg = args$verbose)
+add_to_log(lvl = "info", func="main", message=paste0("Platform: ", sessionInfo()["platform"]), printmsg = args$verbose)
+add_to_log(lvl = "info", func="main", message=paste0("R version: ", R.version.string ), printmsg = args$verbose)
+add_to_log(lvl = "info", func="main", message=paste0("R packages loaded: ",  paste(names(sessionInfo()$otherPkgs), collapse=", ")), printmsg = args$verbose)
+add_to_log(lvl = "info", func="main", message=paste0("Rscript: ", gsub("--file=", "", grep(pattern = "^--file", commandArgs(trailingOnly = F), value = T))), printmsg = args$verbose)
+add_to_log(lvl = "info", func="getopt", message=paste0("CommandLine: ", paste(commandArgs(trailingOnly = T), collapse=" ")), printmsg = args$verbose)
+add_to_log(lvl = "info", func="getopt", message=paste0("Arguments: ", paste(names(args), args, sep=" = ")), printmsg = args$verbose)
+add_to_log(lvl = "info", func="main", message=paste0("Current Working Directory: ", getwd()), printmsg = args$verbose)
 
 #---------------------------------
 # Check the input string for validity
@@ -237,22 +264,26 @@ if (!args$three){
   final <- paste(x, collapse = "-")
 }
 
-if (args$verbose){
-  msg <- paste("The RNA sequence", args$input, "translates to the protein sequence:", final)
-  add_to_log(lvl = "info", func="main", message=msg)
-}
-
-#---------------------------------
-# Write the output to disk
-#---------------------------------
-if (args$output){
-  fname <- file.path(args$outfile) #"/sbgenomics/output-files", 
-  write.table(x = final, file = fname, row.names = F, col.names = T, sep = '\t', quote = F)
-  add_to_log(lvl="info", func="export", message = paste0("Files exported to ", fname, "\n"))
-}
+msg <- paste("The RNA sequence", args$input, "translates to the protein sequence:", final)
+add_to_log(lvl = "info", func="main", message=msg)
 
 #-----------------------------------------------------
 # Close out the script
 #-----------------------------------------------------
-add_to_log(lvl="info", func="main", message = paste0("Process began at ", init, " and finished at ", Sys.time(), "\n"))
+add_to_log(lvl="info", func="main", message = paste0("Process began at ", init, " and finished at ", Sys.time()))
+
+#---------------------------------
+# Write the output to disk
+#---------------------------------
+if (args$write){
+  fname <- file.path(args$outfile) 
+  write(final, fname)
+  add_to_log(lvl="info", func="export", message = paste0("Translation exported to ", fname))
+}
+
+#---------------------------------
+# Write the log to file
+#---------------------------------
+write.log(f = args$outfile)
+
 add_to_log(lvl="info", func="main", message = "Finished\n")
