@@ -1,5 +1,10 @@
 #-------------------------------------------------
 # Base image
+# Provides:
+# Base Image: rocker/tidyverse:4.4.2
+# Build Cmd: docker build --rm -t rtibiocloud/bdc_tutorial:v1.0.0 -f Dockerfile .
+# Pull Cmd: docker pull rtibiocloud/bdc_tutorial:v1.0.0
+# Run Cmd: docker run --rm -v ${PWD}:/data -w /data rtibiocloud/bdc_tutorial:v1.0.0 /bin/bash -c ""
 #-------------------------------------------------
 FROM rocker/tidyverse:4.4.2
 
