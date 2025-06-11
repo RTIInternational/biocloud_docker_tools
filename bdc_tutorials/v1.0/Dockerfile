@@ -32,7 +32,7 @@ ENV PATH=$PATH:/opt/
 #-------------------------------------------------
 # Copy script
 #-------------------------------------------------
-COPY bdc_tutorial.R /opt/bdc_tutorial.R
+COPY bdc_tutorial/aa_translator.R /opt/bdc_tutorial/aa_translator.R
 
 #-------------------------------------------------
 # Create working directory
@@ -43,4 +43,4 @@ WORKDIR /scratch
 #-------------------------------------------------
 # Set default command to display help message
 #-------------------------------------------------
-CMD ["Rscript", "/opt/bdc_tutorial.R", "-h"]
+CMD ["Rscript", "/opt/bdc_tutorial/aa_translator.R", "-h"]
