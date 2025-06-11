@@ -43,7 +43,7 @@ add_to_log <- function(lvl, func, message, printmsg = T){
 argString <- commandArgs(trailingOnly = T) # Read in command line arguments
 #print(argString)
 
-usage <- paste("Usage: bdc_tutorial.R
+usage <- paste("Usage: aa_translator
              -- Required Parameters --
               
              -- Optional Parameters -- 
@@ -56,7 +56,7 @@ usage <- paste("Usage: bdc_tutorial.R
              -- Help Flag --  
               [-h | --help]         <Displays this help message>
              Example:
-             Rscript bdc_tutorial.R -i ATGTAUCTAUCT -v -3 -w
+             Rscript aa_translator -i ATGTAUCTAUCT -v -3 -w
               \n",sep="")
 
 #0=no-arg, 1=required-arg, 2=optional-arg
