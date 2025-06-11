@@ -22,7 +22,7 @@ This is a simple script that translates a default or user supplied RNA sequence 
 
 The following command can be used to run the docker: 
 ```
-docker pull rtibiocloud/bdc_tutorialr:<tagname>
+docker pull rtibiocloud/bdc_tutorial:<tagname>
 docker run -it rtibiocloud/bdc_tutorial:<tagname> -c "Rscript /opt/bdc_tutorial/aa_translator.R --help"
 ```
 
@@ -58,10 +58,14 @@ Running this command will build a Docker image with the name `bdc_tutorial:v1.0.
 
 ## Rscript Output
 A file with the translated sequence with the following structure
+```
 STICK
+```
+<br>
 If the --three flag was used the output will use this example format
+```
 Ser-Thr-Ile-Cys-Lys
-
+```
 
 A tab-delimited log file with 4 columns and a variable number of rows
 |     Column     | Description                                            |
@@ -75,6 +79,7 @@ A tab-delimited log file with 4 columns and a variable number of rows
 `docker run -v ${PWD}/example_files/:/data -t rtibiocloud/bdc_tutorial:v1.0.0 /bin/bash  -c "Rscript /opt/bdc_tutorial/aa_translator.R -i CAUAUCUAA -3 -v -w"`
 
 <details>
+
 ```
 Loading required package: getopt
 Warning message:
