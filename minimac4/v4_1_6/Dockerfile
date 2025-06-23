@@ -24,9 +24,8 @@ RUN apt-get update \
 RUN wget https://github.com/statgen/Minimac4/releases/download/v4.1.6/minimac4-4.1.6-Linux-x86_64.sh --no-check-certificate
 RUN chmod +x minimac4-4.1.6-Linux-x86_64.sh
 RUN ./minimac4-4.1.6-Linux-x86_64.sh --skip-license
-RUN mv bin/minimac4 opt/
 
 WORKDIR /
 
-ENV PATH=$PATH:/opt
+ENV PATH=$PATH:/bin
 
