@@ -15,8 +15,7 @@ RUN useradd docker \
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         wget \
         libgomp1 \
@@ -28,12 +27,6 @@ RUN wget https://storage.googleapis.com/broad-alkesgroup-public/Eagle/downloads/
     && rm Eagle_v2.4.1.tar.gz \
     && mv Eagle_v2.4.1 /Eagle
 
-#### Install Eagle supplementary files ####
-RUN mkdir /Eagle/supplementary_files
-WORKDIR /Eagle/supplementary_files
-RUN wget https://storage.googleapis.com/broad-alkesgroup-public/Eagle/downloads/tables/genetic_map_hg19_withX.txt.gz --no-check-certificate
-RUN wget https://storage.googleapis.com/broad-alkesgroup-public/Eagle/downloads/tables/genetic_map_hg38_withX.txt.gz --no-check-certificate
-
 WORKDIR /
 
-ENV PATH=$PATH:/Eagle/eagle
+ENV PATH=$PATH:/Eagle
