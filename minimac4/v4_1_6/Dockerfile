@@ -2,7 +2,11 @@
 FROM ubuntu:22.04
 
 # Maintainer and author
-LABEL maintainer="Stephanie Giamberardino <sgiamberardino@rti.org>"
+LABEL maintainer="Stephanie Giamberardino <sgiamberardino@rti.org>" \
+      base-image="ubuntu:22.04" \
+      description="minimac4 imputation software" \
+      software-website="https://github.com/statgen/Minimac4" \
+      software-version="v4.6.1"
 
 #### Basic Ubuntu setup ####
 
@@ -24,8 +28,12 @@ RUN apt-get update \
 RUN wget https://github.com/statgen/Minimac4/releases/download/v4.1.6/minimac4-4.1.6-Linux-x86_64.sh --no-check-certificate
 RUN chmod +x minimac4-4.1.6-Linux-x86_64.sh
 RUN ./minimac4-4.1.6-Linux-x86_64.sh --skip-license
+RUN cp /bin/minimac4 /opt/
 
+# Set working directory and path
 WORKDIR /
+ENV PATH=pkg-config:$PATH:/opt/
 
-ENV PATH=$PATH:/bin
-
+# Using CMD instead of ENTRYPOINT allows for easy interactive login with bash command.
+# This way, overriding with --entrypoint is not necessary when logging in interactively.
+CMD ["minimac4"]
