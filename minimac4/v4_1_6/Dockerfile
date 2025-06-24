@@ -27,12 +27,11 @@ RUN apt-get update \
 #### Install minimac4 ####
 RUN wget https://github.com/statgen/Minimac4/releases/download/v4.1.6/minimac4-4.1.6-Linux-x86_64.sh --no-check-certificate
 RUN chmod +x minimac4-4.1.6-Linux-x86_64.sh
-RUN ./minimac4-4.1.6-Linux-x86_64.sh --skip-license
-RUN cp /bin/minimac4 /opt/
+RUN ./minimac4-4.1.6-Linux-x86_64.sh --prefix=/opt --skip-license
 
 # Set working directory and path
 WORKDIR /
-ENV PATH=pkg-config:$PATH:/opt/
+ENV PATH=pkg-config:$PATH:/opt/bin/
 
 # Using CMD instead of ENTRYPOINT allows for easy interactive login with bash command.
 # This way, overriding with --entrypoint is not necessary when logging in interactively.
