@@ -28,7 +28,7 @@ docker run -it rtibiocloud/bdc_tutorial:<tagname> -c "Rscript /opt/bdc_tutorial/
 
 It is recommended that the latest version is used for most applications:
 ```
-rtibiocloud/bdc_tutorial:latest
+rtibiocloud/bdc_tutorial:v1.0_9b4d5cd
 ```
 
 <br>
