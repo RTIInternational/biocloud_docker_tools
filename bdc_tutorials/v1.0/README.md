@@ -26,6 +26,11 @@ docker pull rtibiocloud/bdc_tutorial:<tagname>
 docker run -it rtibiocloud/bdc_tutorial:<tagname> -c "Rscript /opt/bdc_tutorial/aa_translator.R --help"
 ```
 
+It is recommended that the latest version is used for most applications:
+```
+rtibiocloud/bdc_tutorial:latest
+```
+
 <br>
 
 
