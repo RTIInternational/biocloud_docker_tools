@@ -178,8 +178,8 @@ def get_file_metadata_for_file_path(file_path, study_id, consent_group):
 def get_receipt_manifest_file_pointer_for_bucket(bucket_name, prefix):
 	# print(f"get_receipt_manifest_file_pointer_for_bucket")
     timestr = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d%H%M%S")
-    if (prefix != ""):
-        manifest_filepath = bucket_name + '.' + prefix + '.manifest.' + timestr + '.tsv'
+    if prefix != "":
+        manifest_filepath = bucket_name + "." + prefix + '.manifest.' + timestr + '.tsv'
     else:
         manifest_filepath = bucket_name + '.manifest.' + timestr + '.tsv'
 	f = open(manifest_filepath, 'wt')
