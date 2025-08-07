@@ -182,9 +182,9 @@ def get_receipt_manifest_file_pointer_for_bucket(bucket_name, prefix):
         manifest_filepath = bucket_name + "." + prefix + '.manifest.' + timestr + '.tsv'
     else:
         manifest_filepath = bucket_name + '.manifest.' + timestr + '.tsv'
-	f = open(manifest_filepath, 'wt')
-	print(f"get_receipt_manifest_file_pointer_for_bucket - done")
-	return f
+    f = open(manifest_filepath, 'wt')
+    print(f"get_receipt_manifest_file_pointer_for_bucket - done")
+    return f
 
 def get_manifest_file_pointer_for_directory(directory_name):
 	timestr = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d%H%M%S")
