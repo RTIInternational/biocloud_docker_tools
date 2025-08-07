@@ -38,7 +38,7 @@ def main():
 	calculate_md5sum_for_cloud_paths_threaded(od, args.checksum_threads)
 	assign_guids(od)
 	global out_file
-	out_file = get_receipt_manifest_file_pointer_for_bucket(args.bucket)
+	out_file = get_receipt_manifest_file_pointer_for_bucket(args.bucket, args.prefix)
 	update_manifest_file(out_file, od)				
 	out_file.close()
 	upload_manifest_file_to_s3_bucket(out_file.name, args.bucket)
