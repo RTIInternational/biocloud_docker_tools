@@ -23,6 +23,7 @@ init <- Sys.time(); timer <- proc.time();
 if(!require('getopt')){install.packages('getopt', dependencies = T); library(getopt)}
 if(!require('dplyr')){install.packages('dplyr', dependencies = T); library(dplyr)}
 if(!require('pdftools')){install.packages('pdftools', dependencies = T); library(pdftools)}
+if(!require('stringr')){install.packages('stringr', dependencies = T); library(stringr)}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Setup logging
@@ -88,6 +89,42 @@ if(is.null(args$verbose)){args$verbose <- F}
 #-----------------------------------------------------
 # Required Functions
 #-----------------------------------------------------
+parse_filename <- function(fname) {
+  f <- basename(fname)
+  
+  # Study: RMIP_XXX_001_A_001[_V]?_20240515_Anything.pdf
+  pat_study <- "^(RMIP)_([0-9]{3})_([0-9]{3})_([A-Z])_([0-9]{3})(?:_([A-Z]))?_([0-9]{8})_.+\\.pdf$"
+  m1 <- str_match(f, pat_study)
+  
+  if (!is.na(m1[,1])) {
+    return(list(
+      Consortium   = m1[,2],
+      Project      = m1[,3],
+      Participant  = m1[,4],
+      Discriminator= m1[,5],
+      Identifier   = m1[,6],
+      Vial         = m1[,7] # may be NA if not present
+    ))
+  }
+  
+  # Pilot: RMIP_XXX_PL_001[_V]?_20240515_Anything.pdf
+  pat_pilot <- "^(RMIP)_([0-9]{3})_PL_([0-9]{3})(?:_([A-Z]))?_([0-9]{8})_.+\\.pdf$"
+  m2 <- str_match(f, pat_pilot)
+  
+  if (!is.na(m2[,1])) {
+    return(list(
+      Consortium   = m2[,2],
+      Project      = m2[,3],
+      Participant  = NA_character_, # not present in pilot
+      Discriminator= "PL",              
+      Identifier   = m2[,4],
+      Vial         = m2[,5] # may be NA if not present
+    ))
+  }
+  
+  stop("Filename does not match expected study or pilot sample format.")
+}
+
 load_pdf <- function(fname){
   
   tmp <- tryCatch(
@@ -155,6 +192,8 @@ add_to_log(lvl = "info", func="main", message=paste0("Rscript: ", gsub("--file="
 add_to_log(lvl = "info", func="getopt", message=paste0("CommandLine: ", paste(commandArgs(trailingOnly = T), collapse=" ")))
 add_to_log(lvl = "info", func="getopt", message=paste0("Arguments: ", paste(names(args), args, sep=" = ")))
 
+parts <- parse_filename(args$pdf)
+												
 txt <- load_pdf(fname = args$pdf)
 
 id <- txt[[1]][length(txt[[1]])-1] %>% strsplit(., " ") %>% sapply(., `[`, 1) %>% gsub(".pdf$", "", ., perl = T, ignore.case = T) %>% strsplit(x = , split = "-", .)
@@ -171,12 +210,12 @@ diameter <- extract_value("Estimated cell diameter (um)")
 diameter_stdev <- extract_value("Cell diameter standard deviation (um)")
 agg <- extract_value("\\(%\\) of cells in aggregates with five or more cells")
 
-final <- data.frame("Consortium" = prefix %>% substr(.,1,4),
-                    "Project" = prefix %>% substr(.,5,7),
-                    "Participant" = prefix %>% substr(.,8,10),
-                    "Discriminator" = prefix %>% substr(.,11,11),
-                    "Identifier" = prefix %>% substr(.,12,14),
-                    "Vial" = prefix %>% substr(.,15,15),
+final <- data.frame("Consortium" = parts$Consortium,
+                    "Project" = parts$Project,
+                    "Participant" = parts$Participant,
+                    "Discriminator" = parts$Discriminator,
+                    "Identifier" = parts$Identifier,
+                    "Vial" = parts$Vial,
                     "Date" = id %>% sapply(., `[`, 1),
                     "Viability" = viable,
                     "Live" = live,
