@@ -37,17 +37,21 @@ if (!is.null(opt$folder)){
 ### functions ###
 extract_file_info <- function(project_id,parent_id=NA,parent_name="root", df_files) {
   print(paste(project_id, parent_id,parent_name))
+
+  # Initializing empty list for extracted directory files
   offset <- 0
   subdirectory_files_list <- list()
   
+  # Initializing subdirectory_files object and checking for at least one query result
   if (is.na(parent_id)){
-    subdirectory_files <- a$files$query(project = project_id, limit = 100, offset = offset)
+    subdirectory_files <- a$files$query(project = project_id, limit = 1, offset = offset)
   } else{
     print(parent_id)
-    subdirectory_files <- a$files$query(parent = parent_id, limit = 100, offset = offset)
+    subdirectory_files <- a$files$query(parent = parent_id, limit = 1, offset = offset)
     print(paste0("Starting folder search with file$id or parent_id: ", parent_id))
   }
 
+  # Looping through directory to get all items
   while (length(subdirectory_files$items) > 0) {
     if (nchar(parent_id) == 0){
       subdirectory_files <- a$files$query(project = project_id, limit = 100, offset = offset)
@@ -59,6 +63,7 @@ extract_file_info <- function(project_id,parent_id=NA,parent_name="root", df_fil
     offset <- offset + length(subdirectory_files$items)
   }
   
+  # Extracting file info and tag list
   for(file in subdirectory_files_list){
     print(file$tags)
     print(file)
@@ -109,9 +114,9 @@ get_file_folder_id <- function(project_id, name){
     
     # Make an initial call to the project/directory to see if there are any files
     if (nchar(matched_id) == 0){
-      subdirectory_files <- a$files$query(project = project_id, limit = 100, offset = offset)
+      subdirectory_files <- a$files$query(project = project_id, limit = 1, offset = offset)
     } else{
-      subdirectory_files <- a$files$query(parent = matched_id, limit = 100, offset = offset)
+      subdirectory_files <- a$files$query(parent = matched_id, limit = 1, offset = offset)
     }
     
     # Loop to get all files in current directory
