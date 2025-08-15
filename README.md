@@ -67,22 +67,30 @@ To create AWS ECR images from Docker images in Docker Hub, run the following cod
 aws_account_id=<AWS_ACCOUNT_ID>
 aws_region=<AWS_REGION>
 aws_profile=<AWS_PROFILE>
-image_id=<IMAGE_ID>
 repository_tag=<REPOSITORY_TAG>
+project_number=<PROJECT_NUMBER>
 
 # Pull image to be transferred to local system
 docker pull $repository_tag
 
 # Tag image
-docker tag $image_id $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_tag
+docker tag $repository_tag $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_tag
 
-# Create repository in ECR for image
+# Create repository in ECR for image if it doesn't exist
+repository_name=$(echo $repository_tag | perl -pe 's/:.+//;')
+aws ecr create-repository \
+  --repository-name $repository_name \
+  --tags '[{"Key": "project-number","Value": "'$project_number'"}]' \
+  --profile $aws_profile
 
 # Authenticate your Docker client to the Amazon ECR registry
 aws ecr get-login-password --region $aws_region --profile $aws_profile | docker login --username AWS --password-stdin $aws_account_id.dkr.ecr.$aws_region.amazonaws.com
 
 # Push image
 docker push $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_tag
+
+# Set permissions on repository
+
 ```
 <br><br>
 
