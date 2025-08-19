@@ -92,8 +92,8 @@ if(is.null(args$verbose)){args$verbose <- F}
 parse_filename <- function(fname) {
   f <- basename(fname)
   
-  # Study: RMIP_XXX_001_A_001[_V]?_20240515_Anything.pdf
-  pat_study <- "^(RMIP)_([0-9]{3})_([0-9]{3})_([A-Z])_([0-9]{3})(?:_([A-Z]))?_([0-9]{8})_.+\\.pdf$"
+  # Study: RMIP_XXX_001_A_001[_V]?_Anything.pdf
+  pat_study <- "^(RMIP)_([0-9]{3})_([0-9]{3})_([A-Z])_([0-9]{3})(?:_([A-Z]))?_.+\\.pdf$"
   m1 <- str_match(f, pat_study)
   
   if (!is.na(m1[,1])) {
@@ -107,8 +107,8 @@ parse_filename <- function(fname) {
     ))
   }
   
-  # Pilot: RMIP_XXX_PL_001[_V]?_20240515_Anything.pdf
-  pat_pilot <- "^(RMIP)_([0-9]{3})_PL_([0-9]{3})(?:_([A-Z]))?_([0-9]{8})_.+\\.pdf$"
+  # Pilot: RMIP_XXX_PL_001[_V]?_Anything.pdf
+  pat_pilot <- "^(RMIP)_([0-9]{3})_PL_([0-9]{3})(?:_([A-Z]))?_.+\\.pdf$"
   m2 <- str_match(f, pat_pilot)
   
   if (!is.na(m2[,1])) {
