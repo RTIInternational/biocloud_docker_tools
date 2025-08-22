@@ -262,15 +262,11 @@ def upload_manifest_file_to_gcs_bucket(receipt_manifest_file_path, upload_gcs_bu
 	blob.upload_from_filename(receipt_manifest_file_path)
 	# logging.warning(f"Uploading {receipt_manifest_file_path} to gs://{upload_gcs_bucket_name} done")
 
-def upload_manifest_file_to_s3_bucket(receipt_manifest_file_path, s3_bucket_name, s3_prefix):
+def upload_manifest_file_to_s3_bucket(receipt_manifest_file_path, upload_s3_bucket_name):
     destination_path = f'/opt/output/{os.path.basename(receipt_manifest_file_path)}'    
     # Copy the file to /opt/data directory
     shutil.copy(receipt_manifest_file_path, destination_path)
     print(f"Copied {receipt_manifest_file_path} to {destination_path}")
-    if (s3_prefix != ''):
-        upload_s3_bucket_name = s3_bucket_name + "/" + s3_prefix
-    else:
-        upload_s3_bucket_name = s3_bucket_name
     aws_client = boto3.client('s3')
     aws_client.upload_file(receipt_manifest_file_path, upload_s3_bucket_name, basename(receipt_manifest_file_path))
     print("Uploading ", receipt_manifest_file_path, " to s3://", upload_s3_bucket_name, " done", sep='')
