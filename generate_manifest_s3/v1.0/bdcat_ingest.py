@@ -179,6 +179,7 @@ def get_receipt_manifest_file_pointer_for_bucket(bucket_name, prefix):
 	# print(f"get_receipt_manifest_file_pointer_for_bucket")
     timestr = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d%H%M%S")
     if prefix != "":
+        prefix = prefix.replace("/", "_")
         manifest_filepath = bucket_name + "." + prefix + '.manifest.' + timestr + '.tsv'
     else:
         manifest_filepath = bucket_name + '.manifest.' + timestr + '.tsv'
