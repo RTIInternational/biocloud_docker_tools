@@ -5,7 +5,7 @@ LABEL description="This Docker image contains an in-house script written to extr
 LABEL software-version="1.1"
 
 RUN apk update
-RUN apk add --no-cache vim vim-doc vim-tutor zip unzip
+RUN apk add --no-cache vim vim-doc vim-tutor zip unzip libarchive-tools
 RUN apk add --no-cache bash
 
 # Add scripts to make it run

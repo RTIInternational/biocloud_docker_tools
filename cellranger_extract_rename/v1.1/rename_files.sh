@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Function to display script usage
 usage() {
@@ -236,11 +237,11 @@ TMP_OUTPUT_DIR_EXISTS=false
 if [[ (-d ${TMP_OUTPUT_DIR}) && (${COMPRESSED_INPUT} == true) ]]; then
   echo_verbose "WARNING: temporary output directory for file copying already exists"
   echo_verbose "WARNING: files will be copied here from input ZIP file"
-  TMP_OUTPUT_DIR_EXISTS=true
 else
   echo_verbose "INFO: Creating TMP_OUTPUT_DIR"
   mkdir -p ${TMP_OUTPUT_DIR}
 fi
+TMP_OUTPUT_DIR_EXISTS=true
 
 echo_verbose ""
 
@@ -248,11 +249,11 @@ FILE_LIST=($INPUT_NAME/web_summary.html $INPUT_NAME/metrics_summary.csv $INPUT_N
 # unzip outs folder if in compressed mode.
 if [[ ${COMPRESSED_INPUT} == true ]]; then
      echo_verbose "INFO: Extracting all files from '${INPUT}'"
-     unzip -j $INPUT -d ${OUTPUT_DIR}
+     bsdtar --strip-components=1 -xvf $INPUT -C ${OUTPUT_DIR}
 fi
 if [[ ${COMPRESSED_INPUT} == false ]]; then
      echo_verbose "INFO: Extracting all files from '${INPUT}'"
-     cp -r $INPUT/* ${OUTPUT_DIR} 
+     cp -r $INPUT/* ${OUTPUT_DIR}
 fi
 
 #rename all files with linker prefix
@@ -261,12 +262,40 @@ prefix="${LINKER}"  # Replace with the desired prefix
 find ${OUTPUT_DIR} -type f -print0 | while IFS= read -r -d $'\0' file; do
   dir_path=$(dirname "$file")
   file_name=$(basename "$file")
+
+  echo_verbose "Checking for linker prefix of '$file_name'"
+
+  PREFIX_STRING=${file_name::20}
+  IFS="_" read -ra LINKER_SPLIT <<< "$PREFIX_STRING"
+
+  echo_verbose "INFO: Checking ${PREFIX_STRING} for linker match"
+  j=0
+  REGEX_MATCH=true
+  for i in "${LINKER_SPLIT[@]}"; do
+      echo_verbose "INFO: part $j: $i"
+      echo_verbose "INFO: regexp to match: ${LINKER_ARRAY[$j]}"
+      if [[ "$i" =~ ${LINKER_ARRAY[$j]} && (${#i} == ${LINKER_PIECE_LENGTH_ARRAY[$j]} || ${LINKER_PIECE_LENGTH_ARRAY[$j]} == 0) ]]; then
+          echo_verbose "INFO: Regexp match found"
+      else
+          echo_verbose "INFO: Regexp not matched"
+          REGEX_MATCH=false
+      fi
+      ((j+=1))
+      echo_verbose ""
+  done
+
+  if [[ ${REGEX_MATCH} == true ]]; then
+    echo "ERROR: Linker found in prefix of '${file}'"
+    echo "ERROR: Please remove linker prefixes from in front of files and rerun."
+    exit 1
+  fi
+
   mv "$file" "$dir_path/${prefix}_${file_name}"
   echo_verbose "Renamed file '$file' to '${prefix}_${file_name}'"
 done
 
 #compress all files but file list if in compressed mode.
-[[ ${COMPRESSED_OUTPUT_MODE} == true ]] && zip -r ${OUTPUT_DIR}/${LINKER}_outs.zip ${INPUT_NAME} -x "${FILE_LIST[@]}"
+[[ (${COMPRESSED_OUTPUT_MODE} == true) && (${COMPRESSED_INPUT} == false) ]] && zip -r ${OUTPUT_DIR}/${LINKER}_outs.zip ${OUTPUT_DIR} -x "${FILE_LIST[@]}"
 
 if [[ ${TMP_OUTPUT_DIR_EXISTS} == true ]]; then
   echo_verbose "INFO: Removing TMP_OUTPUT_DIR"
