@@ -75,4 +75,4 @@ RUN chmod -R 755 /opt/
 WORKDIR /data
 RUN chown -R docker:staff /data
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+# ENTRYPOINT [ "/opt/entrypoint.sh" ]
