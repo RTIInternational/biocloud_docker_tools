@@ -1,0 +1,281 @@
+{
+    "extract_bfile_variants": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "bed": {
+                "type": "str"
+            },
+            "bim": {
+                "type": "str"
+            },
+            "fam": {
+                "type": "str"
+            },
+            "variant_list": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "plink",
+            "--bed",
+            "<inputs.bed>",
+            "--bim",
+            "<inputs.bim>",
+            "--fam",
+            "<inputs.fam>",
+            "--extract",
+            "<inputs.variant_list>",
+            "--out",
+            "<inputs.out_prefix>",
+            "--recode",
+            "vcf"
+        ],
+        "outputs": {
+            "vcf": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.vcf"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>extract_bfile_variants.log"
+            }
+        }
+    },
+    "analyze_missingness": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "vcf": {
+                "type": "file"
+            },
+            "hladq_variants_file": {
+                "type": "file"
+            },
+            "non_hladq_variants_file": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "/opt/analyze_missingness.pl",
+            "--vcf",
+            "<inputs.vcf>",
+            "--hladq_variants_file",
+            "<inputs.hladq_variants_file>",
+            "--non_hladq_variants_file",
+            "<inputs.non_hladq_variants_file>",
+            "--out_prefix",
+            "<inputs.out_prefix>"
+        ],
+        "outputs": {
+            "missing_summary": {
+                "type": "file",
+                "value": "<inputs.out_prefix>_missing_summary.tsv"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>analyze_missingness.log"
+            }
+        }
+    },
+    "convert_vcf_to_bfile": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "vcf": {
+                "type": "str"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "plink",
+            "--vcf",
+            "<inputs.vcf>",
+            "--out",
+            "<inputs.out_prefix>",
+            "--make-bed"
+        ],
+        "outputs": {
+            "bfile": {
+                "type": "str",
+                "value": "<inputs.out_prefix>"
+            },
+            "bed": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>convert_vcf_to_bfile.log"
+            }
+        }
+    },
+    "merge_sample_and_control_bfiles": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "control_bfile": {
+                "type": "str"
+            },
+            "sample_bfile": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "plink",
+            "--bfile",
+            "<inputs.control_bfile>",
+            "--bmerge",
+            "<inputs.sample_bfile>",
+            "--out",
+            "<inputs.out_prefix>",
+            "--make-bed"
+        ],
+        "outputs": {
+            "bfile": {
+                "type": "str",
+                "value": "<inputs.out_prefix>"
+            },
+            "bed": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bed"
+            },
+            "bim": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.bim"
+            },
+            "fam": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.fam"
+            },
+            "plink_log": {
+                "type": "file",
+                "value": "<inputs.out_prefix>.log"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>merge_bfile_with_reference.log"
+            }
+        }
+    },
+    "calculate_t1dgrs2": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "bfile": {
+                "type": "str"
+            },
+            "yml": {
+                "type": "file"
+            },
+            "out_prefix": {
+                "type": "str"
+            }
+        },
+        "cmd": [
+            "python",
+            "-m",
+            "t1dgrs2",
+            "-b",
+            "<inputs.bfile>",
+            "-c",
+            "<inputs.yml>",
+            "-o",
+            "<inputs.out_prefix>"
+        ],
+        "outputs": {
+            "dosage": {
+                "type": "file",
+                "value": "<inputs.out_prefix>_dosage.tsv"
+            },
+            "dq_calls": {
+                "type": "file",
+                "value": "<inputs.out_prefix>_DQ_calls.tsv"
+            },
+            "results": {
+                "type": "file",
+                "value": "<inputs.out_prefix>_RESULTS.tsv"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>calculate_t1dgrs2.log"
+            }
+        }
+    },
+    "generate_report": {
+        "inputs": {
+            "output_dir": {
+                "type": "dir"
+            },
+            "t1dgrs2_results_file": {
+                "type": "file"
+            },
+            "missingness_summary_file": {
+                "type": "file"
+            },
+            "missing_hla_threshold": {
+                "type": "int",
+                "default": 1
+            },
+            "missing_non_hla_threshold": {
+                "type": "int",
+                "default": 3
+            }
+        },
+        "cmd": [
+            "/opt/generate_report.pl",
+            "--t1dgrs2_results_file",
+            "<inputs.t1dgrs2_results_file>",
+            "--missingness_summary_file",
+            "<inputs.missingness_summary_file>",
+            "--out_prefix",
+            "<inputs.output_dir>t1dgrs2_report",
+            "--missing_hla_threshold",
+            "<inputs.missing_hla_threshold>",
+            "--missing_non_hla_threshold",
+            "<inputs.missing_non_hla_threshold>"
+        ],
+        "outputs": {
+            "t1dgrs2_report": {
+                "type": "file",
+                "value": "<inputs.output_dir>t1dgrs2_report.csv"
+            },
+            "t1dgrs2_report_controls": {
+                "type": "file",
+                "value": "<inputs.output_dir>t1dgrs2_report_controls.csv"
+            },
+            "log": {
+                "type": "file",
+                "value": "<inputs.output_dir>generate_report.log"
+            }
+        }
+    }
+}
