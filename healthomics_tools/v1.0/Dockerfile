@@ -1,12 +1,12 @@
 # Use an official Python runtime as the base image
-FROM python:3.12.6-slim
+FROM python:3.12-slim
 
 # Add Container Labels
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
-LABEL description="Tools for launching WGS QC workflow"
+LABEL description="Tools for interacting with AWS HealthOmics"
 
 # Install System Dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     less \
     git \
     && rm -rf /var/lib/apt/lists/*
