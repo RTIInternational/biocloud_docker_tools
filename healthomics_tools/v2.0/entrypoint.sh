@@ -30,6 +30,10 @@ if [[ "$task" == "create_wf" ]]; then
         echo "--description not provided, exiting!"
         exit 
     fi
+    if [ -z "$readme" ]; then
+        echo "--readme not provided, exiting!"
+        exit 
+    fi
 
     # Assign default values if parameters not provided
     if [ -z "$engine" ]; then
@@ -44,13 +48,12 @@ if [[ "$task" == "create_wf" ]]; then
 
     # Create workflow
     python3 /opt/create_wf.py \
-        --aws_access_key_id "$aws_access_key_id" \
-        --aws_secret_access_key "$aws_secret_access_key" \
-        --aws_region_name "$aws_region_name" \
+        --aws_profile "$aws_profile" \
         --repo_dir "$repo_dir" \
         --main "$main" \
         --name "$name" \
         --description "$description" \
+        --readme "$readme" \
         --engine "$engine" \
         --storage_capacity $storage_capacity
 
@@ -107,9 +110,7 @@ if [[ "$task" == "start_run" ]]; then
     # Start run
     python3 /opt/start_run.py \
         --charge_code "$charge_code" \
-        --aws_access_key_id "$aws_access_key_id" \
-        --aws_secret_access_key "$aws_secret_access_key" \
-        --aws_region_name "$aws_region_name" \
+        --aws_profile "$aws_profile" \
         --workflow_id "$workflow_id" \
         --parameters "$parameters" \
         --name "$name" \
