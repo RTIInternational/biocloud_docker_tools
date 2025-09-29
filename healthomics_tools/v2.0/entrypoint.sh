@@ -10,6 +10,10 @@ if [ -z "$aws_profile" ]; then
     echo "--aws_profile not provided, exiting!"
     exit
 fi
+if [ -z "$AWS_SHARED_CREDENTIALS_FILE" ]; then
+    echo "--AWS_SHARED_CREDENTIALS_FILE not provided, exiting!"
+    exit
+fi
 
 if [[ "$task" == "create_wf" ]]; then
 

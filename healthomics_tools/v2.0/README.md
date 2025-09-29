@@ -12,6 +12,7 @@ docker run -ti \
     -v <HOST_DIR>:<CONTAINER_DIR> \
     -e task=create_wf \
     -e aws_profile=<AWS_PROFILE> \
+    -e AWS_SHARED_CREDENTIALS_FILE=<AWS_SHARED_CREDENTIAL_FILE>
     -e repo_dir=<REPO_DIR> \
     -e main=<MAIN_WDL> \
     -e name=<NAME> \
@@ -26,6 +27,7 @@ docker run -ti \
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
 | aws_profile | AWS profile to use for credentials | string  |  |  | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
 | repo_dir | Base path for Git repository containing workflow definition | string |  |  | Yes |
 | main | Path to main workflow definition file | string |  |  | Yes |
 | name | Name to assign to workflow | string |  |  | Yes |
@@ -46,6 +48,7 @@ docker run -ti \
     -e task=start_run \
     -e charge_code=<CHARGE_CODE> \
     -e aws_profile=<AWS_PROFILE> \
+    -e AWS_SHARED_CREDENTIALS_FILE=<AWS_SHARED_CREDENTIAL_FILE>
     -e workflow_id=<WORKFLOW_ID> \
     -e parameters=<PARAMETERS> \
     -e name=<NAME> \
@@ -64,6 +67,7 @@ docker run -ti \
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
 | aws_profile | AWS profile to use for credentials | string  |  |  | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
 | charge_code | RTI charge code | string |  |  | Yes |
 | workflow_id | HealthOmics ID of workflow to run | string |  |  | Yes |
 | parameters | Path to JSON file containing run parameters | string |  |  | Yes |
@@ -86,6 +90,7 @@ docker run -ti \
     -v <HOST_DIR>:<CONTAINER_DIR> \
     -e task=cancel_runs \
     -e aws_profile=<AWS_PROFILE> \
+    -e AWS_SHARED_CREDENTIALS_FILE=<AWS_SHARED_CREDENTIAL_FILE>
     -e run_ids=<RUN_IDS> \
     -e run_statuses=<RUN_STATUSES> \
     -e delete_run_data=<DELETE_RUN_DATA> \
@@ -96,6 +101,7 @@ docker run -ti \
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
 | aws_profile | AWS profile to use for credentials | string |  |  | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
 | run_ids | Run IDs of runs to cancel (separated by commas) | string |  |  | No |
 | run_statuses | Run statuses of runs to cancel (separated by commas) | string | `PENDING`, `STARTING`, `RUNNING`, `STOPPING` |  | No |
 | delete_run_data | Whether to delete run data after cancelling runs | boolean | `TRUE`, `FALSE` | `FALSE` | No |
@@ -109,9 +115,9 @@ docker run -ti \
     -v <HOST_DIR>:<CONTAINER_DIR> \
     -e task=cancel_all_runs \
     -e aws_profile=<AWS_PROFILE> \
-    -e run_status=<"PENDING|STARTING|RUNNING|STOPPING|COMPLETED|DELETED|CANCELLED|FAILED"> \
-    -e delete_run_data=<"TRUE|FALSE"> \
-    -e run_output_dir=<RUN_OUTPUT_DIR> \
+    -e AWS_SHARED_CREDENTIALS_FILE=<AWS_SHARED_CREDENTIAL_FILE>
+    -e run_ids=<RUN_IDS> \
+    -e run_statuses=<RUN_STATUSES> \
     --rm <DOCKER_IMAGE>:<TAG>
 ```
 
@@ -119,8 +125,7 @@ docker run -ti \
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
 | aws_profile | AWS profile to use for credentials | string |  |  | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
 | run_ids | Run IDs of runs to delete (separated by commas) | string |  |  | No |
 | run_statuses | Run statuses of runs to delete (separated by commas) | string | `PENDING`, `STARTING`, `RUNNING`, `STOPPING`, `COMPLETED`, `DELETED`, `CANCELLED`, `FAILED` |  | No |
-
-
 

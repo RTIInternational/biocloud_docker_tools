@@ -1,2 +1,2 @@
-boto3==1.35.20
-GitPython
+boto3==1.40.40
+GitPython==3.1.45
