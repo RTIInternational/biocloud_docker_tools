@@ -113,7 +113,7 @@ docker run -ti \
 ``` sh
 docker run -ti \
     -v <HOST_DIR>:<CONTAINER_DIR> \
-    -e task=cancel_all_runs \
+    -e task=delete_runs \
     -e aws_profile=<AWS_PROFILE> \
     -e AWS_SHARED_CREDENTIALS_FILE=<AWS_SHARED_CREDENTIAL_FILE>
     -e run_ids=<RUN_IDS> \
@@ -128,4 +128,27 @@ docker run -ti \
 | AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
 | run_ids | Run IDs of runs to delete (separated by commas) | string |  |  | No |
 | run_statuses | Run statuses of runs to delete (separated by commas) | string | `PENDING`, `STARTING`, `RUNNING`, `STOPPING`, `COMPLETED`, `DELETED`, `CANCELLED`, `FAILED` |  | No |
+
+
+## Retrieve Run Results
+
+### Command
+``` sh
+docker run -ti \
+    -v <HOST_DIR>:<CONTAINER_DIR> \
+    -e task=retrieve_run_results \
+    -e aws_profile=<AWS_PROFILE> \
+    -e AWS_SHARED_CREDENTIALS_FILE=<AWS_SHARED_CREDENTIAL_FILE>
+    -e run_id=<RUN_ID> \
+    -e target_dir=<TARGET_DIR> \
+    --rm <DOCKER_IMAGE>:<TAG>
+```
+
+### Parameters
+| Parameter | Description | Type | Choices | Default Value | Required |
+| --------- | ------ | ---- | ------- | ------------- | -------- |
+| aws_profile | AWS profile to use for credentials | string |  |  | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
+| run_id | ID of run for which to retrieve results | string |  |  | Yes |
+| target_dir | Target directory for run results | string |  |  | Yes |
 
