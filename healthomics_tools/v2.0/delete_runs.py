@@ -13,7 +13,7 @@ parser.add_argument(
     '--run_ids',
     help='Run IDs of runs to cancel (separated by commas)',
     type = str,
-    required = True
+    required = False
 )
 parser.add_argument(
     '--run_statuses',
