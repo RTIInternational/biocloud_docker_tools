@@ -115,12 +115,6 @@ parser.add_argument(
     help="file containing mafs for relevant reference population"
 )
 parser.add_argument(
-    "--population",
-    help="Reference population",
-    type = str.lower,
-    choices=["afr", "eas", "eur", "amr", "eas", "amr"]
-)
-parser.add_argument(
     "--file_out_prefix",
     help="prefix for output files"
 )

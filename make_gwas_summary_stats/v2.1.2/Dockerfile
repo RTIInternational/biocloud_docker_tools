@@ -19,4 +19,3 @@ WORKDIR /data
 RUN chmod 755 /opt/make_gwas_summary_stats.py
 
 CMD ["python", "/opt/make_gwas_summary_stats.py", "--help"]
-
