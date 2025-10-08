@@ -27,13 +27,25 @@ parser.add_argument(
 args = parser.parse_args()
 
 def traverse(o, s3_client, target_dir):
-    tree_types=(list, tuple, dict)
+    tree_types=(tuple, dict)
     for key in o:
-        if isinstance(key, tree_types):
+        if isinstance(o[key], tree_types):
             new_target_dir = "{}{}/".format(target_dir, key)
             os.system("mkdir -p {}".format(new_target_dir))
             for subkey in o[key]:
                 traverse(o[key][subkey], s3_client, new_target_dir)
+        elif isinstance(o[key], list):
+            new_target_dir = "{}{}/".format(target_dir, key)
+            os.system("mkdir -p {}".format(new_target_dir))
+            for item in o[key]:
+                if (str(item)[0:2] == "s3"):
+                    file_path = item.replace("s3://", "")
+                    path_parts = file_path.split("/")
+                    s3_bucket = path_parts[0]
+                    s3_key = "/".join(path_parts[1:])
+                    file_name = s3_key.split("/")[-1]
+                    s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, file_name))
+                    print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, file_name)))
         else:
             if (str(o[key])[0:2] == "s3"):
                 file_path = o[key].replace("s3://", "")
