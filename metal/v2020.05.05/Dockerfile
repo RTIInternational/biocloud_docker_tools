@@ -64,13 +64,17 @@ RUN cd /opt/ \
 	&& ln -s METAL-2020-05-05/build/bin/metal \
 	&& echo "HELP" > /opt/help.txt
 
+######################## Install make_metal_command_file.pl ############################
+
+COPY make_metal_command_file.pl /opt/
+
 ############################ Final system configurations ################################
 
 RUN mkdir /data/
 
 WORKDIR /data/
 
-ENV PATH="/opt/metal:${PATH}"
+ENV PATH="/opt/:${PATH}"
 
 # default help command
 CMD  ["/opt/metal", "/opt/help.txt"]
