@@ -78,3 +78,5 @@ ENV PATH="/opt/:${PATH}"
 
 # default help command
 CMD  ["/opt/metal", "/opt/help.txt"]
+
+############################## END OF DOCKERFILE #######################################

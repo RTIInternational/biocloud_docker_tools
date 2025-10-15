@@ -16,11 +16,14 @@ my %arguments = (
     'average_freq' => 'OFF',
     'min_max_freq' => 'OFF',
     'genomic_control' => 'OFF',
+    'track_positions' => 'OFF',
     'out_prefix' => 'metal',
     'out_suffix' => '.tsv',
     'separators' => 'WHITESPACE',
     'sum_stats_files' => '',
     'marker_col_names' => 'VARIANT_ID',
+    'chrom_col_names' => 'CHROM',
+    'pos_col_names' => 'POS',
     'alt_allele_col_names' => 'ALT',
     'ref_allele_col_names' => 'REF',
     'effect_col_names' => 'ALT_EFFECT',
@@ -33,6 +36,8 @@ my %arguments = (
 
 my @arrayArguments = (
     'marker_col_names',
+    'chrom_col_names',
+    'pos_col_names',
     'alt_allele_col_names',
     'ref_allele_col_names',
     'effect_col_names',
@@ -43,12 +48,13 @@ my @arrayArguments = (
     'freq_col_names'
 );
 
-my %commandArgumentXref = (
+my %metalCommandArgumentXref = (
     'SCHEME' => 'scheme',
     'COLUMNCOUNTING' => 'column_counting',
     'AVERAGEFREQ' => 'average_freq',
     'MINMAXFREQ' => 'min_max_freq',
     'GENOMICCONTROL' => 'genomic_control',
+    'TRACKPOSITIONS' => 'track_positions',
     'OUTFILE' => 'out_prefix out_suffix',
     'SEPARATOR' => 'separators',
     'MARKERLABEL' => 'marker_col_names',
@@ -62,20 +68,28 @@ my %commandArgumentXref = (
     'ANALYZE' => 'analyze'
 );
 
-my @commandOrder = (
+my %metalCustomVariableXref = (
+    'CHR' => 'chrom_col_names',
+    'POS' => 'pos_col_names'
+);
+
+my @metalCommandOrder = (
     'SCHEME',
     'COLUMNCOUNTING',
     'AVERAGEFREQ',
     'MINMAXFREQ',
     'GENOMICCONTROL',
+    'TRACKPOSITIONS',
     'OUTFILE',
     '[PROCESS]',
     'ANALYZE'
 );
 
-my @fileCommandOrder = (
+my @metalFileCommandOrder = (
     'SEPARATOR',
     'MARKERLABEL',
+    'CHR',
+    'POS',
     'ALLELELABELS',
     'EFFECTLABEL',
     'WEIGHTLABEL',
@@ -96,8 +110,11 @@ GetOptions (
     'average_freq:s',
     'min_max_freq:s',
     'genomic_control:s',
+    'track_positions:s',
     'separators:s',
     'marker_col_names:s',
+    'chrom_col_names:s',
+    'pos_col_names:s',
     'alt_allele_col_names:s',
     'ref_allele_col_names:s',
     'effect_col_names:s',
@@ -147,25 +164,37 @@ foreach my $arrayArgument (@arrayArguments) {
 
 my $metalCommand = '';
 
-foreach my $command (@commandOrder) {
+foreach my $command (@metalCommandOrder) {
     if ($command eq '[PROCESS]') {
         for (my $i=0; $i<$sumStatsCount; $i++) {
-            foreach my $fileCommand (@fileCommandOrder) {
-                my $argument = $commandArgumentXref{$fileCommand};
-                my @substitutions = ( $argument =~ /\S+/g );
-                foreach my $substitution (@substitutions) {
-                    my $argumentCount = @{$arguments{$substitution}};
-                    if ($argumentCount > $i) {
-                        $argument =~ s/$substitution/$arguments{$substitution}[$i]/;
+            foreach my $metalFileCommand (@metalFileCommandOrder) {
+                if (exists($metalCommandArgumentXref{$metalFileCommand})) {
+                    my $metalArgument = $metalCommandArgumentXref{$metalFileCommand};
+                    my @substitutions = ( $metalArgument =~ /\S+/g );
+                    foreach my $substitution (@substitutions) {
+                        my $metalArgumentCount = @{$arguments{$substitution}};
+                        if ($metalArgumentCount == 1) {
+                            $metalArgument =~ s/$substitution/$arguments{$substitution}[0]/;
+                        } elsif ($metalArgumentCount > $i) {
+                            $metalArgument =~ s/$substitution/$arguments{$substitution}[$i]/;
+                        }
                     }
-                }
-                if ($argument ne $commandArgumentXref{$fileCommand}) {
-                    $metalCommand .= $fileCommand . ' ' . $argument . "\n";
+                    if ($metalArgument ne $metalCommandArgumentXref{$metalFileCommand}) {
+                        $metalCommand .= $metalFileCommand . ' ' . $metalArgument . "\n";
+                    }
+                } elsif (exists($metalCustomVariableXref{$metalFileCommand})) {
+                    my $argumentCount = @{$arguments{$metalCustomVariableXref{$metalFileCommand}}};
+                    $metalCommand .= 'CUSTOMVARIABLE ' . $metalFileCommand . "\n";
+                    if ($argumentCount == 1) {
+                        $metalCommand .= 'LABEL ' . $metalFileCommand . ' as ' . $arguments{$metalCustomVariableXref{$metalFileCommand}}[0] . "\n";
+                    } elsif ($argumentCount > $i) {
+                        $metalCommand .= 'LABEL ' . $metalFileCommand . ' as ' . $arguments{$metalCustomVariableXref{$metalFileCommand}}[$i] . "\n";
+                    }
                 }
             }
         }
     } else {
-        my $argument = $commandArgumentXref{$command};
+        my $argument = $metalCommandArgumentXref{$command};
         my $addCommand = TRUE;
         my @substitutions = ( $argument =~ /\S+/g );
         foreach my $substitution (@substitutions) {
@@ -175,7 +204,7 @@ foreach my $command (@commandOrder) {
                 $argument =~ s/$substitution/$arguments{$substitution}/;
             }
         }
-        if ($argument ne $commandArgumentXref{$command} && $addCommand) {
+        if ($argument ne $metalCommandArgumentXref{$command} && $addCommand) {
             $metalCommand .= $command . ' ' . $argument . "\n";
         }
     }
