@@ -24,4 +24,3 @@ WORKDIR /data
 RUN chmod 755 /opt/rti-tsv-utils-join.py
 RUN chmod 755 /opt/rti-tsv-utils-sort.py
 
-CMD ["python", "/opt/rti-tsv-utils-join.py", "--help"]

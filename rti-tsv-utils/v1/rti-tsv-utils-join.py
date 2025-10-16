@@ -154,7 +154,7 @@ for rightArgument in rightArguments:
 # Convert comma-separated arguments to lists
 commaSepArguments = ["left_cols"]
 for commaSepArgument in commaSepArguments:
-    setattr(args, commaSepArgument, getColListFromArgument(getattr(args, commaSepArgument), args.left, args.left_sep))
+    setattr(args, commaSepArgument, getColListFromArgument(getattr(args, commaSepArgument), args.left_file, args.left_sep))
 
 commaSepArguments = ["right_cols"]
 for commaSepArgument in commaSepArguments:
