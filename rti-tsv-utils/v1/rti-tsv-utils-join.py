@@ -86,8 +86,8 @@ parser.add_argument(
     help = "Suffix to add to columns in right file in joined file"
 )
 parser.add_argument(
-    "--how",
-    dest = "how",
+    "--hows",
+    dest = "hows",
     nargs = "+",
     type = str.lower,
     default = ["inner"],
@@ -141,7 +141,7 @@ for rightSep in args.right_seps:
 args.right_seps = rightSepRegex
 
 # Check whether arguments are logical
-rightArguments = ["right_cols", "right_ons", "right_seps", "how", "right_suffixes"]
+rightArguments = ["right_cols", "right_ons", "right_seps", "hows", "right_suffixes"]
 for rightArgument in rightArguments:
     rightArgumentValue = getattr(args, rightArgument)
     rightArgumentCount = len(rightArgumentValue)
@@ -241,7 +241,7 @@ for left in pd.read_table(
         out = out.merge(
             dfRight,
             how = args.hows[rightIndex],
-            left_on = leftOn,
+            left_on= leftOn,
             right_on = rightOn,
             sort = args.sort
         )
