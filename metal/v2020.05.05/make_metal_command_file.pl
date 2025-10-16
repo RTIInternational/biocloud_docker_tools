@@ -58,6 +58,8 @@ my %metalCommandArgumentXref = (
     'OUTFILE' => 'out_prefix out_suffix',
     'SEPARATOR' => 'separators',
     'MARKERLABEL' => 'marker_col_names',
+    'CHROMOSOMELABEL' => 'chrom_col_names',
+    'POSITIONLABEL' => 'pos_col_names',
     'ALLELELABELS' => 'ref_allele_col_names alt_allele_col_names',
     'EFFECTLABEL' => 'effect_col_names',
     'WEIGHTLABEL' => 'weight_col_names',
@@ -66,11 +68,6 @@ my %metalCommandArgumentXref = (
     'FREQLABEL' => 'freq_col_names',
     'PROCESSFILE' => 'sum_stats_files',
     'ANALYZE' => 'analyze'
-);
-
-my %metalCustomVariableXref = (
-    'CHR' => 'chrom_col_names',
-    'POS' => 'pos_col_names'
 );
 
 my @metalCommandOrder = (
@@ -88,8 +85,8 @@ my @metalCommandOrder = (
 my @metalFileCommandOrder = (
     'SEPARATOR',
     'MARKERLABEL',
-    'CHR',
-    'POS',
+    'CHROMOSOMELABEL',
+    'POSITIONLABEL',
     'ALLELELABELS',
     'EFFECTLABEL',
     'WEIGHTLABEL',
@@ -168,28 +165,18 @@ foreach my $command (@metalCommandOrder) {
     if ($command eq '[PROCESS]') {
         for (my $i=0; $i<$sumStatsCount; $i++) {
             foreach my $metalFileCommand (@metalFileCommandOrder) {
-                if (exists($metalCommandArgumentXref{$metalFileCommand})) {
-                    my $metalArgument = $metalCommandArgumentXref{$metalFileCommand};
-                    my @substitutions = ( $metalArgument =~ /\S+/g );
-                    foreach my $substitution (@substitutions) {
-                        my $metalArgumentCount = @{$arguments{$substitution}};
-                        if ($metalArgumentCount == 1) {
-                            $metalArgument =~ s/$substitution/$arguments{$substitution}[0]/;
-                        } elsif ($metalArgumentCount > $i) {
-                            $metalArgument =~ s/$substitution/$arguments{$substitution}[$i]/;
-                        }
+                my $metalArgument = $metalCommandArgumentXref{$metalFileCommand};
+                my @substitutions = ( $metalArgument =~ /\S+/g );
+                foreach my $substitution (@substitutions) {
+                    my $metalArgumentCount = @{$arguments{$substitution}};
+                    if ($metalArgumentCount == 1) {
+                        $metalArgument =~ s/$substitution/$arguments{$substitution}[0]/;
+                    } elsif ($metalArgumentCount > $i) {
+                        $metalArgument =~ s/$substitution/$arguments{$substitution}[$i]/;
                     }
-                    if ($metalArgument ne $metalCommandArgumentXref{$metalFileCommand}) {
-                        $metalCommand .= $metalFileCommand . ' ' . $metalArgument . "\n";
-                    }
-                } elsif (exists($metalCustomVariableXref{$metalFileCommand})) {
-                    my $argumentCount = @{$arguments{$metalCustomVariableXref{$metalFileCommand}}};
-                    $metalCommand .= 'CUSTOMVARIABLE ' . $metalFileCommand . "\n";
-                    if ($argumentCount == 1) {
-                        $metalCommand .= 'LABEL ' . $metalFileCommand . ' as ' . $arguments{$metalCustomVariableXref{$metalFileCommand}}[0] . "\n";
-                    } elsif ($argumentCount > $i) {
-                        $metalCommand .= 'LABEL ' . $metalFileCommand . ' as ' . $arguments{$metalCustomVariableXref{$metalFileCommand}}[$i] . "\n";
-                    }
+                }
+                if ($metalArgument ne $metalCommandArgumentXref{$metalFileCommand}) {
+                    $metalCommand .= $metalFileCommand . ' ' . $metalArgument . "\n";
                 }
             }
         }

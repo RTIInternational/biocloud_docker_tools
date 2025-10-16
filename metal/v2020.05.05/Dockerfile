@@ -1,9 +1,9 @@
 ########################## Set Inital Image to work from ################################
-FROM ubuntu:18.04
+FROM python:3.8-slim
 
 
 ############################### Add Container Labels ####################################
-LABEL maintainer="Jesse Marks <jmarks@rti.org>"
+LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
 LABEL software="METAL"
 LABEL software.version="2020-05-05"
 LABEL website="https://github.com/statgen/METAL"
@@ -19,28 +19,17 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN useradd docker \
     && mkdir /home/docker \
     && chown docker:docker /home/docker \
-    && addgroup docker staff
+    && usermod -a -G staff docker
 
 ############################### Install System Dependencies #############################
 
 # Install basic system dependencies. Once all installation is completed, remove
 # all packages cache to reduce the size of the custom image.
-RUN echo 'deb http://mirror.math.princeton.edu/pub/ubuntu/ bionic main' >> /etc/apt/sources.list
 RUN apt update && apt install -y --no-install-recommends \
-	git \
-	vim \
-	cmake \
-	zlib1g-dev \
-    dirmngr \
-	software-properties-common \
-	build-essential \
-	ca-certificates \
 	wget \
-	locales \
-	openssl \
 	build-essential \
-	libssl-dev \
-	libffi-dev \
+	cmake \
+	libglib2.0-dev \
  && rm -rf /var/lib/apt/lists/* && apt clean
 
 ################################## Install METAL ######################################
@@ -48,12 +37,11 @@ RUN apt update && apt install -y --no-install-recommends \
 # download from source, unpack, cleanup, and move to appropriate dir
 RUN wget https://github.com/statgen/METAL/archive/2020-05-05.tar.gz \
 	&& tar -xvzf 2020-05-05.tar.gz \
-	&& rm /2020-05-05.tar.gz \
+	&& rm 2020-05-05.tar.gz \
 	&& mv METAL-2020-05-05 /opt/ 
 
 # build and install
-RUN mkdir /opt/METAL-2020-05-05/build/ \
-	&& cd /opt/METAL-2020-05-05/build/ \
+RUN cd /opt/METAL-2020-05-05/ \
 	&& cmake -DCMAKE_BUILD_TYPE=Release .. \
 	&& make \
 	&& make test \
@@ -61,12 +49,17 @@ RUN mkdir /opt/METAL-2020-05-05/build/ \
 
 # hyperlink in CODE approved dir and create file for default help command
 RUN cd /opt/ \
-	&& ln -s METAL-2020-05-05/build/bin/metal \
+	&& ln -s METAL-2020-05-05/bin/metal \
 	&& echo "HELP" > /opt/help.txt
+
+######################## Install python libraries ############################
+
+RUN pip install --no-cache-dir pandas
 
 ######################## Install make_metal_command_file.pl ############################
 
 COPY make_metal_command_file.pl /opt/
+COPY postprocess_metal_results.py /opt/
 
 ############################ Final system configurations ################################
 
@@ -75,8 +68,5 @@ RUN mkdir /data/
 WORKDIR /data/
 
 ENV PATH="/opt/:${PATH}"
-
-# default help command
-CMD  ["/opt/metal", "/opt/help.txt"]
 
 ############################## END OF DOCKERFILE #######################################
