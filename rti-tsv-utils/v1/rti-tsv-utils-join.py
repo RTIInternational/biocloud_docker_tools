@@ -15,7 +15,7 @@ def getColListFromArgument(argValue, file, sep):
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--in-file-left",
-    dest = "left",
+    dest = "left_file",
     type = str,
     help = "Left-hand file for merge"
 )
@@ -48,15 +48,15 @@ parser.add_argument(
     help = "Suffix to add to columns in left file in joined file"
 )
 parser.add_argument(
-    "--in-file-right",
-    dest = "right",
+    "--in-file-rights",
+    dest = "right_files",
     nargs = "+",
     type = str,
     help = "Right-hand file(s) for merge."
 )
 parser.add_argument(
-    "--in-file-right-sep",
-    dest = "right_sep",
+    "--in-file-right-seps",
+    dest = "right_seps",
     nargs = "+",
     type = str.lower,
     default = ["whitespace"],
@@ -71,15 +71,15 @@ parser.add_argument(
     help = "Column-separated names of columns in right-hand file(s) to include in output"
 )
 parser.add_argument(
-    "--right-on",
-    dest = "right_on",
+    "--right-ons",
+    dest = "right_ons",
     nargs = "+",
     type = str,
     help = "Field in right file(s) to join on"
 )
 parser.add_argument(
-    "--right-suffix",
-    dest = "right_suffix",
+    "--right-suffixes",
+    dest = "right_suffixes",
     nargs = "+",
     type = str,
     default = [""],
@@ -125,7 +125,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Get count of right files
-rightCount = len(args.right)
+rightCount = len(args.right_files)
 
 # Set separators
 sepRegex = {
@@ -136,12 +136,12 @@ sepRegex = {
 }
 args.left_sep = sepRegex[args.left_sep]
 rightSepRegex = []
-for rightSep in args.right_sep:
+for rightSep in args.right_seps:
     rightSepRegex.append(sepRegex[rightSep])
-args.right_sep = rightSepRegex
+args.right_seps = rightSepRegex
 
 # Check whether arguments are logical
-rightArguments = ["right_cols", "right_on", "right_sep", "how", "right_suffix"]
+rightArguments = ["right_cols", "right_ons", "right_seps", "how", "right_suffixes"]
 for rightArgument in rightArguments:
     rightArgumentValue = getattr(args, rightArgument)
     rightArgumentCount = len(rightArgumentValue)
@@ -161,7 +161,7 @@ for commaSepArgument in commaSepArguments:
     argLists = []
     for rightIndex in range(rightCount):
         arg = getattr(args, commaSepArgument)[rightIndex]
-        argLists.append(getColListFromArgument(arg, args.right[rightIndex], args.right_sep[rightIndex]))
+        argLists.append(getColListFromArgument(arg, args.right_files[rightIndex], args.right_seps[rightIndex]))
     setattr(args, commaSepArgument, argLists)
 
 # Open log file
@@ -178,19 +178,19 @@ logHandle.flush()
 # Create list of columns to output
 outCols = [leftCol + args.left_suffix for leftCol in args.left_cols]
 for rightIndex in range(rightCount):
-    outCols = outCols + [rightCol + args.right_suffix[rightIndex] for rightCol in args.right_cols[rightIndex]]
-    rightOn = args.right_on[rightIndex] + args.right_suffix[rightIndex]
+    outCols = outCols + [rightCol + args.right_suffixes[rightIndex] for rightCol in args.right_cols[rightIndex]]
+    rightOn = args.right_ons[rightIndex] + args.right_suffixes[rightIndex]
     outCols.remove(rightOn)
 
 # Read left file, adding columns from right files
 chunkCount = 1
 for left in pd.read_table(
-    args.left,
+    args.left_file,
     sep = args.left_sep,
     usecols = args.left_cols,
     chunksize = args.chunk_size
 ):
-    logHandle.write("Processing chunk " + str(chunkCount) + " of " + args.left + "\n")
+    logHandle.write("Processing chunk " + str(chunkCount) + " of " + args.left_file + "\n")
     logHandle.flush()
 
     # Create dataframe for output
@@ -209,7 +209,7 @@ for left in pd.read_table(
     # Loop through right files
     firstMerge = True
     for rightIndex in range(rightCount):
-        logHandle.write("Reading " + args.right[rightIndex] + "\n")
+        logHandle.write("Reading " + args.right_files[rightIndex] + "\n")
         logHandle.flush()
 
         # Create dataframe for right file rows to save
@@ -217,30 +217,30 @@ for left in pd.read_table(
 
         # Create iterator for right file
         for right in pd.read_table(
-            args.right[rightIndex],
-            sep = args.right_sep[rightIndex],
+            args.right_files[rightIndex],
+            sep = args.right_seps[rightIndex],
             usecols = args.right_cols[rightIndex],
             chunksize = args.chunk_size
         ):
             # Capture rows from right file whose keys are present in the left file
-            dfRight = dfRight.append(right[right[args.right_on[rightIndex]].isin(out[leftOn])])
+            dfRight = dfRight.append(right[right[args.right_ons[rightIndex]].isin(out[leftOn])])
 
             # Remove duplicates
-            dfRight.drop_duplicates(subset=[args.right_on[rightIndex]], inplace = True)
+            dfRight.drop_duplicates(subset=[args.right_ons[rightIndex]], inplace = True)
 
             # Check if all keys in out accounted for
             dfRightCount = dfRight.shape[0]
 
         # Add suffixes to column names
-        dfRight = dfRight.add_suffix(args.right_suffix[rightIndex])
-        rightOn = args.right_on[rightIndex] + args.right_suffix[rightIndex]
+        dfRight = dfRight.add_suffix(args.right_suffixes[rightIndex])
+        rightOn = args.right_ons[rightIndex] + args.right_suffixes[rightIndex]
 
         # Merge out and dfRight dataframes
-        logHandle.write("Merging " + args.right[rightIndex] + "\n")
+        logHandle.write("Merging " + args.right_files[rightIndex] + "\n")
         logHandle.flush()
         out = out.merge(
             dfRight,
-            how = args.how[rightIndex],
+            how = args.hows[rightIndex],
             left_on = leftOn,
             right_on = rightOn,
             sort = args.sort
