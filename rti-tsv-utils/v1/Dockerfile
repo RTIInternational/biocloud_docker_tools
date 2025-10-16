@@ -1,4 +1,4 @@
-FROM python:3.7.6-slim-stretch
+FROM python:3.13.9-slim
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
@@ -23,4 +23,3 @@ WORKDIR /data
 
 RUN chmod 755 /opt/rti-tsv-utils-join.py
 RUN chmod 755 /opt/rti-tsv-utils-sort.py
-
