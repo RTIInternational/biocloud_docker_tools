@@ -19,15 +19,22 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Add scripts
-ADD entrypoint.sh /opt/
+ADD cancel_runs.py /opt/
 ADD create_wf.py /opt/
+ADD delete_runs.py /opt/
+ADD entrypoint.sh /opt/
+ADD healthomics_utils.py /opt/
+ADD retrieve_run_results.py /opt/
 ADD start_run.py /opt/
 
 # Set permissions
-RUN chmod 755 /opt/entrypoint.sh
+RUN chmod 755 /opt/cancel_runs.py
 RUN chmod 755 /opt/create_wf.py
+RUN chmod 755 /opt/delete_runs.py
+RUN chmod 755 /opt/entrypoint.sh
+RUN chmod 755 /opt/healthomics_utils.py
+RUN chmod 755 /opt/retrieve_run_results.py
 RUN chmod 755 /opt/start_run.py
 
 # Set the entry point command
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
-

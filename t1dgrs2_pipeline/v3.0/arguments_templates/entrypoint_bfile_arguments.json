@@ -1,0 +1,11 @@
+{
+    "output_dir": "<OUTPUT_DIR>",
+    "bed": "<BED>",
+    "bim": "<BIM>",
+    "fam": "<FAM>",
+    "variant_list": "/pipeline/inputs/t1dgrs2_hg38_variants.tsv",
+    "hladq_variants_file": "/pipeline/inputs/hla_dq_variants.txt",
+    "non_hladq_variants_file": "/pipeline/inputs/non_hla_dq_variants.txt",
+    "missing_hla_threshold": 1,
+    "missing_non_hla_threshold": 3
+}
