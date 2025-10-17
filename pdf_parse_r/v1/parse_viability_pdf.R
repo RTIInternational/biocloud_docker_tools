@@ -121,8 +121,21 @@ parse_filename <- function(fname) {
       Vial         = m2[,5] # may be NA if not present
     ))
   }
+  pat_allo <- "^(RMIP)_([0-9]{3})_(Allo[0-9]{1})_([A-Z])_([0-9]{3})(?:_([A-Z]))?_.+\\.pdf$"
+  m3 <- str_match(f, pat_allo)
+  print(m3)
+  if (!is.na(m3[,1])) {
+    return(list(
+      Consortium   = m3[,2],
+      Project      = m3[,3],
+      Participant  = m3[,4],
+      Discriminator= m3[,5],
+      Identifier   = m3[,6],
+      Vial         = m3[,7] # may be NA if not present
+    ))
+  }
   
-  stop("Filename does not match expected study or pilot sample format.")
+  stop("Filename does not match expected study, allo, or pilot sample format.")
 }
 
 load_pdf <- function(fname){
