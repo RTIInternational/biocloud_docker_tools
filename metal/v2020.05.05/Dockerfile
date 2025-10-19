@@ -34,23 +34,22 @@ RUN apt update && apt install -y --no-install-recommends \
 
 ################################## Install METAL ######################################
 
-# download from source, unpack, cleanup, and move to appropriate dir
+# download from source, unpack, cleanup
 RUN wget https://github.com/statgen/METAL/archive/2020-05-05.tar.gz \
 	&& tar -xvzf 2020-05-05.tar.gz \
 	&& rm 2020-05-05.tar.gz \
-	&& mv METAL-2020-05-05 /opt/ 
+	&& mv METAL-2020-05-05 /opt/
 
 # build and install
 RUN cd /opt/METAL-2020-05-05/ \
-	&& cmake -DCMAKE_BUILD_TYPE=Release .. \
+	&& cmake -DCMAKE_BUILD_TYPE=Release \
 	&& make \
 	&& make test \
 	&& make install
 
 # hyperlink in CODE approved dir and create file for default help command
 RUN cd /opt/ \
-	&& ln -s METAL-2020-05-05/bin/metal \
-	&& echo "HELP" > /opt/help.txt
+	&& ln -s METAL-2020-05-05/bin/metal
 
 ######################## Install python libraries ############################
 
