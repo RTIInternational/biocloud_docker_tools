@@ -28,7 +28,7 @@ os.system("mv {} {}".format(metal_info, processed_metal_info))
 # Read metal results file
 print("Processing metal results file {} to {}".format(metal_results, processed_metal_results))
 results = pd.read_csv(
-    "/shared/ngaddis/data/temp/metal/metal1tsv",
+    "{}1{}".format(args.metal_prefix, args.metal_suffix),
     sep="\t"
 )
 
