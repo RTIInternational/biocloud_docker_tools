@@ -42,7 +42,7 @@ if(!("combined" %in% lcms_file_sheets)){
 }
 
 #read in files
-LCMS<-read.xlsx(lcms_file, sheet="combined")
+LCMS<-read_xlsx(lcms_file, sheet="combined")
 LCMS<- as.data.frame(LCMS)
 column_converter <-read.table(column_converter_file, sep=',')
 
@@ -60,7 +60,7 @@ if("column" %in% names(LCMS)){
 names(LCMS)[match(column_converter$V1, names(LCMS))] <- column_converter$V2
 
 if(!exists("columns_to_drop_file")){
-drops<-c("# Usable QC","RSD QC Areas [%]","RT [min]")
+drops<-c("# Usable QC","RSD QC Areas [%]","RT [min]", "Name")
 }else{
   drops<-c(read.table(columns_to_drop_file, sep=','))
   print(drops)
