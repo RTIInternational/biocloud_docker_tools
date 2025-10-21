@@ -42,9 +42,10 @@ if(!("combined" %in% lcms_file_sheets)){
 }
 
 #read in files
-LCMS<-read.xlsx(lcms_file, sheet="combined")
+LCMS<-read.xlsx(lcms_file, sheet="combined",sep.names=" ")
 LCMS<- as.data.frame(LCMS)
 column_converter <-read.table(column_converter_file, sep=',')
+
 
 #remove duplicate header columns
 if("column" %in% names(LCMS)){
