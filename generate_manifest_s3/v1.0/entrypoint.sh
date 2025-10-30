@@ -61,5 +61,5 @@ HEADERS=(
 )
 
 # Make the API request
-echo "Making API request to update Jira issue..."
-curl -X PUT "${HEADERS[@]}" -d "$PAYLOAD" "$URL"
+#echo "Making API request to update Jira issue..."
+#curl -X PUT "${HEADERS[@]}" -d "$PAYLOAD" "$URL"
