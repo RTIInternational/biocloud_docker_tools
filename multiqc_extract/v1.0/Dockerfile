@@ -2,6 +2,9 @@ FROM rocker/r-ubuntu:20.04
 
 LABEL maintainer="David Williams <dnwilliams@rti.org>"
 LABEL description="This Docker image contains an in-house script written to extract several key stats of interest from a MultiQC run coming off of a FastQC analysis."
+LABEL base-image="rocker/r-ubuntu:20.04"
+LABEL software-version="1.0"
+
 
 RUN apt update
 RUN apt install -y vim
