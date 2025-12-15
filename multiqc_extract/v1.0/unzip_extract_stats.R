@@ -55,7 +55,7 @@ print(paste0("Here is outpath: ",outpath))
 print(paste0("Here is args$outfile: ",args$outfile))
 
 zip_files <- list.files(path = args$inputpath, pattern = "multiqc_data\\.zip", full.names = TRUE)
-fastq_files <- list.files(path = args$inputpath, pattern = "\\.fastq$", , full.names = TRUE)
+fastq_files <- list.files(path = args$inputpath, pattern = "\\.fastq\\.gz$", , full.names = TRUE)
 
 print(paste0("Here are zip_files: ", zip_files))
 print(paste0("Here are fastq_files: ", fastq_files))
