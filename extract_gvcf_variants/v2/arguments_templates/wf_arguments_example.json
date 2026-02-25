@@ -1,0 +1,10 @@
+{
+    "file_in_gvcf": "/rti-01/ngaddis/data/temp/ancestry/PFNA12878.hard-filtered.gvcf.gz",
+    "file_out_vcf": "/rti-01/ngaddis/data/temp/t1d_grs/PFNA12878",
+    "file_in_ref_bim": "/data/t1dgrs2_hg19_variants.tsv",
+    "include_homozygous_ref": true,
+    "filter_by_qual": 0,
+    "filter_by_gq": 0,
+    "hom_gq_threshold": 99,
+    "het_gq_threshold": 48
+}

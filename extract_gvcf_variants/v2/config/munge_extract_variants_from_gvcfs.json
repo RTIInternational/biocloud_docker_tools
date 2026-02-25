@@ -1,0 +1,89 @@
+{
+    "name": "munge_extract_variants_from_gvcfs",
+    "inputs": {
+        "output_dir": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "gvcf_list": {
+            "type": "dir",
+            "default": "",
+            "required": true
+        },
+        "bim": {
+            "type": "str",
+            "default": "",
+            "required": true
+        },
+        "argo_api_url": {
+            "type": "str",
+            "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+            "required": false
+        },
+        "simultaneous_jobs": {
+            "type": "int",
+            "default": 50,
+            "required": false
+        },
+        "include_homozygous_ref": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "filter_by_qual": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "filter_by_gq": {
+            "type": "int",
+            "default": 0,
+            "required": false
+        },
+        "hom_gq_threshold": {
+            "type": "int",
+            "default": 99,
+            "required": false
+        },
+        "het_gq_threshold": {
+            "type": "int",
+            "default": 48,
+            "required": false
+        }
+    },
+    "outputs": {
+        "log": {
+            "type": "file",
+            "value": "<inputs.output_dir>/munge_extract_variants_from_gvcfs.log"
+        }
+    },
+    "entry_point": "process_gvcf_batch",
+    "entry_point_inputs": {
+        "output_dir": "<inputs.output_dir>process_gvcf_batch",
+        "gvcf_list": "<inputs.gvcf_list>",
+        "bim": "<inputs.bim>",
+        "include_homozygous_ref": "<inputs.include_homozygous_ref>",
+        "filter_by_qual": "<inputs.filter_by_qual>",
+        "filter_by_gq": "<inputs.filter_by_gq>",
+        "hom_gq_threshold": "<inputs.hom_gq_threshold>",
+        "het_gq_threshold": "<inputs.het_gq_threshold>",
+        "argo_api_url": "<inputs.argo_api_url>",
+        "simultaneous_jobs": "<inputs.simultaneous_jobs>",
+        "workflow_template": "ancestry",
+        "entrypoint": "munge-extract-variants-from-gvcf"
+    },
+    "pipeline": {
+        "process_gvcf_batch": {
+            "task": "process_gvcf_batch",
+            "check_output": {
+                "returncode_0": {
+                    "step": "exit"
+                },
+                "returncode_1": { 
+                    "step": "error"
+                }
+            }
+        }
+    }
+}
