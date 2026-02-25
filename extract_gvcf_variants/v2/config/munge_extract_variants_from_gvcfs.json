@@ -70,7 +70,7 @@
         "het_gq_threshold": "<inputs.het_gq_threshold>",
         "argo_api_url": "<inputs.argo_api_url>",
         "simultaneous_jobs": "<inputs.simultaneous_jobs>",
-        "workflow_template": "ancestry",
+        "workflow_template": "extract-gvcf-variants",
         "entrypoint": "munge-extract-variants-from-gvcf"
     },
     "pipeline": {
