@@ -40,6 +40,7 @@ sub add_variant_to_output {
 }
 
 # Read arguments
+my $fileInArgs = '';
 GetOptions (
     'args=s' => \$fileInArgs,
 ) or die("Invalid options");
