@@ -16,16 +16,6 @@
             "default": "",
             "required": true
         },
-        "argo_api_url": {
-            "type": "str",
-            "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
-            "required": false
-        },
-        "simultaneous_jobs": {
-            "type": "int",
-            "default": 50,
-            "required": false
-        },
         "include_homozygous_ref": {
             "type": "int",
             "default": 0,
@@ -49,6 +39,16 @@
         "het_gq_threshold": {
             "type": "int",
             "default": 48,
+            "required": false
+        },
+        "argo_api_url": {
+            "type": "str",
+            "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
+            "required": false
+        },
+        "simultaneous_jobs": {
+            "type": "int",
+            "default": 50,
             "required": false
         }
     },

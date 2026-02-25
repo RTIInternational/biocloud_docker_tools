@@ -159,7 +159,7 @@
             }
         },
         "cmd": [
-            "plink1.9",
+            "plink2",
             "--vcf",
             "<inputs.file_in_vcf>",
             "--out",

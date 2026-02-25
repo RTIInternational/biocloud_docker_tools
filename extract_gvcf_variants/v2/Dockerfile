@@ -25,13 +25,13 @@ RUN wget https://s3.amazonaws.com/plink2-assets/alpha5/plink2_linux_x86_64_20240
 ENV PATH=pkg-config:$PATH:/opt/
 RUN rm -Rf /var/lib/apt/lists/*
 
-#### Install custom scripts ####
-# Add scripts
-ADD extract_gvcf_variants.pl /opt/
-ADD entrypoint.sh /opt/
-# Change permissions
-RUN chmod 755 /opt/extract_gvcf_variants.pl
-RUN chmod 755 /opt/entrypoint.sh
+#### Add pipeline config files
+RUN mkdir -p /pipeline/config
+ADD config/* /pipeline/config/
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+#### Add scripts
+RUN mkdir -p /pipeline/scripts
+ADD scripts/* /pipeline/scripts/
+RUN chmod 755 /pipeline/scripts/*
 
+ENTRYPOINT [ "/pipeline/scripts/entrypoint.sh" ]
