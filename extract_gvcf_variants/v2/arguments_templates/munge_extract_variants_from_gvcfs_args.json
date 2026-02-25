@@ -2,7 +2,7 @@
     "output_dir": "",
     "gvcf_list": "",
     "bim": "",
-    "include_homozygous_ref": true,
+    "include_homozygous_ref": 1,
     "filter_by_qual": 0,
     "filter_by_gq": 0,
     "hom_gq_threshold": 99,
