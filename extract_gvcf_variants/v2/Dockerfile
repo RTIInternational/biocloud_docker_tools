@@ -13,6 +13,9 @@ RUN apt-get update \
         unzip \
         cpanminus
 
+# Install python3 and pip
+RUN apt-get update && apt-get install -y python3 python3-pip
+
 #### Install PERL modules ####
 RUN cpanm install JSON
 
