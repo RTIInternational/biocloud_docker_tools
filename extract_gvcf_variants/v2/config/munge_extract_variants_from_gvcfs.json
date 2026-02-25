@@ -7,12 +7,12 @@
             "required": true
         },
         "gvcf_list": {
-            "type": "dir",
+            "type": "file",
             "default": "",
             "required": true
         },
         "bim": {
-            "type": "str",
+            "type": "file",
             "default": "",
             "required": true
         },
@@ -42,7 +42,7 @@
             "required": false
         },
         "argo_api_url": {
-            "type": "str",
+            "type": "file",
             "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
             "required": false
         },
