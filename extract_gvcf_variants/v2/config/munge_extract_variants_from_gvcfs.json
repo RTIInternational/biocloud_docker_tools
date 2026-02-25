@@ -42,7 +42,7 @@
             "required": false
         },
         "argo_api_url": {
-            "type": "file",
+            "type": "str",
             "default": "http://argo-early-check-rs-1-server:2746/api/v1/workflows/early-check-rs-1",
             "required": false
         },
