@@ -57,7 +57,6 @@ sub add_variant_to_output {
     my @F = @{$opt{F}};
     my $OUT_VCF = $opt{OUT_VCF};
     $F[5] = ".";
-    $F[6] = ".";
     $F[7] = ".";
     print $OUT_VCF join("\t", @F)."\n";
 }
@@ -189,8 +188,6 @@ while(<GVCF>){
                                 $F[2] = $variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele};
                                 $F[3] = $ref_allele;
                                 $F[4] = $alt_allele;
-                                $F[5] = ".";
-                                $F[7] = ".";
                                 add_variant_to_output(
                                     F => \@F,
                                     OUT_VCF => \*OUT_VCF
