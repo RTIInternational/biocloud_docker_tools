@@ -6,7 +6,7 @@
 #   - REF allele in the gVCF file is the same as allele 2 in the ref BIM file.
 #   - If there are more than 2 alleles for a position in a compressed band, the position will not be extracted
 # The script filters the variants based on quality and genotype quality, and outputs the results in VCF format.
-# The script takes the following arguments provided via a JSON file:
+# The script takes the following arguments:
 # --file_in_gvcf: Input gVCF file (can be gzipped)
 # --file_in_bim: Input reference BIM file
 # --file_out_vcf: Output gVCF file
@@ -17,7 +17,9 @@
 # --het_gq_threshold: Genotype quality threshold for heterozygous variants (default: 48)
 #
 # Usage:
-# perl extract_gvcf_variants.pl --args <input_gvcf>
+# perl extract_gvcf_variants.pl --file_in_gvcf <input_gvcf> --file_in_bim <input_bim> --file_out_vcf <output_vcf> [options]
+# Example:
+# perl extract_gvcf_variants.pl --file_in_gvcf input.gvcf.gz --file_in_bim ref.bim --file_out_vcf output.vcf --include_homozygous_ref 1 --filter_by_qual 1 --filter_by_gq 1 --hom_gq_threshold 99 --het_gq_threshold 48
 
 
 use strict;
@@ -30,6 +32,26 @@ use JSON;
 # Autoflush STDOUT
 select((select(STDOUT), $|=1)[0]);
 
+my $file_in_gvcf = '';
+my $file_in_bim = '';
+my $file_out_vcf = '';
+my $include_homozygous_ref = 0;
+my $filter_by_qual = 0;
+my $filter_by_gq = 0;
+my $hom_gq_threshold = 99;
+my $het_gq_threshold = 48;
+
+GetOptions (
+    'file_in_gvcf=s' => \$file_in_gvcf,
+    'file_in_bim=s' => \$file_in_bim,
+    'file_out_vcf=s' => \$file_out_vcf,
+    'include_homozygous_ref:i' => \$include_homozygous_ref,
+    'filter_by_qual:i' => \$filter_by_qual, 
+    'filter_by_gq:i' => \$filter_by_gq,
+    'hom_gq_threshold:i' => \$hom_gq_threshold,
+    'het_gq_threshold:i' => \$het_gq_threshold
+) or die("Invalid options");
+
 sub add_variant_to_output {
     my %opt = %{ shift @_ };
     my @F = @{$opt{F}};
@@ -39,25 +61,11 @@ sub add_variant_to_output {
     print $OUT_VCF join("\t", @F)."\n";
 }
 
-# Read arguments
-my $fileInArgs = '';
-GetOptions (
-    'args=s' => \$fileInArgs,
-) or die("Invalid options");
-my $args_text = do {
-   open(my $json_fh, "<:encoding(UTF-8)", $fileInArgs)
-      or die("Can't open \"$fileInArgs\": $!\n");
-   local $/;
-   <$json_fh>
-};
-my $json = JSON->new;
-my $args = $json->decode($args_text);
-
 my %variants = ();
 my @F = ();
 
 # Read position list
-open(REF_BIM, $args->{file_in_bim});
+open(REF_BIM, $file_in_bim);
 while (<REF_BIM>) {
     chomp;
     @F = split();
@@ -76,11 +84,11 @@ while (<REF_BIM>) {
 close REF_BIM;
 
 # Get gvcf variants by position
-open(OUT_VCF, "> ".$args->{file_out_vcf});
-if ($args->{file_in_gvcf} =~ /gz$/) {
-    open(GVCF, "gunzip -c " . $args->{file_in_gvcf} . " |") or die "gunzip $args->{file_in_gvcf}: $!";
+open(OUT_VCF, "> ".$file_out_vcf);
+if ($file_in_gvcf =~ /gz$/) {
+    open(GVCF, "gunzip -c " . $file_in_gvcf . " |") or die "gunzip $file_in_gvcf: $!";
 } else {
-    open(GVCF, $args->{file_in_gvcf});
+    open(GVCF, $file_in_gvcf) or die "Can't open \"$file_in_gvcf\": $!";
 }
 while(<GVCF>){
     if (/^#CHROM/) {
@@ -97,7 +105,7 @@ while(<GVCF>){
         chomp;
         @F =split();
         if (
-            !$args->{filter_by_qual}
+            !$filter_by_qual
             || (uc($F[6]) eq "PASS")
         ) {
             $F[0] =~ s/^chr//;
@@ -114,19 +122,19 @@ while(<GVCF>){
                 $F[9] = join(":", $variant_data{"GT"}, $variant_data{"GQ"});
                 if ($a1_index ne "." && $a2_index ne ".") {
                     if (
-                        !$args->{filter_by_gq}
+                        !$filter_by_gq
                         || (
                             (
                                 $a1_index eq $a2_index
-                                && ($variant_data{"GQ"} >= $args->{hom_gq_threshold})
+                                && ($variant_data{"GQ"} >= $hom_gq_threshold)
                             )
                             || (
                                 $a1_index ne $a2_index
-                                && ($variant_data{"GQ"} >= $args->{het_gq_threshold})
+                                && ($variant_data{"GQ"} >= $het_gq_threshold)
                             )
                         )
                     ) {
-                        if ($F[7] =~ /END=(\d+)/ && $args->{include_homozygous_ref}) {
+                        if ($F[7] =~ /END=(\d+)/ && $include_homozygous_ref) {
                             my $end = $1;
                             for (my $i=$F[1]; $i<=$end; $i++) {
                                 if (exists($variants{$F[0]}{$i})) {
