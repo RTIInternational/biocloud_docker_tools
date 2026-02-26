@@ -68,7 +68,7 @@
                     "step": "convert_vcf_to_bfile",
                     "inputs": {
                         "file_in_vcf": "<steps.extract_gvcf_variants.outputs.file_out_vcf>",
-                        "file_out_prefix": "<inputs.output_dir><inputs.sample_id>/convert_vcf_to_bfile/<inputs.sample_id>"
+                        "file_out_prefix": "<inputs.output_dir>convert_vcf_to_bfile/<inputs.sample_id>"
                     }
                 },
                 "returncode_1": { 
