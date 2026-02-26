@@ -121,8 +121,8 @@ while(<GVCF>){
                 my $a1_index = $1;
                 my $a2_index = $2;
                 $variant_data{"GT"} =~ s/^(\d+|\.).(\d+|\.)/$a1_index|$a2_index/;
-                $F[8] = "GT:GQ";
-                $F[9] = join(":", $variant_data{"GT"}, $variant_data{"GQ"});
+                $F[8] = "GT";
+                $F[9] = $variant_data{"GT"};
                 if ($a1_index ne "." && $a2_index ne ".") {
                     if (
                         !$filter_by_gq
