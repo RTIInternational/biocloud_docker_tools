@@ -57,6 +57,7 @@ sub add_variant_to_output {
     my @F = @{$opt{F}};
     my $OUT_VCF = $opt{OUT_VCF};
     $F[5] = ".";
+    $F[6] = ".";
     $F[7] = ".";
     print $OUT_VCF join("\t", @F)."\n";
 }
@@ -118,8 +119,8 @@ while(<GVCF>){
                 my $a1_index = $1;
                 my $a2_index = $2;
                 $variant_data{"GT"} =~ s/^(\d+|\.).(\d+|\.)/$a1_index|$a2_index/;
-                $F[8] = "GT:GQ";
-                $F[9] = join(":", $variant_data{"GT"}, $variant_data{"GQ"});
+                $F[8] = "GT";
+                $F[9] = $variant_data{"GT"};
                 if ($a1_index ne "." && $a2_index ne ".") {
                     if (
                         !$filter_by_gq
@@ -148,9 +149,10 @@ while(<GVCF>){
                                             $F[2] = $variants{$F[0]}{$i}{$ref_allele}{$alt_allele};
                                             $F[3] = $ref_allele;
                                             $F[4] = $alt_allele;
-                                            $F[5] = ".";
-                                            $F[7] = ".";
-                                            print OUT_VCF join("\t", @F)."\n";
+                                            add_variant_to_output(
+                                                F => \@F,
+                                                OUT_VCF => \*OUT_VCF
+                                            );
                                         }
                                     }
                                 }
@@ -189,7 +191,10 @@ while(<GVCF>){
                                 $F[4] = $alt_allele;
                                 $F[5] = ".";
                                 $F[7] = ".";
-                                print OUT_VCF join("\t", @F)."\n";
+                                add_variant_to_output(
+                                    F => \@F,
+                                    OUT_VCF => \*OUT_VCF
+                                );
                             }
                         }
                     }
