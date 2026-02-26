@@ -53,7 +53,7 @@
         "output_dir": "<inputs.output_dir>",
         "file_in_gvcf": "<inputs.file_in_gvcf>",
         "file_in_bim": "<inputs.file_in_bim>",
-        "file_out_vcf": "<inputs.output_dir><inputs.sample_id>/extract_gvcf_variants/<inputs.sample_id>.vcf",
+        "file_out_vcf": "<inputs.output_dir>extract_gvcf_variants/<inputs.sample_id>.vcf",
         "include_homozygous_ref": "<inputs.include_homozygous_ref>",
         "filter_by_qual": "<inputs.filter_by_qual>",
         "filter_by_gq": "<inputs.filter_by_gq>",
