@@ -148,10 +148,10 @@ while(<GVCF>){
                                             $F[2] = $variants{$F[0]}{$i}{$ref_allele}{$alt_allele};
                                             $F[3] = $ref_allele;
                                             $F[4] = $alt_allele;
-                                            add_variant_to_output(
+                                            add_variant_to_output({
                                                 F => \@F,
                                                 OUT_VCF => \*OUT_VCF
-                                            );
+                                            });
                                         }
                                     }
                                 }
@@ -188,10 +188,10 @@ while(<GVCF>){
                                 $F[2] = $variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele};
                                 $F[3] = $ref_allele;
                                 $F[4] = $alt_allele;
-                                add_variant_to_output(
+                                add_variant_to_output({
                                     F => \@F,
                                     OUT_VCF => \*OUT_VCF
-                                );
+                                });
                             }
                         }
                     }
