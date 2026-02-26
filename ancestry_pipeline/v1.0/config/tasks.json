@@ -129,8 +129,8 @@
                 "default": "dataset"
             },
             "include_homozygous_ref": {
-                "type": "o",
-                "default": "include"
+                "type": "int",
+                "default": 1
             },
             "filter_by_qual": {
                 "type": "int",
@@ -150,10 +150,10 @@
             }
         },
         "cmd": [
-            "/pipeline/scripts/get_ref_variants_from_dataset_gvcf.pl",
+            "/pipeline/scripts/extract_gvcf_variants.pl",
             "--file_in_gvcf",
             "<inputs.file_in_gvcf>",
-            "--file_in_ref_bim",
+            "--file_in_bim",
             "<inputs.file_in_ref_bim>",
             "--file_out_prefix",
             "<inputs.file_out_prefix>",
