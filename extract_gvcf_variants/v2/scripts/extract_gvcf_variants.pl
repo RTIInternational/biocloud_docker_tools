@@ -174,14 +174,19 @@ while(<GVCF>){
                                         if (!exists($variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele})) {
                                             next;
                                         }
+                                        $F[9] = "1|1";
                                     }
                                 } else {
-                                    if ($a1_index == 0 || $a2_index == 0) {
-                                        $alt_allele = ($a1_index == 0) ? $alleles[$a2_index] : $alleles[$a1_index];
-                                        if (!exists($variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele})) {
-                                            next;
-                                        }
+                                    if ($a1_index == 0) {
+                                        $alt_allele = $alleles[$a2_index];
+                                        $F[9] = "0|1";
+                                    } elsif ($a2_index == 0) {
+                                        $alt_allele = $alleles[$a1_index];
+                                        $F[9] = "1|0";
                                     } else {
+                                        next;
+                                    }
+                                    if (!exists($variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele})) {
                                         next;
                                     }
                                 }
