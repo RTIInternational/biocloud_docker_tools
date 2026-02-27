@@ -27,7 +27,6 @@ use warnings;
 use Getopt::Long;
 use constant FALSE => 0;
 use constant TRUE  => 1;
-use JSON;
 
 # Autoflush STDOUT
 select((select(STDOUT), $|=1)[0]);
