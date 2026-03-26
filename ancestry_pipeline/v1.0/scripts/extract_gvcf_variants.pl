@@ -89,8 +89,8 @@ if (scalar(keys %variants) == 0) {
 }
 
 # Get gvcf variants by position
-$max_chr = max(keys %variants);
-$max_pos = max(keys %{$variants{$max_chr}});
+my $max_chr = max(keys %variants);
+my $max_pos = max(keys %{$variants{$max_chr}});
 open(OUT_VCF, "> ".$file_out_prefix.".vcf");
 open(OUT_VARIANTS, "> ".$file_out_prefix."_variants.txt");
 if ($file_in_gvcf =~ /gz$/) {
