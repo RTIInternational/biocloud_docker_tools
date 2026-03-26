@@ -197,6 +197,8 @@
             "plink1.9",
             "--vcf",
             "<inputs.file_in_vcf>",
+            "--allow-no-sex",
+            "--keep-allele-order",
             "--out",
             "<inputs.file_out_prefix>",
             "--make-bed"
@@ -245,6 +247,8 @@
             "<inputs.bfile_merge_list>",
             "--geno",
             "<inputs.geno>",
+            "--allow-no-sex",
+            "--keep-allele-order",
             "--out",
             "<inputs.out_prefix>",
             "--make-bed"
@@ -352,6 +356,8 @@
             "<inputs.file_in_flip_list>",
             "--extract",
             "<inputs.file_in_extract_list>",
+            "--allow-no-sex",
+            "--keep-allele-order",
             "--make-bed"
         ],
         "outputs": {
@@ -412,6 +418,8 @@
             "--extract",
             "<inputs.extract>",
             "--make-bed",
+            "--allow-no-sex",
+            "--keep-allele-order",
             "--out",
             "<inputs.file_out_prefix>"
         ],
@@ -573,6 +581,7 @@
             "<inputs.fam_2>",
             "--make-bed",
             "--allow-no-sex",
+            "--keep-allele-order",
             "--out",
             "<inputs.file_out_prefix>"
         ],
@@ -631,6 +640,8 @@
             "<inputs.fam>",
             "--flip",
             "<inputs.flip>",
+            "--keep-allele-order",
+            "--allow-no-sex",
             "--make-bed",
             "--out",
             "<inputs.file_out_prefix>"

@@ -25,6 +25,7 @@
 use strict;
 use warnings;
 use Getopt::Long;
+use List::Util qw(max);
 use constant FALSE => 0;
 use constant TRUE  => 1;
 
@@ -83,8 +84,13 @@ while (<REF_BIM>) {
     $variants{$F[0]}{$F[3]}{$F[5]}{$F[4]} = $F[1];
 }
 close REF_BIM;
+if (scalar(keys %variants) == 0) {
+    die "No variants found in BIM file";
+}
 
 # Get gvcf variants by position
+$max_chr = max(keys %variants);
+$max_pos = max(keys %{$variants{$max_chr}});
 open(OUT_VCF, "> ".$file_out_prefix.".vcf");
 open(OUT_VARIANTS, "> ".$file_out_prefix."_variants.txt");
 if ($file_in_gvcf =~ /gz$/) {
@@ -111,6 +117,9 @@ while(<GVCF>){
             || (uc($F[6]) eq "PASS")
         ) {
             $F[0] =~ s/^chr//;
+            if ($F[0] > $max_chr || ($F[0] == $max_chr && $F[1] > $max_pos)) {
+                last;
+            }
             if ($F[0] =~ /^\d+$/) {
                 my @keys = split(":", $F[8]);
                 my @values = split(":", $F[9]);
