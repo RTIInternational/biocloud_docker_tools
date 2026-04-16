@@ -15,6 +15,7 @@ docker run -ti \
     -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
     -e aws_session_token=<AWS_SESSION_TOKEN> \
     -e aws_region_name=<AWS_REGION_NAME> \
+    -e aws_profile=<AWS_PROFILE> \
     -e repo_dir=<REPO_DIR> \
     -e main=<MAIN_WDL> \
     -e name=<NAME> \
@@ -31,6 +32,7 @@ docker run -ti \
 | aws_secret_access_key | AWS secret access key |  | Yes |
 | aws_region_name | AWS region |  | Yes |
 | aws_session_token | AWS session token (for temporary credentials) |  | No |
+| aws_profile | AWS profile name (from ~/.aws/credentials) |  | No |
 | repo_dir | /path/to/repo |  | Yes |
 | main | /path/to/wf_wdl |  | Yes |
 | name | string |  | Yes |
@@ -52,6 +54,8 @@ docker run -ti \
     -e charge_code=<CHARGE_CODE> \
     -e aws_access_key_id=<AWS_ACCESS_KEY_ID> \
     -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
+    -e aws_session_token=<AWS_SESSION_TOKEN> \
+    -e aws_profile=<AWS_PROFILE> \
     -e aws_region_name=<AWS_REGION_NAME> \
     -e workflow_id=<WORKFLOW_ID> \
     -e parameters=<PARAMETERS> \
@@ -71,8 +75,10 @@ docker run -ti \
 | Parameter | Values | Default Value | Required |
 | --------- | ------ | ------------- | -------- |
 | charge_code | RTI charge code |  | Yes |
-| aws_access_key_id | AWS access key ID |  | Yes |
-| aws_secret_access_key | AWS secret access key |  | Yes |
+| aws_access_key_id | AWS access key ID |  | No |
+| aws_secret_access_key | AWS secret access key |  | No |
+| aws_session_token | AWS session token (for temporary credentials) |  | No |
+| aws_profile | AWS profile name (from ~/.aws/credentials) |  | No |
 | aws_region_name | AWS region |  | Yes |
 | workflow_id | string |  | Yes |
 | parameters | /path/to/parameters_json |  | Yes |
@@ -85,3 +91,7 @@ docker run -ti \
 | storage_capacity | `1-10000` (GB) | `2000` | No |
 | log_level | `OFF`, `FATAL`, `ERROR`, `ALL` | `ALL` | No |
 | retention_mode | `RETAIN`, `REMOVE` | `RETAIN` | No |
+
+### Notes
+- Credential selection priority: if `aws_profile` is provided, the profile will be used; else if both `aws_access_key_id` and `aws_secret_access_key` are provided, those (and `aws_session_token` if present) will be used; otherwise the default boto3 credential provider chain is used (environment variables, shared credentials file, or instance/task role).
+- This means you can omit explicit keys and rely on `--aws_profile` or the AWS environment/instance role when running the container.

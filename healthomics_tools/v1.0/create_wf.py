@@ -15,13 +15,13 @@ parser.add_argument(
     '--aws_access_key_id',
     help = 'Access key ID for AWS',
     type = str,
-    required = True
+    required = False
 )
 parser.add_argument(
     '--aws_secret_access_key',
     help = 'Secret access key for AWS',
     type = str,
-    required = True
+    required = False
 )
 parser.add_argument(
     '--aws_region_name',
@@ -74,6 +74,12 @@ parser.add_argument(
     type = str,
     default=None,
     required = False  # Set to False so it doesn't break if you go back to permanent keys
+)
+parser.add_argument(
+    '--aws_profile',
+    help = 'AWS profile name (from ~/.aws/credentials) to use instead of explicit keys',
+    type = str,
+    required = False
 )
 
 args = parser.parse_args()
@@ -131,12 +137,19 @@ tags = {
 }
 
 # Create Healthomics session and create wf
-session = boto3.Session(
-    aws_access_key_id=args.aws_access_key_id,
-    aws_secret_access_key=args.aws_secret_access_key,
-    region_name=args.aws_region_name,
-    aws_session_token=args.aws_session_token
-)
+# Prefer an explicit AWS profile if provided, otherwise use explicit credentials
+# (including optional session token), otherwise fall back to the default provider chain.
+if getattr(args, 'aws_profile', None):
+    session = boto3.Session(profile_name=args.aws_profile, region_name=args.aws_region_name)
+elif args.aws_access_key_id and args.aws_secret_access_key:
+    session = boto3.Session(
+        aws_access_key_id=args.aws_access_key_id,
+        aws_secret_access_key=args.aws_secret_access_key,
+        aws_session_token=args.aws_session_token,
+        region_name=args.aws_region_name
+    )
+else:
+    session = boto3.Session(region_name=args.aws_region_name)
 omics = session.client('omics')
 request_id = args.name + str(datetime.now().timestamp())
 response = omics.create_workflow(

@@ -16,19 +16,31 @@ parser.add_argument(
     '--aws_access_key_id',
     help='AWS access key ID for profile used to run workflow',
     type = str,
-    required = True
+    required = False
 )
 parser.add_argument(
     '--aws_secret_access_key',
     help='AWS secret access key ID for profile used to run workflow',
     type = str,
-    required = True
+    required = False
 )
 parser.add_argument(
     '--aws_region_name',
     help='AWS region in which to run workflow',
     type = str,
     required = True
+)
+parser.add_argument(
+    '--aws_session_token',
+    help='Session token for AWS (required for temporary credentials)',
+    type = str,
+    required = False
+)
+parser.add_argument(
+    '--aws_profile',
+    help='AWS profile name (from ~/.aws/credentials) to use instead of explicit keys',
+    type = str,
+    required = False
 )
 parser.add_argument(
     '--workflow_id',
@@ -119,7 +131,19 @@ with open(args.parameters) as f:
 tags = { "project-number": args.charge_code}
 
 # Open AWS Healthomics session
-session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key, region_name=args.aws_region_name)
+# Prefer an explicit AWS profile if provided, otherwise use explicit credentials
+# (including optional session token), otherwise fall back to the default provider chain.
+if args.aws_profile:
+    session = boto3.Session(profile_name=args.aws_profile, region_name=args.aws_region_name)
+elif args.aws_access_key_id and args.aws_secret_access_key:
+    session = boto3.Session(
+        aws_access_key_id=args.aws_access_key_id,
+        aws_secret_access_key=args.aws_secret_access_key,
+        aws_session_token=args.aws_session_token,
+        region_name=args.aws_region_name
+    )
+else:
+    session = boto3.Session(region_name=args.aws_region_name)
 
 # Get role ARN
 client = session.client("sts")
@@ -147,4 +171,3 @@ response = omics.start_run(
 
 with open("{}{}_metadata.json".format(run_metadata_output_dir, args.name), 'w', encoding='utf-8') as f:
     json.dump(response, f)
-
