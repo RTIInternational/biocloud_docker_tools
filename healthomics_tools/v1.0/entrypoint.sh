@@ -6,18 +6,14 @@ if [ -z "$task" ]; then
     echo "--task not provided, exiting!"
     exit
 fi
-if [ -z "$aws_access_key_id" ]; then
-    echo "--aws_access_key_id not provided, exiting!"
-    exit
-fi
-if [ -z "$aws_secret_access_key" ]; then
-    echo "--aws_secret_access_key not provided, exiting!"
-    exit
-fi
 if [ -z "$aws_region_name" ]; then
     echo "--aws_region_name not provided, exiting!"
     exit
 fi
+# Note: credentials are not strictly required here. You may provide either:
+#  - aws_profile (preferred), or
+#  - aws_access_key_id and aws_secret_access_key (and optional aws_session_token), or
+#  - rely on the default boto3 provider chain (env/shared creds/instance role).
 
 if [[ "$task" == "create_wf" ]]; then
 
@@ -54,6 +50,8 @@ if [[ "$task" == "create_wf" ]]; then
     python3 /opt/create_wf.py \
         --aws_access_key_id "$aws_access_key_id" \
         --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_session_token "$aws_session_token" \
+        --aws_profile "$aws_profile" \
         --aws_region_name "$aws_region_name" \
         --repo_dir "$repo_dir" \
         --main "$main" \
@@ -117,6 +115,8 @@ if [[ "$task" == "start_run" ]]; then
         --charge_code "$charge_code" \
         --aws_access_key_id "$aws_access_key_id" \
         --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_session_token "$aws_session_token" \
+        --aws_profile "$aws_profile" \
         --aws_region_name "$aws_region_name" \
         --workflow_id "$workflow_id" \
         --parameters "$parameters" \
@@ -139,6 +139,8 @@ if [[ "$task" == "cancel_all_runs" ]]; then
     python3 /opt/cancel_all_runs.py \
         --aws_access_key_id "$aws_access_key_id" \
         --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_session_token "$aws_session_token" \
+        --aws_profile "$aws_profile" \
         --aws_region_name "$aws_region_name"
 
 fi
@@ -163,6 +165,8 @@ if [[ "$task" == "delete_runs" ]]; then
     python3 /opt/cancel_all_runs.py \
         --aws_access_key_id "$aws_access_key_id" \
         --aws_secret_access_key "$aws_secret_access_key" \
+        --aws_session_token "$aws_session_token" \
+        --aws_profile "$aws_profile" \
         --aws_region_name "$aws_region_name" \
         --param_run_status \
         --param_delete_run_data \
