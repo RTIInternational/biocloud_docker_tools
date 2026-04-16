@@ -13,6 +13,7 @@ docker run -ti \
     -e task=create_wf \
     -e aws_access_key_id=<AWS_ACCESS_KEY_ID> \
     -e aws_secret_access_key=<AWS_SECRET_ACCESS_KEY> \
+    -e aws_session_token=<AWS_SESSION_TOKEN> \
     -e aws_region_name=<AWS_REGION_NAME> \
     -e repo_dir=<REPO_DIR> \
     -e main=<MAIN_WDL> \
@@ -29,6 +30,7 @@ docker run -ti \
 | aws_access_key_id | AWS access key ID |  | Yes |
 | aws_secret_access_key | AWS secret access key |  | Yes |
 | aws_region_name | AWS region |  | Yes |
+| aws_session_token | AWS session token (for temporary credentials) |  | No |
 | repo_dir | /path/to/repo |  | Yes |
 | main | /path/to/wf_wdl |  | Yes |
 | name | string |  | Yes |

@@ -68,6 +68,13 @@ parser.add_argument(
     default = 2000,
     required = False
 )
+parser.add_argument(
+    '--aws_session_token',
+    help = 'Session token for AWS (required for temporary credentials)',
+    type = str,
+    default=None,
+    required = False  # Set to False so it doesn't break if you go back to permanent keys
+)
 
 args = parser.parse_args()
 
@@ -77,7 +84,6 @@ def get_wf_dependencies(repo_dir, wf_path):
     with open(wf_dependencies_file) as f:
         wf_dependencies = json.load(f)
     if 'workflows' in wf_dependencies:
-        more_dependencies = []
         for sub_wf in wf_dependencies['workflows']:
             dependencies.append("{}{}".format(repo_dir, sub_wf))
             dependencies = dependencies + get_wf_dependencies(repo_dir, sub_wf)
@@ -125,7 +131,12 @@ tags = {
 }
 
 # Create Healthomics session and create wf
-session = boto3.Session(aws_access_key_id=args.aws_access_key_id, aws_secret_access_key=args.aws_secret_access_key, region_name=args.aws_region_name)
+session = boto3.Session(
+    aws_access_key_id=args.aws_access_key_id,
+    aws_secret_access_key=args.aws_secret_access_key,
+    region_name=args.aws_region_name,
+    aws_session_token=args.aws_session_token
+)
 omics = session.client('omics')
 request_id = args.name + str(datetime.now().timestamp())
 response = omics.create_workflow(
