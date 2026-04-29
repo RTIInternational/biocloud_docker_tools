@@ -26,7 +26,6 @@ ENV UV_LINK_MODE="copy"
 ENV UV_PYTHON_DOWNLOADS="0"
 
 # Set default shell to ash and enable pipefail
-# This is nececary when using pipes in docker so it wont silent fail
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # System packages to build CKAN requirements and plugins
@@ -65,7 +64,6 @@ ENV UV_LINK_MODE="copy"
 ENV UV_PYTHON_DOWNLOADS="0"
 
 # Set default shell to ash and enable pipefail
-# This is nececary when using pipes in docker so it wont silent fail
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
 
 # System packages to build CKAN requirements and plugins
@@ -116,7 +114,6 @@ RUN apk add --no-cache \
         bash \
         git \
         curl \
-        # Required for CKAN
         libmagic \
         postgresql17-client
 
@@ -137,38 +134,35 @@ COPY --from=ckanbuild --chown=ckan:ckan /app/src/ckan ${CKAN_DIR}
 
 WORKDIR ${CKAN_DIR}
 
-# Install CKAN
-RUN uv pip install --system pip --upgrade setuptools wheel && \
+# Unified Installation with uv
+RUN uv pip install --system --upgrade setuptools wheel && \
     uv pip install --system -r requirements.txt && \
-    uv pip install --system -e ${CKAN_DIR}
+    uv pip install --system -e ${CKAN_DIR} && \
+    uv pip install --system \
+        git+${ENVVARS_GIT_URL}@${ENVVARS_GIT_VERSION} \
+        git+${XLOADER_GIT_URL}@${XLOADER_GIT_VERSION} \
+        -r ${XLOADER_REQUIREMENTS_URL} \
+        "requests[security]"
 
-# Install extensions and create directory structure
-RUN /opt/python/bin/pip install git+${ENVVARS_GIT_URL}@${ENVVARS_GIT_VERSION} && \
-    /opt/python/bin/pip install git+${XLOADER_GIT_URL}@${XLOADER_GIT_VERSION} && \
-    /opt/python/bin/pip install -r ${XLOADER_REQUIREMENTS_URL} && \
-    /opt/python/bin/pip install requests[security] && \
-    # Create the data directory
-    mkdir -p ${DATA_DIR} && \
-    # Create and set timezone
+# Configuration and directory setup
+RUN mkdir -p ${DATA_DIR} && \
     echo "UTC" > /etc/timezone && \
     chown -R ckan:ckan ${APP_DIR} && \
-    # Remove pip cache
-    rm -rf ~/.cache/pip /app/cache
+    # Cleanup cache
+    rm -rf ${XDG_CACHE_HOME}
 
 # Copy necessary scripts
 COPY --chown=ckan:ckan setup/app ${APP_DIR}
 
 WORKDIR ${APP_DIR}
 
-# Create entrypoint directory for children image scripts
-ONBUILD RUN mkdir docker-entrypoint.d
-
-# Create afterinit directory for children image scripts
-ONBUILD RUN mkdir docker-afterinit.d
+# Create entrypoint directories for children image scripts
+ONBUILD RUN mkdir -p docker-entrypoint.d docker-afterinit.d
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=5 CMD curl --fail http://localhost:5000/api/3/action/status_show || exit 1
+HEALTHCHECK --interval=10s --timeout=5s --retries=5 \
+    CMD curl --fail http://localhost:5000/api/3/action/status_show || exit 1
 
 USER ckan
 
@@ -177,3 +171,4 @@ ENV UWSGI_PROC_NU="2"
 ENV UWSGI_OPTS="--socket /tmp/uwsgi.sock --uid ckan --gid ckan --http :5000 --master --enable-threads --wsgi-file $APP_DIR/wsgi.py --module wsgi:application --lazy-apps -p ${UWSGI_PROC_NU} -L --vacuum --harakiri 50 --callable application"
 
 CMD ["/app/start_ckan.sh"]
+
