@@ -149,8 +149,8 @@ while(<GVCF>){
                             my $end = $1;
                             for (my $i=$F[1]; $i<=$end; $i++) {
                                 if (exists($variants{$F[0]}{$i})) {
-                                    foreach $ref_allele (keys(%{$variants{$F[0]}{$i}})) {
-                                        foreach $alt_allele (keys(%{$variants{$F[0]}{$i}{$ref_allele}})) {
+                                    foreach my $ref_allele (keys(%{$variants{$F[0]}{$i}})) {
+                                        foreach my $alt_allele (keys(%{$variants{$F[0]}{$i}{$ref_allele}})) {
                                             $F[1] = $i;
                                             $F[2] = $variants{$F[0]}{$i}{$ref_allele}{$alt_allele};
                                             $F[3] = $ref_allele;
@@ -167,45 +167,27 @@ while(<GVCF>){
                         } else {
                             my @alleles = ($F[3], split(",", $F[4]));
                             my $ref_allele = $alleles[0];
-                            my $alt_allele = "";
                             if (exists($variants{$F[0]}{$F[1]}{$ref_allele})) {
-                                if ($a1_index == $a2_index) {
-                                    if ($a1_index == 0) {
-                                        if (keys(%{$variants{$F[0]}{$F[1]}{$ref_allele}}) == 1) {
-                                            my @position_alt_alleles = keys(%{$variants{$F[0]}{$F[1]}{$ref_allele}});
-                                            $alt_allele = $position_alt_alleles[0];
-                                        } else {
-                                            next;
+                                foreach my $alt_allele (keys(%{$variants{$F[0]}{$F[1]}{$ref_allele}})) {
+                                    my $allele_found = 0;
+                                    $F[2] = $variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele};
+                                    $F[3] = $ref_allele;
+                                    $F[4] = $alt_allele;
+                                    for (my $i=1; $i<@alleles; $i++) {
+                                        if ($alt_allele eq $alleles[$i]) {
+                                            $allele_found = 1;
+                                            $F[9] = ($a1_index == $i) ? "1" : "0";
+                                            $F[9] .= ($a2_index == $i) ? "|1" : "|0";
+                                            last;
                                         }
-                                    } else {
-                                        $alt_allele = $alleles[$a1_index];
-                                        if (!exists($variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele})) {
-                                            next;
-                                        }
-                                        $F[9] = "1|1";
                                     }
-                                } else {
-                                    if ($a1_index == 0) {
-                                        $alt_allele = $alleles[$a2_index];
-                                        $F[9] = "0|1";
-                                    } elsif ($a2_index == 0) {
-                                        $alt_allele = $alleles[$a1_index];
-                                        $F[9] = "1|0";
-                                    } else {
-                                        next;
-                                    }
-                                    if (!exists($variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele})) {
-                                        next;
-                                    }
+                                    $F[9] = $allele_found ? $F[9] : "0|0";
+                                    add_variant_to_output({
+                                        F => \@F,
+                                        OUT_VCF => \*OUT_VCF,
+                                        OUT_VARIANTS => \*OUT_VARIANTS
+                                    });
                                 }
-                                $F[2] = $variants{$F[0]}{$F[1]}{$ref_allele}{$alt_allele};
-                                $F[3] = $ref_allele;
-                                $F[4] = $alt_allele;
-                                add_variant_to_output({
-                                    F => \@F,
-                                    OUT_VCF => \*OUT_VCF,
-                                    OUT_VARIANTS => \*OUT_VARIANTS
-                                });
                             }
                         }
                     }
