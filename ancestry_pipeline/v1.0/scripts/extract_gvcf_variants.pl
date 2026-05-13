@@ -149,12 +149,8 @@ while(<GVCF>){
                             my $end = $1;
                             for (my $i=$F[1]; $i<=$end; $i++) {
                                 if (exists($variants{$F[0]}{$i})) {
-                                    if (keys(%{$variants{$F[0]}{$i}}) == 1) {
-                                        my @position_ref_alleles = keys(%{$variants{$F[0]}{$i}});
-                                        my $ref_allele = $position_ref_alleles[0];
-                                        if (keys(%{$variants{$F[0]}{$i}{$ref_allele}}) == 1) {
-                                            my @position_alt_alleles = keys(%{$variants{$F[0]}{$i}{$ref_allele}});
-                                            my $alt_allele = $position_alt_alleles[0];
+                                    foreach $ref_allele (keys(%{$variants{$F[0]}{$i}})) {
+                                        foreach $alt_allele (keys(%{$variants{$F[0]}{$i}{$ref_allele}})) {
                                             $F[1] = $i;
                                             $F[2] = $variants{$F[0]}{$i}{$ref_allele}{$alt_allele};
                                             $F[3] = $ref_allele;
