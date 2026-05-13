@@ -155,6 +155,7 @@ while(<GVCF>){
                                             $F[2] = $variants{$F[0]}{$i}{$ref_allele}{$alt_allele};
                                             $F[3] = $ref_allele;
                                             $F[4] = $alt_allele;
+                                            $F[9] = "0|0";
                                             add_variant_to_output({
                                                 F => \@F,
                                                 OUT_VCF => \*OUT_VCF,
