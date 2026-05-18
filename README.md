@@ -100,4 +100,3 @@ If you have any questions, suggestions, or need assistance, please feel free to 
 
 - Nathan Gaddis (ngaddis@rti.org)
 - Jesse Marks (jmarks@rti.org)
-- Bryan Quach (bquach@rti.org)
