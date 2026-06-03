@@ -92,6 +92,37 @@ docker push $aws_account_id.dkr.ecr.us-east-1.amazonaws.com/$repository_tag
 # Set permissions on repository
 
 ```
+
+<details>
+   <summary><strong>Note about permissions</strong></summary>
+
+   Go to the following link and there are 5 simple steps to do: https://docs.aws.amazon.com/omics/latest/dev/permissions-ecr.html#permissions-resource-policy
+   Basically, you have to attach a JSON file that give HealthOmics permission to pull the image.
+
+   **Example**
+   ```json
+   {
+    "Version":"2012-10-17",
+    "Statement": [
+        {
+            "Sid": "omics workflow access",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "omics.amazonaws.com"
+            },
+            "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability"
+            ],
+            "Resource": "*"
+        }
+    ]
+}         
+
+   ```
+</details>
+
 <br><br>
 
 # Contact Us
