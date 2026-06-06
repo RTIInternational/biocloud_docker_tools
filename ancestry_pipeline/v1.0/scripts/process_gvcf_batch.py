@@ -108,7 +108,7 @@ parser.add_argument(
     '--entrypoint',
     help = 'Entrypoint to use',
     default = 'munge-extract-ref-variants-from-gvcf',
-    choices = ['munge-extract-ref-variants-from-gvcf', 'ancestry-from-gvcf'],
+    choices = ['munge-extract-ref-variants-from-gvcf', 'ancestry-from-gvcf', 'munge-extract-ref-variants-from-gvcf-to-vcf'],
     type = str
 )
 args = parser.parse_args()

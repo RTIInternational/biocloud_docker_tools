@@ -88,4 +88,3 @@ RUN chmod 755 /pipeline/scripts/*
 WORKDIR /data
 
 # ENTRYPOINT [ "/pipeline/scripts/entrypoint.sh" ]
-
