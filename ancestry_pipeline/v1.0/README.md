@@ -8,7 +8,7 @@ docker run -ti \
     -v <VOLUME_NAME>:<MOUNT_PATH> \
     -e wf_arguments=<WORKFLOW_ARGS_JSON> \
     -e wf_definition=<ENTRYPOINT> \
-    --rm rtibiocloud/ancestry_pipeline:v1.0_cf38d38
+    --rm rtibiocloud/ancestry_pipeline:v1.0_90cc93a
 ```
 
 ### Parameters
@@ -26,7 +26,7 @@ docker run -ti \
 docker run -ti \
     -v <VOLUME_NAME>:<MOUNT_PATH> \
     --entrypoint bash \
-    --rm rtibiocloud/ancestry_pipeline:v1.0_cf38d38
+    --rm rtibiocloud/ancestry_pipeline:v1.0_90cc93a
 ```
 ### Parameters
 | Parameter | Values | Default Value | Required |
