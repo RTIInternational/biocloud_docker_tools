@@ -5,7 +5,7 @@ FROM bioconductor/bioconductor_docker:RELEASE_3_23
 LABEL maintainer="Xin Wu <xwu@rti.org>"
 LABEL description="Docker image for DNA methylation (DNAm) array processing and quality control using the SeSAMe pipeline."
 LABEL base-image="bioconductor/bioconductor_docker:RELEASE_3_23"
-LABEL software-website="https://github.com/rti-international/multiomics-aud-cs"
+LABEL software-website="https://github.com/RTIInternational/biocloud_docker_tools/tree/master/dnam_processing_qc"
 LABEL software-version="1.0"
 LABEL license="https://github.com/RTIInternational/biocloud_docker_tools/blob/master/LICENSE"
 

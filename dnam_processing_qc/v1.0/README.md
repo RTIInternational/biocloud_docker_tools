@@ -32,18 +32,18 @@ performs the following steps:
 
 **Key R packages installed:**
 
-| Package | Source | Purpose |
-| --- | --- | --- |
-| `sesame` ≥ 1.30.0 | Bioconductor 3.23 | Core DNAm preprocessing |
-| `sesameData` | Bioconductor | SeSAMe reference data |
-| `minfi` | Bioconductor | IDAT reading for beadcount |
-| `wateRmelon` | Bioconductor | Beadcount extraction |
-| `BiocParallel` | Bioconductor | Cross-platform parallelism |
-| `PCAtools` | Bioconductor | Elbow-point PCA |
-| `GGally` | CRAN | Pairs plots |
-| `logr` | CRAN | Pipeline logging |
-| `pacman` | CRAN | Package loading utility |
-| `dplyr`, `tibble`, `tidyr` | CRAN (base image) | Data manipulation |
+| Package | Version | Source | Purpose |
+| --- | --- | --- | --- |
+| `sesame` | 1.30.1 | Bioconductor 3.23 | Core DNAm preprocessing |
+| `sesameData` | 1.30.0 | Bioconductor 3.23 | SeSAMe reference data |
+| `minfi` | 1.58.0 | Bioconductor 3.23 | IDAT reading for beadcount |
+| `wateRmelon` | 2.18.0 | Bioconductor 3.23 | Beadcount extraction |
+| `BiocParallel` | 1.46.0 | Bioconductor 3.23 | Cross-platform parallelism |
+| `PCAtools` | 2.24.0 | Bioconductor 3.23 | Elbow-point PCA |
+| `GGally` | 2.4.0 | CRAN | Pairs plots |
+| `logr` | 1.3.9 | CRAN | Pipeline logging |
+| `pacman` | 0.5.1 | CRAN | Package loading utility |
+| `dplyr`, `tibble`, `tidyr` | (base image) | CRAN | Data manipulation |
 
 <br>
 
@@ -68,7 +68,7 @@ docker run -it \
 
 - `<idat_dir>` — directory containing IDAT files (can be nested)
 - `<platform>` — array platform: one of `EPICv2`, `EPIC`, `HM450`, `HM27`
-- `<sample_sheet>` — tab-delimited file with columns `sample_id`, `sex`, `prefix`
+- `<sample_sheet>` — tab-delimited file with columns `sample_id`, `sex`, `prefix` (IDAT file prefix, without `_Red` or `_Grn` suffix)
 - `<run_name>` — label used for the output directory and log file naming
 
 ### Outputs
@@ -90,10 +90,6 @@ All outputs are written to `outputs/<run_name>/` within the mounted directory:
 
 ## Build
 
-> **Before building**, copy `dnam_processing_qc.R` from the
-> [multiomics-aud-cs](https://github.com/rti-international/multiomics-aud-cs)
-> repository into this directory (`dnam_processing_qc/v1.0/`).
-
 To build this Docker image, you can use the following command:
 
 ```bash
@@ -113,7 +109,9 @@ Make sure you are in the directory containing the Dockerfile before running this
 
 ## Perform a testrun
 
-`docker run -it dnam_processing_qc:v1.0 Rscript -e "pacman::p_load(logr, sesame, parallel, BiocParallel, minfi, wateRmelon, dplyr, tibble, tidyr, PCAtools, GGally); message('All packages loaded successfully.')"`
+```bash
+docker run -it dnam_processing_qc:v1.0 Rscript -e "pacman::p_load(logr, sesame, parallel, BiocParallel, minfi, wateRmelon, dplyr, tibble, tidyr, PCAtools, GGally); message('All packages loaded successfully.')"
+```
 
 <details>
 
