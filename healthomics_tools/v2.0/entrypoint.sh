@@ -63,6 +63,59 @@ if [[ "$task" == "create_wf" ]]; then
 
 fi
 
+if [[ "$task" == "create_wf_version" ]]; then
+
+    # Check parameters and set to default if not provided where applicable
+    if [ -z "$repo_dir" ]; then
+        echo "--repo_dir not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$workflow_id" ]; then
+        echo "--workflow_id not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$main" ]; then
+        echo "--main not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$name" ]; then
+        echo "--name not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$description" ]; then
+        echo "--description not provided, exiting!"
+        exit 
+    fi
+    if [ -z "$readme" ]; then
+        echo "--readme not provided, exiting!"
+        exit 
+    fi
+
+    # Assign default values if parameters not provided
+    if [ -z "$engine" ]; then
+        engine="WDL"
+    fi
+    if [ -z "$storage_capacity" ]; then
+        storage_capacity=2000
+    fi
+
+    # Add repo to list of safe directories
+    git config --global --add safe.directory "$repo_dir"
+
+    # Create workflow version
+    python3 /opt/create_wf_version.py \
+        --aws_profile "$aws_profile" \
+        --repo_dir "$repo_dir" \
+        --workflow_id "$workflow_id" \
+        --main "$main" \
+        --name "$name" \
+        --description "$description" \
+        --readme "$readme" \
+        --engine "$engine" \
+        --storage_capacity $storage_capacity
+
+fi
+
 if [[ "$task" == "start_run" ]]; then
 
     # Check parameters and set to default if not provided where applicable
