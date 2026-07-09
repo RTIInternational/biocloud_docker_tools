@@ -25,14 +25,36 @@ parser.add_argument(
     required = True
 )
 parser.add_argument(
-    '--parameters',
-    help='JSON file with run parameters',
+    '--workflow_version_name',
+    help='Name of workflow version to run',
     type = str,
-    required = True
+    required = False,
+    default = None
 )
 parser.add_argument(
     '--name',
     help='A name for the run',
+    type = str,
+    required = True
+)
+parser.add_argument(
+    '--cache_id',
+    help='ID of cache to use for the run',
+    type = str,
+    required = False,
+    default = None
+)
+parser.add_argument(
+    '--cache_behavior',
+    help='Cache behavior for the run',
+    type = str,
+    required = False,
+    default = None,
+    choices = ['CACHE_ON_FAILURE', 'CACHE_ALWAYS']
+)
+parser.add_argument(
+    '--parameters',
+    help='JSON file with run parameters',
     type = str,
     required = True
 )
@@ -120,8 +142,11 @@ request_id = "{}_{}".format(args.name, str(datetime.now().timestamp()))
 response = omics.start_run(
     roleArn=role_arn,
     workflowId=args.workflow_id,
-    parameters=parameters,
+    workflowVersionName=args.workflow_version_name,
     name=args.name,
+    cacheId=args.cache_id,
+    cacheBehavior=args.cache_behavior,
+    parameters=parameters,
     outputUri=args.output_uri,
     tags=tags,
     workflowType=args.workflow_type,
