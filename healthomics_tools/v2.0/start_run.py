@@ -28,8 +28,7 @@ parser.add_argument(
     '--workflow_version_name',
     help='Name of workflow version to run',
     type = str,
-    required = False,
-    default = None
+    required = False
 )
 parser.add_argument(
     '--name',
@@ -41,15 +40,13 @@ parser.add_argument(
     '--cache_id',
     help='ID of cache to use for the run',
     type = str,
-    required = False,
-    default = None
+    required = False
 )
 parser.add_argument(
     '--cache_behavior',
     help='Cache behavior for the run',
     type = str,
     required = False,
-    default = None,
     choices = ['CACHE_ON_FAILURE', 'CACHE_ALWAYS']
 )
 parser.add_argument(

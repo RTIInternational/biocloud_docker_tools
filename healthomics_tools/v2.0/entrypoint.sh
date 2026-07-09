@@ -145,6 +145,21 @@ if [[ "$task" == "start_run" ]]; then
     fi
 
     # Assign default values if parameters not provided
+    if [ -z "$workflow_version_name" ]; then
+        workflow_version_name=""
+    else
+        workflow_version_name="--workflow_version_name $workflow_version_name"
+    fi
+    if [ -z "$cache_id" ]; then
+        cache_id=""
+    else
+        cache_id="--cache_id $cache_id"
+    fi
+    if [ -z "$cache_behavior" ]; then
+        cache_behavior=""
+    else
+        cache_behavior="--cache_behavior $cache_behavior"
+    fi
     if [ -z "$workflow_type" ]; then
         workflow_type="PRIVATE"
     fi
@@ -169,8 +184,11 @@ if [[ "$task" == "start_run" ]]; then
         --charge_code "$charge_code" \
         --aws_profile "$aws_profile" \
         --workflow_id "$workflow_id" \
-        --parameters "$parameters" \
+        "$workflow_version_name" \
         --name "$name" \
+        "$cache_id" \
+        "$cache_behavior" \
+        --parameters "$parameters" \
         --output_uri "$output_uri" \
         --run_metadata_output_dir "$run_metadata_output_dir" \
         --workflow_type "$workflow_type" \
