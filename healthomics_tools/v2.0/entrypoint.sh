@@ -147,18 +147,12 @@ if [[ "$task" == "start_run" ]]; then
     # Assign default values if parameters not provided
     if [ -z "$workflow_version_name" ]; then
         workflow_version_name=""
-    else
-        workflow_version_name="--workflow_version_name $workflow_version_name"
     fi
     if [ -z "$cache_id" ]; then
-        cache_id=""
-    else
-        cache_id="--cache_id $cache_id"
+        parameter_cache_id="--cache_id"
     fi
     if [ -z "$cache_behavior" ]; then
-        cache_behavior=""
-    else
-        cache_behavior="--cache_behavior $cache_behavior"
+        parameter_cache_behavior="--cache_behavior"
     fi
     if [ -z "$workflow_type" ]; then
         workflow_type="PRIVATE"
@@ -180,14 +174,31 @@ if [[ "$task" == "start_run" ]]; then
     fi
     
     # Start run
+    echo "Starting run with the following parameters:"
+    echo "Charge code: $charge_code"
+    echo "AWS profile: $aws_profile"
+    echo "Workflow ID: $workflow_id"
+    echo "Workflow version name: $workflow_version_name"
+    echo "Run name: $name"
+    echo "Cache ID: $cache_id"
+    echo "Cache behavior: $cache_behavior"
+    echo "Parameters file: $parameters"
+    echo "Output URI: $output_uri"
+    echo "Run metadata output directory: $run_metadata_output_dir"
+    echo "Workflow type: $workflow_type"
+    echo "Priority: $priority"
+    echo "Storage type: $storage_type"
+    echo "Storage capacity: $storage_capacity"
+    echo "Log level: $log_level"
+    echo "Retention mode: $retention_mode"
     python3 /opt/start_run.py \
         --charge_code "$charge_code" \
         --aws_profile "$aws_profile" \
         --workflow_id "$workflow_id" \
-        "$workflow_version_name" \
+        --workflow_version_name "$workflow_version_name" \
         --name "$name" \
-        "$cache_id" \
-        "$cache_behavior" \
+        --cache_id "$cache_id" \
+        --cache_behavior "$cache_behavior" \
         --parameters "$parameters" \
         --output_uri "$output_uri" \
         --run_metadata_output_dir "$run_metadata_output_dir" \
