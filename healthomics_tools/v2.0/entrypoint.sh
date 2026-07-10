@@ -174,23 +174,6 @@ if [[ "$task" == "start_run" ]]; then
     fi
     
     # Start run
-    echo "Starting run with the following parameters:"
-    echo "Charge code: $charge_code"
-    echo "AWS profile: $aws_profile"
-    echo "Workflow ID: $workflow_id"
-    echo "Workflow version name: $workflow_version_name"
-    echo "Run name: $name"
-    echo "Cache ID: $cache_id"
-    echo "Cache behavior: $cache_behavior"
-    echo "Parameters file: $parameters"
-    echo "Output URI: $output_uri"
-    echo "Run metadata output directory: $run_metadata_output_dir"
-    echo "Workflow type: $workflow_type"
-    echo "Priority: $priority"
-    echo "Storage type: $storage_type"
-    echo "Storage capacity: $storage_capacity"
-    echo "Log level: $log_level"
-    echo "Retention mode: $retention_mode"
     python3 /opt/start_run.py \
         --charge_code "$charge_code" \
         --aws_profile "$aws_profile" \
