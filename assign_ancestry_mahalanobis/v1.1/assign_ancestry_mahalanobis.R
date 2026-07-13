@@ -300,7 +300,7 @@ for (i in 1:nrow(filtered_pcs)){
 # Write reference assignments with mahalanobis distances
 write.table(
     filtered_pcs[!(filtered_pcs$POP == dataset), c('FID', 'IID', 'POP', ancestries, 'ANCESTRY')],
-    file=paste0(out_dir, 'ref_raw_ancestry_assignments.tsv'),
+    file=paste0(out_dir, 'ref_ancestry_assignments.tsv'),
     quote=FALSE,
     sep="\t",
     row.names=F
@@ -313,7 +313,7 @@ summary = cbind(rownames(summary), summary)
 colnames(summary)[1] = 'POP'
 write.table(
     summary,
-    file=paste0(out_dir, 'ref_raw_ancestry_assignments_summary.tsv'),
+    file=paste0(out_dir, 'ref_ancestry_assignments_summary.tsv'),
     quote=FALSE,
     sep="\t",
     row.names=F
