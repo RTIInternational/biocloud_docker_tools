@@ -82,6 +82,7 @@ docker run -ti \
 ### Command
 ``` sh
 docker run -ti \
+    -u $(id -u):$(id -g) \
     -v "<HOST_DIR>":"<CONTAINER_DIR>" \
     -e task=start_run \
     -e charge_code="<CHARGE_CODE>" \
@@ -179,6 +180,7 @@ docker run -ti \
 ### Command
 ``` sh
 docker run -ti \
+    -u $(id -u):$(id -g) \
     -v "<HOST_DIR>":"<CONTAINER_DIR>" \
     -e task=retrieve_run_results \
     -e aws_profile="<AWS_PROFILE>" \

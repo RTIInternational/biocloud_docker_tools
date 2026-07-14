@@ -43,18 +43,16 @@ def traverse(o, s3_client, target_dir):
                     path_parts = file_path.split("/")
                     s3_bucket = path_parts[0]
                     s3_key = "/".join(path_parts[1:])
-                    file_name = s3_key.split("/")[-1]
-                    s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, file_name))
-                    print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, file_name)))
+                    s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, s3_key))
+                    print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, s3_key)))
         else:
             if (str(o[key])[0:2] == "s3"):
                 file_path = o[key].replace("s3://", "")
                 path_parts = file_path.split("/")
                 s3_bucket = path_parts[0]
                 s3_key = "/".join(path_parts[1:])
-                file_name = s3_key.split("/")[-1]
-                s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, file_name))
-                print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, file_name)))
+                s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, s3_key))
+                print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, s3_key)))
 
 target_dir = args.target_dir if (args.target_dir[-1] == "/") else (args.target_dir + "/")
 os.system("mkdir -p {}".format(target_dir))
