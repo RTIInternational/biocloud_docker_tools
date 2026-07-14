@@ -35,22 +35,26 @@ def traverse(o, s3_client, target_dir):
             for subkey in o[key]:
                 traverse(o[key][subkey], s3_client, new_target_dir)
         elif isinstance(o[key], list):
-            new_target_dir = "{}{}/".format(target_dir, key)
-            os.system("mkdir -p {}".format(new_target_dir))
             for item in o[key]:
                 if (str(item)[0:2] == "s3"):
                     file_path = item.replace("s3://", "")
                     path_parts = file_path.split("/")
                     s3_bucket = path_parts[0]
                     s3_key = "/".join(path_parts[1:])
-                    s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, s3_key))
-                    print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, s3_key)))
+                    new_target_dir = "{}{}".format(target_dir, "/".join(path_parts[3:-1]))
+                    os.system("mkdir -p {}".format(new_target_dir))
+                    target_file_path = "{}/{}".format(new_target_dir, s3_key.split("/")[-1])
+                    s3_client.download_file(s3_bucket, s3_key, target_file_path)
+                    print("Downloaded {} to {}".format(s3_key, target_file_path))
         else:
             if (str(o[key])[0:2] == "s3"):
                 file_path = o[key].replace("s3://", "")
                 path_parts = file_path.split("/")
                 s3_bucket = path_parts[0]
                 s3_key = "/".join(path_parts[1:])
+                new_target_dir = "{}{}".format(target_dir, "/".join(path_parts[3:-1]))
+                os.system("mkdir -p {}".format(new_target_dir))
+                target_file_path = "{}/{}".format(new_target_dir, s3_key.split("/")[-1])
                 s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, s3_key))
                 print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, s3_key)))
 
