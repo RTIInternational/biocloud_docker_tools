@@ -2,6 +2,7 @@ import argparse
 import boto3
 import json
 import os
+import re
 from healthomics_utils import get_run_metadata
 
 # Get arguments
@@ -26,24 +27,22 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-def traverse(o, s3_client, target_dir):
+def traverse(o, s3_client, base_target_dir):
     tree_types=(tuple, dict)
     for key in o:
         if isinstance(o[key], tree_types):
-            new_target_dir = "{}{}/".format(target_dir, key)
-            os.system("mkdir -p {}".format(new_target_dir))
             for subkey in o[key]:
-                traverse(o[key][subkey], s3_client, new_target_dir)
+                traverse(o[key][subkey], s3_client, base_target_dir)
         elif isinstance(o[key], list):
             for item in o[key]:
                 if (str(item)[0:2] == "s3"):
-                    file_path = item.replace("s3://", "")
-                    path_parts = file_path.split("/")
-                    s3_bucket = path_parts[0]
-                    s3_key = "/".join(path_parts[1:])
-                    new_target_dir = "{}{}".format(target_dir, "/".join(path_parts[3:-1]))
-                    os.system("mkdir -p {}".format(new_target_dir))
-                    target_file_path = "{}/{}".format(new_target_dir, s3_key.split("/")[-1])
+                    s3_file_path = item.replace("s3://", "")
+                    s3_path_parts = s3_file_path.split("/")
+                    s3_bucket = s3_path_parts[0]
+                    s3_key = "/".join(s3_path_parts[1:])
+                    target_dir = "{}{}".format(base_target_dir, "/".join(s3_path_parts[3:-1]))
+                    os.system("mkdir -p {}".format(target_dir))
+                    target_file_path = "{}{}".format(base_target_dir, "/".join(s3_path_parts[3:]))
                     s3_client.download_file(s3_bucket, s3_key, target_file_path)
                     print("Downloaded {} to {}".format(s3_key, target_file_path))
         else:
@@ -52,14 +51,12 @@ def traverse(o, s3_client, target_dir):
                 path_parts = file_path.split("/")
                 s3_bucket = path_parts[0]
                 s3_key = "/".join(path_parts[1:])
-                new_target_dir = "{}{}".format(target_dir, "/".join(path_parts[3:-1]))
-                os.system("mkdir -p {}".format(new_target_dir))
-                target_file_path = "{}/{}".format(new_target_dir, s3_key.split("/")[-1])
-                s3_client.download_file(s3_bucket, s3_key, os.path.join(target_dir, s3_key))
-                print("Downloaded {} to {}".format(s3_key, os.path.join(target_dir, s3_key)))
+                target_file_path = "{}{}".format(base_target_dir, "/".join(path_parts[4:]))
+                s3_client.download_file(s3_bucket, s3_key, target_file_path)
+                print("Downloaded {} to {}".format(s3_key, target_file_path))
 
-target_dir = args.target_dir if (args.target_dir[-1] == "/") else (args.target_dir + "/")
-os.system("mkdir -p {}".format(target_dir))
+base_target_dir = args.target_dir if (args.target_dir[-1] == "/") else (args.target_dir + "/")
+os.system("mkdir -p {}".format(base_target_dir))
 
 # Get run metadata
 run_metadata = get_run_metadata(args.aws_profile, args.run_id)
@@ -78,7 +75,7 @@ s3_client = session.client("s3")
 # Retrieve outputs.json
 source_bucket = run_metadata['outputUri'].replace("s3://", "").split("/")[0]
 source_path = "{}/logs/outputs.json".format(args.run_id)
-target_path = "{}{}_outputs.json".format(target_dir, args.run_id)
+target_path = "{}{}_outputs.json".format(base_target_dir, args.run_id)
 s3_client.download_file(source_bucket, source_path, target_path)
 
 # Read outputs.json
@@ -86,4 +83,4 @@ with open(target_path) as f:
     outputs = json.load(f)
 
 # Retrieve all output files
-traverse(outputs, s3_client, target_dir)
+traverse(outputs, s3_client, base_target_dir)
