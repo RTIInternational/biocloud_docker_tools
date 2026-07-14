@@ -15,7 +15,7 @@ framework. The pipeline processes Illumina Infinium BeadChip IDAT files and
 performs the following steps:
 
 - IDAT file reading and sample–sheet matching
-- Predicted vs. reported sex checking
+- Predicted sex inference via `sesame::inferSex`; mismatch check against reported sex (skipped if `sex` column is absent from sample sheet)
 - Experiment-independent probe masking (mapping quality, SNPs, cross-reactivity)
 - Low beadcount probe filtering
 - Dye bias correction (non-linear, SeSAMe `CD` steps)
@@ -68,7 +68,7 @@ docker run -it \
 
 - `<idat_dir>` — directory containing IDAT files (can be nested)
 - `<platform>` — array platform: one of `EPICv2`, `EPIC`, `HM450`, `HM27`
-- `<sample_sheet>` — tab-delimited file with columns `sample_id`, `sex`, `prefix` (IDAT file prefix, without `_Red` or `_Grn` suffix)
+- `<sample_sheet>` — tab-delimited file with required columns `sample_id` and `prefix` (IDAT file prefix, without `_Red` or `_Grn` suffix), and optional column `sex`. If `sex` is absent, the predicted-vs-reported mismatch check is skipped and predicted sex is used.
 - `<run_name>` — label used for the output directory and log file naming
 
 ### Outputs

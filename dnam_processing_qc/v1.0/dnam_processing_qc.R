@@ -9,8 +9,9 @@ args <- commandArgs(TRUE)
 idat_location <- args[1]
 # Methylation platform (EPICv2, EPIC, HM450, etc.)
 platform <- args[2]
-# Sample sheet with the sample_id, sex, prefix of the idat file
-# (without the _Red or _Grn suffix).
+# Sample sheet with required columns sample_id and prefix, and optional column
+# sex. If sex is absent, the predicted sex is used instead.
+# (prefix = IDAT basename without the _Red/_Grn suffix)
 sample_sheet_name <- args[3]
 # Run name to identify the run in the output directory and log file names.
 run_name <- args[4]
@@ -93,7 +94,7 @@ if (nrow(sample_sheet) == 0) {
 
 # If the sample sheet does not have the required columns, stop the script and
 # print a message.
-required_columns <- c("sample_id", "sex", "prefix")
+required_columns <- c("sample_id", "prefix")
 if (!all(required_columns %in% colnames(sample_sheet))) {
   stop(
     "Sample sheet is missing required columns. Please check the sample sheet and
@@ -162,51 +163,58 @@ predicted_sex <- BiocParallel::bplapply(
   BPPARAM = bpparam
 )
 
-# Determine if the predicted sex matches the reported sex in the sample sheet.
+# Add predicted sex to the sample sheet.
 sample_sheet <- do.call(rbind, predicted_sex) |>
   as.data.frame() |>
   tibble::rownames_to_column(var = "prefix") |>
   dplyr::rename("predicted_sex" = V1) |>
-  dplyr::right_join(sample_sheet, by = "prefix") |>
-  # Match the predicted sex to the reported sex, being inclusive of the
-  # different ways to report sex. E.g., "M" = "MALE" = "male" = "m".
-  dplyr::mutate(
-    sex_match = dplyr::case_when(
-      predicted_sex == "MALE" & toupper(sex) %in% c("M", "MALE") ~ TRUE,
-      predicted_sex == "FEMALE" & toupper(sex) %in% c("F", "FEMALE") ~ TRUE,
-      is.na(predicted_sex) ~ NA,
-      TRUE ~ FALSE
-    )
-  )
+  dplyr::right_join(sample_sheet, by = "prefix")
 
-# Remove any samples that have mismatched predicted and reported sex, ignoring
-# those with NA in both columns, and print a message listing the removed samples
-mismatched_samples <- sample_sheet |>
-  dplyr::filter(sex_match == FALSE) |>
-  dplyr::pull(sample_id)
-
-if (length(mismatched_samples) > 0) {
-  logr::log_print(
-    paste(
-      "Removing", length(mismatched_samples),
-      "samples with mismatched predicted and reported sex:"
-    ), console = FALSE, blank_after = FALSE
-  )
-  logr::log_print(mismatched_samples)
-
+# If the sex column is present, check for mismatches; otherwise skip.
+if ("sex" %in% colnames(sample_sheet)) {
   sample_sheet <- sample_sheet |>
-    dplyr::filter(!sample_id %in% mismatched_samples)
-  sdf <- sdf[
-    names(sdf) %in%
-      sample_sheet$prefix[!sample_sheet$sample_id %in% mismatched_samples]
-  ]
+    dplyr::mutate(
+      sex_match = dplyr::case_when(
+        predicted_sex == "MALE" & toupper(sex) %in% c("M", "MALE") ~ TRUE,
+        predicted_sex == "FEMALE" & toupper(sex) %in% c("F", "FEMALE") ~ TRUE,
+        is.na(predicted_sex) | is.na(sex) ~ NA,
+        TRUE ~ FALSE
+      )
+    )
+
+  mismatched_samples <- sample_sheet |>
+    dplyr::filter(sex_match == FALSE) |>
+    dplyr::pull(sample_id)
+
+  if (length(mismatched_samples) > 0) {
+    logr::log_print(
+      paste(
+        "Removing", length(mismatched_samples),
+        "samples with mismatched predicted and reported sex:"
+      ), console = FALSE, blank_after = FALSE
+    )
+    logr::log_print(mismatched_samples)
+
+    sample_sheet <- sample_sheet |>
+      dplyr::filter(!sample_id %in% mismatched_samples)
+    sdf <- sdf[
+      names(sdf) %in%
+        sample_sheet$prefix[!sample_sheet$sample_id %in% mismatched_samples]
+    ]
+  } else {
+    logr::log_print(
+      "All samples have matching predicted and reported sex.",
+      console = FALSE
+    )
+  }
+  rm(mismatched_samples)
 } else {
   logr::log_print(
-    "All samples have matching predicted and reported sex.",
+    "No sex column in sample sheet. Skipping mismatch check; using predicted sex.",
     console = FALSE
   )
 }
-rm(mismatched_samples, predicted_sex)
+rm(predicted_sex)
 
 # Apply the following recommended masks to the data. This is step "Q" in the
 # openSesame pipeline, but I'm applying the masks manually here so that I can
