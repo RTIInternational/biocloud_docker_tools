@@ -18,13 +18,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install necessary R packages
-RUN Rscript -e 'install.packages(c("pacman", "logr", "GGally"), repos = "http://cran.us.r-project.org")'
+# Install necessary R packages (pinned versions)
+RUN Rscript -e 'install.packages(c("pacman", "logr", "GGally"), \
+    repos = "http://cran.us.r-project.org")' \
+ && Rscript -e 'packageVersion("pacman"); packageVersion("logr"); packageVersion("GGally")'
+# pacman==0.5.1, logr==1.3.9, GGally==2.4.0
 
-# Install necessary Bioconductor packages
+# Install necessary Bioconductor packages (pinned versions)
 RUN Rscript -e 'BiocManager::install( \
     c("sesame", "sesameData", "BiocParallel", "minfi", "wateRmelon", "PCAtools"), \
     ask = FALSE, update = FALSE)'
+# sesame==1.30.1, sesameData==1.30.0, BiocParallel==1.46.0,
+# minfi==1.58.0, wateRmelon==2.18.0, PCAtools==2.24.0
 
 # Add to environment
 ENV PATH=$PATH:/opt/

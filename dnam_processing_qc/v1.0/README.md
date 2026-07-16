@@ -43,7 +43,7 @@ performs the following steps:
 | `GGally` | 2.4.0 | CRAN | Pairs plots |
 | `logr` | 1.3.9 | CRAN | Pipeline logging |
 | `pacman` | 0.5.1 | CRAN | Package loading utility |
-| `dplyr`, `tibble`, `tidyr` | (base image) | CRAN | Data manipulation |
+| `dplyr`, `tibble`, `tidyr` | 1.2.1, 3.3.1, 1.3.2 | CRAN | Data manipulation |
 
 <br>
 

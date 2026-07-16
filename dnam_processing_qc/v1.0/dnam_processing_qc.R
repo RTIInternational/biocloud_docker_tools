@@ -170,7 +170,9 @@ sample_sheet <- do.call(rbind, predicted_sex) |>
   dplyr::rename("predicted_sex" = V1) |>
   dplyr::right_join(sample_sheet, by = "prefix")
 
-# If the sex column is present, check for mismatches; otherwise skip.
+# If the sex column is present (case-insensitive), check for mismatches;
+# otherwise skip.
+colnames(sample_sheet) <- tolower(colnames(sample_sheet))
 if ("sex" %in% colnames(sample_sheet)) {
   sample_sheet <- sample_sheet |>
     dplyr::mutate(
@@ -447,7 +449,7 @@ logr::sep("Extracting control probe signals and calculating PCs")
 # are erroring as "not exported object from namespace:sesame", even though they
 # are in the package reference.
 controls_df <- lapply(sdf_processed, attr, "controls")
-# Current (6/15/26, sesame v1.30.0) controls df has columns "G", "R", "col",
+# Current (6/15/26, sesame v1.30.1) controls df has columns "G", "R", "col",
 # "type", "<NA>", and "<NA>", with Names in rownames. The "col" and "type"
 # columns are actually the beadcount from the green and red channels,
 # respectively, and the NA columns are the color channel and control type,
