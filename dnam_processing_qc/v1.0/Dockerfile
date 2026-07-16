@@ -18,11 +18,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libhdf5-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install necessary R packages (pinned versions)
-RUN Rscript -e 'install.packages(c("pacman", "logr", "GGally"), \
-    repos = "http://cran.us.r-project.org")' \
- && Rscript -e 'packageVersion("pacman"); packageVersion("logr"); packageVersion("GGally")'
-# pacman==0.5.1, logr==1.3.9, GGally==2.4.0
+# Install necessary R packages (pinned versions via pak)
+RUN Rscript -e 'install.packages("pak", repos = "https://cloud.r-project.org")' \
+ && Rscript -e 'pak::pak("pacman@0.5.1")' \
+ && Rscript -e 'pak::pak("logr@1.3.9")' \
+ && Rscript -e 'pak::pak("GGally@2.4.0")'
 
 # Install necessary Bioconductor packages (pinned versions)
 RUN Rscript -e 'BiocManager::install( \
