@@ -26,10 +26,15 @@ RUN Rscript -e 'install.packages("pak", repos = "https://cloud.r-project.org")' 
 
 # Install necessary Bioconductor packages (pinned versions)
 RUN Rscript -e 'BiocManager::install( \
-    c("sesame", "sesameData", "BiocParallel", "minfi", "wateRmelon", "PCAtools"), \
+    c("sesame", "sesameData", "BiocParallel", "minfi", "wateRmelon", "PCAtools", \
+      "IlluminaHumanMethylationEPICmanifest", \
+      "IlluminaHumanMethylationEPICv2manifest", \
+      "IlluminaHumanMethylation450kmanifest", \
+      "IlluminaHumanMethylation27kmanifest"), \
     ask = FALSE, update = FALSE)'
 # sesame==1.30.1, sesameData==1.30.0, BiocParallel==1.46.0,
 # minfi==1.58.0, wateRmelon==2.18.0, PCAtools==2.24.0
+# manifests for EPIC / EPICv2 / HM450 / HM27 (required by minfi::read.metharray)
 
 # Add to environment
 ENV PATH=$PATH:/opt/
