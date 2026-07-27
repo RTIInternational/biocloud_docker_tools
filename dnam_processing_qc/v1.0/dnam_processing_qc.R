@@ -134,9 +134,11 @@ rm(matched_samples)
 
 logr::sep("Reading in idat files")
 
-# Read in the idat files so that we can get beadcount
+# Read in the idat files so that we can get beadcount.
+# force = TRUE allows mixing IDATs with slightly different array sizes (e.g.
+# minor manufacturing revisions of the same platform).
 rgchannelset <- minfi::read.metharray(
-  basenames = matching_files, extended = TRUE
+  basenames = matching_files, extended = TRUE, force = TRUE
 )
 # Store the beadcount information for later.
 beadcount <- wateRmelon::beadcount(rgchannelset)
