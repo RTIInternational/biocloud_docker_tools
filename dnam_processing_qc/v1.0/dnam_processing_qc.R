@@ -144,6 +144,11 @@ rgchannelset <- minfi::read.metharray(
 beadcount <- wateRmelon::beadcount(rgchannelset)
 rm(rgchannelset)
 
+# Warm up the sesame data cache with a single serial call before parallel
+# reads. Without this, parallel workers can race on ExperimentHub and throw
+# "wrong args for environment subassignment" (BiocParallel reducer errors).
+invisible(sesame::readIDATpair(matching_files[[1]], platform = platform))
+
 # Read in the idat files using sesame to get the SDF objects for each sample.
 sdf <- BiocParallel::bplapply(
   matching_files, sesame::readIDATpair, platform = platform,
