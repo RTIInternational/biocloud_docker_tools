@@ -35,15 +35,13 @@ lf <- logr::log_open(
 # On exit, close the log file
 on.exit(logr::log_close())
 
-# Set up a parallel backend that works on all platforms (including Windows).
-# MulticoreParam uses forking and is not supported on Windows; SnowParam uses
-# sockets and works everywhere.
+# Set up a parallel backend. SnowParam (socket-based) is used on all platforms
+# because MulticoreParam has a known bug ("wrong args for environment
+# subassignment" in the reducer) that triggers when workers return SigDF
+# objects. SnowParam avoids this at a small overhead cost from serializing
+# objects between workers.
 n_workers <- max(1L, parallel::detectCores() - 2L)
-if (.Platform$OS.type == "windows") {
-  bpparam <- BiocParallel::SnowParam(workers = n_workers)
-} else {
-  bpparam <- BiocParallel::MulticoreParam(workers = n_workers)
-}
+bpparam <- BiocParallel::SnowParam(workers = n_workers)
 
 # Write the input parameters to the log file.
 logr::sep("Input parameters")
