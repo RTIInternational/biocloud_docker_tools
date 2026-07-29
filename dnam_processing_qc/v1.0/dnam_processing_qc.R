@@ -35,15 +35,13 @@ lf <- logr::log_open(
 # On exit, close the log file
 on.exit(logr::log_close())
 
-# Set up a parallel backend that works on all platforms (including Windows).
-# MulticoreParam uses forking and is not supported on Windows; SnowParam uses
-# sockets and works everywhere.
+# Set up a parallel backend. SnowParam (socket-based) is used on all platforms
+# because MulticoreParam has a known bug ("wrong args for environment
+# subassignment" in the reducer) that triggers when workers return SigDF
+# objects. SnowParam avoids this at a small overhead cost from serializing
+# objects between workers.
 n_workers <- max(1L, parallel::detectCores() - 2L)
-if (.Platform$OS.type == "windows") {
-  bpparam <- BiocParallel::SnowParam(workers = n_workers)
-} else {
-  bpparam <- BiocParallel::MulticoreParam(workers = n_workers)
-}
+bpparam <- BiocParallel::SnowParam(workers = n_workers)
 
 # Write the input parameters to the log file.
 logr::sep("Input parameters")
@@ -134,13 +132,20 @@ rm(matched_samples)
 
 logr::sep("Reading in idat files")
 
-# Read in the idat files so that we can get beadcount
+# Read in the idat files so that we can get beadcount.
+# force = TRUE allows mixing IDATs with slightly different array sizes (e.g.
+# minor manufacturing revisions of the same platform).
 rgchannelset <- minfi::read.metharray(
-  basenames = matching_files, extended = TRUE
+  basenames = matching_files, extended = TRUE, force = TRUE
 )
 # Store the beadcount information for later.
 beadcount <- wateRmelon::beadcount(rgchannelset)
 rm(rgchannelset)
+
+# Warm up the sesame data cache with a single serial call before parallel
+# reads. Without this, parallel workers can race on ExperimentHub and throw
+# "wrong args for environment subassignment" (BiocParallel reducer errors).
+invisible(sesame::readIDATpair(matching_files[[1]], platform = platform))
 
 # Read in the idat files using sesame to get the SDF objects for each sample.
 sdf <- BiocParallel::bplapply(
