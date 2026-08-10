@@ -32,6 +32,28 @@ Optional flags:
 - `--sex_col <colname>`: Sex column name for chrY QC metrics (default: `Sex`).
 - `--group_vars <comma-separated-colnames>`: Phenotype columns used for PCA coloring. If omitted, PCA plotting is skipped.
 
+### Required contents of `--multiqc_dir`
+
+The QC loader (`omixjutsu::load_paired_end_qc_data`) expects the following files to be present in the `--multiqc_dir` directory:
+
+- `multiqc_fastqc.txt`
+- `multiqc_hisat2.txt`
+- `multiqc_rseqc_bam_stat.txt`
+- `multiqc_rseqc_read_distribution.txt`
+- `multiqc_salmon.txt`
+- `multiqc_trimmomatic.txt`
+- `rseqc_inner_distance_plot.tsv`
+- `salmon_plot.tsv`
+- `fastqc_per_base_sequence_quality_plot.tsv`
+- `fastqc_per_sequence_quality_scores_plot.tsv`
+- `fastqc_per_sequence_gc_content_plot.tsv`
+- `fastqc_sequence_duplication_levels_plot.tsv`
+- `fastqc_adapter_content_plot.tsv`
+- `rseqc_known_junction_saturation_plot.tsv`
+- `rseqc_novel_junction_saturation_plot.tsv`
+
+If any of these files are missing, the script will fail when reading MultiQC-derived inputs.
+
 ## Command Usage
 
 ```bash
