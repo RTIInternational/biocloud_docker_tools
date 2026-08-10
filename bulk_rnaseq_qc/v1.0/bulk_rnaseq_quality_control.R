@@ -69,9 +69,13 @@ sex_col <- if ("sex_col" %in% names(flag_args)) flag_args$sex_col else "Sex"
 group_vars_arg <- if ("group_vars" %in% names(flag_args)) {
 	flag_args$group_vars
 } else {
-	paste(rin_col, "PMI,Sex,AgeDeath,Race,Plate,RemakeLibrary", sep = ",")
+	NULL
 }
-group_vars <- trimws(strsplit(group_vars_arg, ",", fixed = TRUE)[[1]])
+group_vars <- if (is.null(group_vars_arg)) {
+	character(0)
+} else {
+	trimws(strsplit(group_vars_arg, ",", fixed = TRUE)[[1]])
+}
 group_vars <- group_vars[nzchar(group_vars)]
 
 out_dir <- file.path(output_dir, paste0(run_name, "_quality_control"))
@@ -97,10 +101,14 @@ logr::log_print(paste("Output directory:", out_dir), console = FALSE)
 logr::log_print(paste("Sample ID column:", sample_id_col), console = FALSE)
 logr::log_print(paste("RIN column:", rin_col), console = FALSE)
 logr::log_print(paste("Sex column:", sex_col), console = FALSE)
-logr::log_print(
-	paste("PCA group vars:", paste(group_vars, collapse = ", ")),
-	console = FALSE
-)
+if (length(group_vars) > 0) {
+	logr::log_print(
+		paste("PCA group vars:", paste(group_vars, collapse = ", ")),
+		console = FALSE
+	)
+} else {
+	logr::log_print("PCA group vars: not provided; PCA plotting will be skipped.", console = FALSE)
+}
 
 required_paths <- c(multiqc_dir, txi_rds, pheno_tsv, annotation_gtf)
 missing_paths <- required_paths[!file.exists(required_paths)]
@@ -911,92 +919,55 @@ with_plot_guard({
 	save_plot(p$hist / p$boxplot, "shannon_diversity.png", 6, 6)
 }, "shannon")
 
-with_plot_guard({
-	available_group_vars <- group_vars[group_vars %in% colnames(pheno_data)]
-	if ("mitochondrial_mapping_rate" %in% colnames(pheno_data) &&
-		!"mitochondrial_mapping_rate" %in% available_group_vars) {
-		available_group_vars <- c(available_group_vars, "mitochondrial_mapping_rate")
-	}
-	if (length(available_group_vars) == 0) {
-		stop("No valid PCA group variables were found in phenotype data.")
-	}
-	# Compute PCA once, then render one panel per grouping variable.
-	assay_mat <- SummarizedExperiment::assay(dds_vst)
-	row_vars <- matrixStats::rowVars(assay_mat)
-	keeper_rows <- order(row_vars, decreasing = TRUE)[seq_len(min(20000, length(row_vars)))]
-	pca <- prcomp(
-		t(assay_mat[keeper_rows, , drop = FALSE]),
-		center = TRUE,
-		scale. = FALSE
-	)
-	pct_var <- pca$sdev^2 / sum(pca$sdev^2)
-	x_title <- paste0("PC1: ", round(pct_var[1] * 100), "% variance")
-	y_title <- paste0("PC2: ", round(pct_var[2] * 100), "% variance")
+if (length(group_vars) == 0) {
+	logr::log_print("Skipping PCA plot block because --group_vars was not provided.", console = FALSE)
+} else {
+	with_plot_guard({
+		available_group_vars <- group_vars[group_vars %in% colnames(pheno_data)]
+		if ("mitochondrial_mapping_rate" %in% colnames(pheno_data) &&
+			!"mitochondrial_mapping_rate" %in% available_group_vars) {
+			available_group_vars <- c(available_group_vars, "mitochondrial_mapping_rate")
+		}
+		if (length(available_group_vars) == 0) {
+			logr::log_print(
+				"Skipping PCA plot block because none of the provided --group_vars are present in phenotype data.",
+				console = FALSE
+			)
+			return(NULL)
+		}
+		# Compute PCA once, then render one panel per grouping variable.
+		assay_mat <- SummarizedExperiment::assay(dds_vst)
+		row_vars <- matrixStats::rowVars(assay_mat)
+		keeper_rows <- order(row_vars, decreasing = TRUE)[seq_len(min(20000, length(row_vars)))]
+		pca <- prcomp(
+			t(assay_mat[keeper_rows, , drop = FALSE]),
+			center = TRUE,
+			scale. = FALSE
+		)
+		pct_var <- pca$sdev^2 / sum(pca$sdev^2)
+		x_title <- paste0("PC1: ", round(pct_var[1] * 100), "% variance")
+		y_title <- paste0("PC2: ", round(pct_var[2] * 100), "% variance")
 
-	plot_data_base <- data.frame(
-		PC1 = pca$x[, 1],
-		PC2 = pca$x[, 2],
-		sample_id = colnames(dds_vst),
-		stringsAsFactors = FALSE
-	)
+		plot_data_base <- data.frame(
+			PC1 = pca$x[, 1],
+			PC2 = pca$x[, 2],
+			sample_id = colnames(dds_vst),
+			stringsAsFactors = FALSE
+		)
 
-	p_list <- list()
+		p_list <- list()
 
-	for (gv in available_group_vars) {
-		p_tmp <- tryCatch(
-			{
-				plot_df <- plot_data_base
-				group_values <- SummarizedExperiment::colData(dds_vst)[[gv]]
-				plot_df$group <- group_values
+		for (gv in available_group_vars) {
+			p_tmp <- tryCatch(
+				{
+					plot_df <- plot_data_base
+					group_values <- SummarizedExperiment::colData(dds_vst)[[gv]]
+					plot_df$group <- group_values
 
-				if (all(is.na(plot_df$group))) {
-					stop("all values are NA")
-				}
+					if (all(is.na(plot_df$group))) {
+						stop("all values are NA")
+					}
 
-				p <- ggplot2::ggplot(
-					plot_df,
-					ggplot2::aes(x = PC1, y = PC2, fill = group)
-				) +
-					ggplot2::geom_point(size = 3, alpha = 1, shape = 21, color = "white") +
-					ggplot2::labs(x = x_title, y = y_title, fill = gv, title = gv) +
-					ggplot2::theme(
-						plot.margin = grid::unit(c(0.5, 0.5, 0.5, 0.5), units = "cm"),
-						title = ggplot2::element_text(size = 18),
-						axis.text = ggplot2::element_text(size = 18),
-						axis.title = ggplot2::element_text(size = 18),
-						axis.title.y = ggplot2::element_text(vjust = 3),
-						axis.title.x = ggplot2::element_text(vjust = -1),
-						legend.title = ggplot2::element_text(size = 16),
-						legend.text = ggplot2::element_text(size = 16)
-					)
-
-				data_min <- min(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
-				data_max <- max(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
-				if (is.finite(data_min) && is.finite(data_max)) {
-					axis_min <- switch(
-						as.character(sign(data_min)),
-						`-1` = data_min * 1.05,
-						`1` = data_min * 0.95,
-						`0` = data_min - (diff(c(data_min, data_max)) * 0.05)
-					)
-					axis_max <- switch(
-						as.character(sign(data_max)),
-						`-1` = data_max * 0.95,
-						`1` = data_max * 1.05,
-						`0` = data_max + (diff(c(data_min, data_max)) * 0.05)
-					)
-					p <- p + ggplot2::xlim(axis_min, axis_max) + ggplot2::ylim(axis_min, axis_max)
-				}
-
-				if (is.numeric(plot_df$group) || is.integer(plot_df$group)) {
-					p + ggplot2::scale_fill_gradient(
-						low = "khaki1",
-						high = "red4",
-						na.value = "grey80"
-					)
-				} else {
-					plot_df$group <- as.factor(plot_df$group)
-					n_lvls <- nlevels(plot_df$group)
 					p <- ggplot2::ggplot(
 						plot_df,
 						ggplot2::aes(x = PC1, y = PC2, fill = group)
@@ -1014,6 +985,8 @@ with_plot_guard({
 							legend.text = ggplot2::element_text(size = 16)
 						)
 
+					data_min <- min(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
+					data_max <- max(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
 					if (is.finite(data_min) && is.finite(data_max)) {
 						axis_min <- switch(
 							as.character(sign(data_min)),
@@ -1030,35 +1003,79 @@ with_plot_guard({
 						p <- p + ggplot2::xlim(axis_min, axis_max) + ggplot2::ylim(axis_min, axis_max)
 					}
 
-					if (n_lvls <= 8) {
-						p + ggplot2::scale_fill_brewer(palette = ifelse(gv %in% c(sex_col, "Race"), "Dark2", "Set2"), na.value = "grey80")
+					if (is.numeric(plot_df$group) || is.integer(plot_df$group)) {
+						p + ggplot2::scale_fill_gradient(
+							low = "khaki1",
+							high = "red4",
+							na.value = "grey80"
+						)
 					} else {
-						p + ggplot2::scale_fill_hue(na.value = "grey80")
+						plot_df$group <- as.factor(plot_df$group)
+						n_lvls <- nlevels(plot_df$group)
+						p <- ggplot2::ggplot(
+							plot_df,
+							ggplot2::aes(x = PC1, y = PC2, fill = group)
+						) +
+							ggplot2::geom_point(size = 3, alpha = 1, shape = 21, color = "white") +
+							ggplot2::labs(x = x_title, y = y_title, fill = gv, title = gv) +
+							ggplot2::theme(
+								plot.margin = grid::unit(c(0.5, 0.5, 0.5, 0.5), units = "cm"),
+								title = ggplot2::element_text(size = 18),
+								axis.text = ggplot2::element_text(size = 18),
+								axis.title = ggplot2::element_text(size = 18),
+								axis.title.y = ggplot2::element_text(vjust = 3),
+								axis.title.x = ggplot2::element_text(vjust = -1),
+								legend.title = ggplot2::element_text(size = 16),
+								legend.text = ggplot2::element_text(size = 16)
+							)
+
+						if (is.finite(data_min) && is.finite(data_max)) {
+							axis_min <- switch(
+								as.character(sign(data_min)),
+								`-1` = data_min * 1.05,
+								`1` = data_min * 0.95,
+								`0` = data_min - (diff(c(data_min, data_max)) * 0.05)
+							)
+							axis_max <- switch(
+								as.character(sign(data_max)),
+								`-1` = data_max * 0.95,
+								`1` = data_max * 1.05,
+								`0` = data_max + (diff(c(data_min, data_max)) * 0.05)
+							)
+							p <- p + ggplot2::xlim(axis_min, axis_max) + ggplot2::ylim(axis_min, axis_max)
+						}
+
+						if (n_lvls <= 8) {
+							p + ggplot2::scale_fill_brewer(palette = ifelse(gv %in% c(sex_col, "Race"), "Dark2", "Set2"), na.value = "grey80")
+						} else {
+							p + ggplot2::scale_fill_hue(na.value = "grey80")
+						}
 					}
+				},
+				error = function(e) {
+					logr::log_print(
+						paste0("Skipping PCA group var '", gv, "' due to error: ", e$message),
+						console = FALSE
+					)
+					NULL
 				}
-			},
-			error = function(e) {
-				logr::log_print(
-					paste0("Skipping PCA group var '", gv, "' due to error: ", e$message),
-					console = FALSE
-				)
-				NULL
+			)
+
+			if (!is.null(p_tmp)) {
+				p_list[[length(p_list) + 1]] <- p_tmp
 			}
-		)
-
-		if (!is.null(p_tmp)) {
-			p_list[[length(p_list) + 1]] <- p_tmp
 		}
-	}
 
-	if (length(p_list) == 0) {
-		stop("All PCA group variables failed; no PCA panels could be generated.")
-	}
+		if (length(p_list) == 0) {
+			logr::log_print("All PCA group variables were skipped; no PCA plot generated.", console = FALSE)
+			return(NULL)
+		}
 
-	p_patch <- patchwork::wrap_plots(p_list, ncol = 2)
-	save_plot(p_patch, "pca_plots_pc1_pc2.png", 16, 14)
-}, "pca")
-logr::log_print("Completed PCA plot block.", console = FALSE)
+		p_patch <- patchwork::wrap_plots(p_list, ncol = 2)
+		save_plot(p_patch, "pca_plots_pc1_pc2.png", 16, 14)
+	}, "pca")
+	logr::log_print("Completed PCA plot block.", console = FALSE)
+}
 
 logr::sep("Build QC metrics table")
 
