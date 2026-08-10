@@ -5,6 +5,7 @@ pacman::p_load(
 
 args <- commandArgs(TRUE)
 
+# Parse command-line inputs as strict --flag value pairs.
 parse_flag_args <- function(cli_args) {
 	if (length(cli_args) %% 2 != 0) {
 		stop("All inputs must be provided as --flag value pairs.")
@@ -36,6 +37,7 @@ if (length(args) < 12) {
 	stop(usage)
 }
 
+# Validate required CLI flags before any file or object loading.
 flag_args <- parse_flag_args(args)
 required_flags <- c("multiqc_dir", "txi_rds", "pheno_tsv", "annotation_gtf", "sample_id_col", "run_name")
 missing_flags <- required_flags[!required_flags %in% names(flag_args)]
@@ -78,6 +80,7 @@ group_vars <- if (is.null(group_vars_arg)) {
 }
 group_vars <- group_vars[nzchar(group_vars)]
 
+# Create a run-scoped output tree and central log file.
 out_dir <- file.path(output_dir, paste0(run_name, "_quality_control"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 plot_dir <- file.path(out_dir, "plots")
@@ -121,6 +124,7 @@ if (length(missing_paths) > 0) {
 	)
 }
 
+# Save each plot with a run_name prefix for traceability across runs.
 save_plot <- function(plot_obj, filename, width = 10, height = 6, dpi = 150) {
 	out_file <- file.path(plot_dir, paste0(run_name, "_", filename))
 	ggplot2::ggsave(
@@ -134,6 +138,7 @@ save_plot <- function(plot_obj, filename, width = 10, height = 6, dpi = 150) {
 	logr::log_print(paste("Wrote plot:", out_file), console = FALSE)
 }
 
+# Keep plotting resilient: log and continue when one plot block fails.
 with_plot_guard <- function(expr, plot_name) {
 	tryCatch(
 		expr,
@@ -147,6 +152,7 @@ with_plot_guard <- function(expr, plot_name) {
 	)
 }
 
+# Compute feature-level expression fraction as a percent of total sample counts.
 compute_feature_fraction <- function(count_matrix, feature_ids) {
 	feature_ids <- intersect(feature_ids, rownames(count_matrix))
 	out <- data.frame(values = rep(NA_real_, ncol(count_matrix)), row.names = colnames(count_matrix))
@@ -159,6 +165,7 @@ compute_feature_fraction <- function(count_matrix, feature_ids) {
 	out
 }
 
+# Generate paired histogram and boxplot summaries for percent-based QC metrics.
 plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod") {
 	plot_df <- data.frame(
 		sample_id = rownames(metric_df),
@@ -184,6 +191,7 @@ plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod
 	list(hist = hist_plot, boxplot = box_plot)
 }
 
+# Stream gene IDs from GTF using awk filters to avoid loading full annotation into R.
 get_annotation_gene_ids <- function(gtf_path, seqnames = NULL, gene_types = NULL, exclude_par = FALSE) {
 	conditions <- c("$0 !~ /^#/", "$3 == \"gene\"")
 
@@ -251,6 +259,7 @@ normalize_sample_id <- function(x) {
 	x
 }
 
+# Subset and reorder per-sample QC frames to match phenotype/txi sample IDs.
 subset_qc_df <- function(df, ids) {
 	if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) {
 		return(df)
@@ -306,6 +315,7 @@ subset_qc_df <- function(df, ids) {
 	out[ord, , drop = FALSE]
 }
 
+# Recursively subset nested QC objects that mix lists and data frames.
 subset_qc_object <- function(obj, ids) {
 	if (is.data.frame(obj)) {
 		return(subset_qc_df(obj, ids))
@@ -316,6 +326,7 @@ subset_qc_object <- function(obj, ids) {
 	obj
 }
 
+# Align metric tables to QC IDs and coerce value columns to numeric output vectors.
 align_metric_output <- function(metric_df, qc_ids, value_col = "values") {
 	out <- data.frame(values = rep(NA_real_, length(qc_ids)), row.names = qc_ids)
 
@@ -345,6 +356,7 @@ align_metric_output <- function(metric_df, qc_ids, value_col = "values") {
 	out
 }
 
+# Recover paired trimmed R1/R2 rows from mixed FastQC-like tables.
 extract_trimmed_pairs <- function(df) {
 	empty <- data.frame()
 	if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) {
@@ -381,6 +393,7 @@ extract_trimmed_pairs <- function(df) {
 	list(trimmed_r1 = r1, trimmed_r2 = r2)
 }
 
+# Capture per-metric failures without terminating the full QC workflow.
 collect_metric <- function(expr, metric_name) {
 	tryCatch(
 		expr,
@@ -394,6 +407,7 @@ collect_metric <- function(expr, metric_name) {
 	)
 }
 
+# Standardize FASTQ-derived tables into trim/read-orientation partitions.
 split_by_trim_status <- function(df) {
 	if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) {
 		return(list(
@@ -445,6 +459,7 @@ split_by_trim_status <- function(df) {
 
 logr::sep("Load QC and expression inputs")
 
+# Load MultiQC-derived data and normalize expected nested structures.
 qc_data <- omixjutsu::load_paired_end_qc_data(data_dir = multiqc_dir)
 logr::log_print("Loaded multiqc-derived qc_data object.", console = FALSE)
 
@@ -473,6 +488,7 @@ if (!is.list(txi) || !"counts" %in% names(txi)) {
 
 pheno_data <- read.table(pheno_tsv, sep = "\t", header = TRUE, check.names = FALSE)
 
+# Optionally map a custom RIN column name to canonical RIN for downstream calls.
 if (rin_col != "RIN" && rin_col %in% colnames(pheno_data)) {
 	if ("RIN" %in% colnames(pheno_data)) {
 		stop(
@@ -487,6 +503,7 @@ if (rin_col != "RIN" && rin_col %in% colnames(pheno_data)) {
 	rin_col <- "RIN"
 }
 
+# Enforce unique non-empty sample IDs before matching to tximport columns.
 if (!sample_id_col %in% colnames(pheno_data)) {
 	stop(
 		paste0(
@@ -615,6 +632,7 @@ recover_fastqc_subset <- function(df, ids) {
 	out[ord, , drop = FALSE]
 }
 
+# FastQC recovery path: try generic subset, then FastQC-specific matching, then raw fallback.
 if (
 	(trimmed_r1_n == 0 || trimmed_r2_n == 0) &&
 	!is.null(fastqc_pre_subset) &&
@@ -701,6 +719,7 @@ logr::log_print(
 
 logr::sep("Plot QC summaries")
 
+# Build plotting inputs from parsed FastQC data, with deterministic raw fallback.
 fastqc_plot_data <- NULL
 fastqc_plot_data <- tryCatch(
 	{
@@ -919,6 +938,7 @@ with_plot_guard({
 	save_plot(p$hist / p$boxplot, "shannon_diversity.png", 6, 6)
 }, "shannon")
 
+# PCA is optional and runs only when user-provided grouping variables are available.
 if (length(group_vars) == 0) {
 	logr::log_print("Skipping PCA plot block because --group_vars was not provided.", console = FALSE)
 } else {
@@ -1079,6 +1099,7 @@ if (length(group_vars) == 0) {
 
 logr::sep("Build QC metrics table")
 
+# Re-load raw QC where needed to compute metric tables from consistent trimmed subsets.
 raw_qc_for_metrics <- omixjutsu::load_paired_end_qc_data(data_dir = multiqc_dir)
 phred_trimmed_for_metrics <- if ("phred_seq" %in% names(raw_qc_for_metrics)) {
 	extract_trimmed_pairs(raw_qc_for_metrics$phred_seq)
@@ -1103,6 +1124,7 @@ logr::log_print(
 
 qc_metrics_list <- list()
 
+# Collect each metric independently so one missing modality does not collapse the table.
 qc_metrics_list$trimmomatic_dropped_pct <- collect_metric({
 	td <- qc_data$trimmomatic
 	td$Sample <- stringr::str_split_fixed(td$Sample, " ", 3)[, 1]
@@ -1322,6 +1344,7 @@ if (length(qc_metrics_list) == 0) {
 qc_metrics <- do.call(cbind, qc_metrics_list)
 qc_metrics <- tibble::rownames_to_column(as.data.frame(qc_metrics), var = "sample_id")
 
+# Join computed metrics back onto phenotype for one analysis-ready sample table.
 pheno_out <- pheno_data
 pheno_out$sample_id <- rownames(pheno_out)
 rnaseq_pheno_qc <- dplyr::left_join(pheno_out, qc_metrics, by = "sample_id")
@@ -1339,6 +1362,7 @@ write.table(
 logr::log_print("QC metrics table written to:", console = FALSE, blank_after = FALSE)
 logr::log_print(qc_out_file, console = FALSE)
 
+# Resolve numeric metric vectors with fallback column names for format drift across tools.
 get_metric_numeric <- function(df, primary_col, fallback_cols = character(0)) {
 	col_candidates <- c(primary_col, fallback_cols)
 	col_candidates <- col_candidates[col_candidates %in% colnames(df)]
@@ -1388,6 +1412,7 @@ transcriptome_mapping_pct <- salmon_mapping_pct
 mito_rna_pct <- get_metric_numeric(rnaseq_pheno_qc, "mito_rna_pct")
 ribo_rna_pct <- get_metric_numeric(rnaseq_pheno_qc, "ribo_rna_pct")
 
+# Derive Shannon lower bound using Tukey-style outlier threshold on the cohort.
 shannon_non_na <- shannon_index[!is.na(shannon_index)]
 if (length(shannon_non_na) > 0) {
 	shannon_q1 <- as.numeric(stats::quantile(shannon_non_na, probs = 0.25, names = FALSE, na.rm = TRUE))
@@ -1414,6 +1439,7 @@ pass_shannon_or_transcriptome <-
 pass_mito <- !is.na(mito_rna_pct) & mito_rna_pct < 10
 pass_ribo <- !is.na(ribo_rna_pct) & ribo_rna_pct < 1
 
+# Centralized threshold definitions drive both counts and failed-sample reporting.
 threshold_defs <- list(
 	list(
 		metric = "rin_gt5",
@@ -1514,6 +1540,7 @@ logr::log_print(summary_out_file, console = FALSE)
 
 logr::sep("Build HTML report")
 
+# Minimal escaping helper so report tables are safe to embed in HTML.
 html_escape <- function(x) {
 	x <- as.character(x)
 	x <- gsub("&", "&amp;", x, fixed = TRUE)
@@ -1523,6 +1550,7 @@ html_escape <- function(x) {
 	x
 }
 
+# Render data frames as lightweight HTML tables for in-report summaries.
 df_to_html_table <- function(df, max_rows = NULL) {
 	if (is.null(df) || nrow(df) == 0) {
 		return("<p>No rows available.</p>")
@@ -1583,6 +1611,7 @@ failed_samples_html <- df_to_html_table(failed_samples_df, max_rows = NULL)
 
 report_file <- file.path(out_dir, paste0(run_name, "_qc_summary.html"))
 
+# Build a self-contained report that links tables/logs and embeds all generated PNGs.
 html_lines <- c(
 	"<!doctype html>",
 	"<html lang='en'>",
