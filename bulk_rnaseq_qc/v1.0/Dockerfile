@@ -3,7 +3,7 @@ FROM rocker/r-ver:4.4.1
 # Add Container Labels
 LABEL maintainer="Caryn Willis <cdwillis@rti.org>"
 LABEL description="Tools for running quality control on bulk RNA-seq data. Both sample level metrics and visualizations are generated. The QC script is designed to be run after alignment and quantification, but before differential expression analysis."
-
+LABEL base-image="rocker/r-ver:4.4.1"
 ENV DEBIAN_FRONTEND=noninteractive
 
 # System libraries required by CRAN/Bioconductor packages used in the QC script.
