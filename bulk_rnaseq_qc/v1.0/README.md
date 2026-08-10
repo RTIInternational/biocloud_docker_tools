@@ -23,11 +23,11 @@ Required flags:
 - `--txi_rds <path>`: `tximport`-like `.rds` object containing at least `counts`.
 - `--pheno_tsv <path>`: Tab-delimited phenotype file with a sample ID column.
 - `--annotation_gtf <path>`: GTF used to derive mitochondrial/ribosomal/chrY feature sets.
+- `--sample_id_col <colname>`: Sample ID column in phenotype TSV.
 - `--run_name <name>`: Prefix used for outputs and report naming.
 
 Optional flags:
 - `--output_dir <path>`: Parent output directory (default: `outputs`).
-- `--sample_id_col <colname>`: Sample ID column in phenotype TSV (default: `RNum`).
 - `--rin_col <colname>`: RIN column name in phenotype TSV (default: `RIN`).
 - `--sex_col <colname>`: Sex column name for chrY QC metrics (default: `Sex`).
 - `--group_vars <comma-separated-colnames>`: Phenotype columns used for PCA coloring. If omitted, PCA plotting is skipped.
@@ -40,9 +40,9 @@ Rscript bulk_rnaseq_quality_control.R \
   --txi_rds <path> \
   --pheno_tsv <path> \
   --annotation_gtf <path> \
+  --sample_id_col <colname> \
   --run_name <name> \
   [--output_dir <path>] \
-  [--sample_id_col <colname>] \
   [--rin_col <colname>] \
   [--sex_col <colname>] \
   [--group_vars <comma-separated-colnames>]
@@ -155,6 +155,7 @@ docker run --rm -it \
   --txi_rds /data/path/to/txi.rds \
   --pheno_tsv /data/path/to/pheno.tsv \
   --annotation_gtf /data/path/to/annotation.gtf \
+  --sample_id_col RNum \
   --run_name study_run_001 \
   --output_dir /data/outputs
 ```
@@ -167,6 +168,7 @@ Rscript bulk_rnaseq_quality_control.R \
   --txi_rds path/to/txi.rds \
   --pheno_tsv path/to/pheno.tsv \
   --annotation_gtf path/to/annotation.gtf \
+  --sample_id_col RNum \
   --run_name study_run_001
 ```
 

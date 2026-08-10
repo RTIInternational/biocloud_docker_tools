@@ -24,20 +24,20 @@ usage <- paste(
 	"--txi_rds <path>",
 	"--pheno_tsv <path>",
 	"--annotation_gtf <path>",
+	"--sample_id_col <colname>",
 	"--run_name <name>",
 	"[--output_dir <path>]",
-	"[--sample_id_col <colname>]",
 	"[--rin_col <colname>]",
 	"[--sex_col <colname>]",
 	"[--group_vars <comma-separated-colnames>]"
 )
 
-if (length(args) < 10) {
+if (length(args) < 12) {
 	stop(usage)
 }
 
 flag_args <- parse_flag_args(args)
-required_flags <- c("multiqc_dir", "txi_rds", "pheno_tsv", "annotation_gtf", "run_name")
+required_flags <- c("multiqc_dir", "txi_rds", "pheno_tsv", "annotation_gtf", "sample_id_col", "run_name")
 missing_flags <- required_flags[!required_flags %in% names(flag_args)]
 if (length(missing_flags) > 0) {
 	stop(paste0("Missing required flags: ", paste(missing_flags, collapse = ", "), "\n", usage))
@@ -59,8 +59,8 @@ output_dir <- if ("output_dir" %in% names(flag_args)) {
 } else {
 	"outputs"
 }
-# Optional phenotype ID column.
-sample_id_col <- if ("sample_id_col" %in% names(flag_args)) flag_args$sample_id_col else "RNum"
+# Required phenotype ID column.
+sample_id_col <- flag_args$sample_id_col
 # Optional RIN column name in phenotype table.
 rin_col <- if ("rin_col" %in% names(flag_args)) flag_args$rin_col else "RIN"
 # Optional sex column name for sex-stratified QC metrics.
