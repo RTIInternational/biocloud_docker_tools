@@ -235,7 +235,7 @@ Threshold summary in the report includes rules such as:
 - Gene mapping% > 80
 - Intergenic/genic ratio < 0.9
 - Shannon index IQR rule OR transcriptome mapping% > 50
-- Mitochondrial mapping% < 10
+- Mitochondrial mapping% < 50
 - Ribosomal RNA mapping% < 1
 
 ## Repository Files

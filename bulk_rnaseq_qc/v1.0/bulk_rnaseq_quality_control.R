@@ -1436,7 +1436,7 @@ pass_intergenic_genic_ratio <- !is.na(intergenic_genic_ratio) & intergenic_genic
 pass_shannon_or_transcriptome <-
 	((!is.na(shannon_cutoff)) & !is.na(shannon_index) & shannon_index > shannon_cutoff) |
 	(!is.na(transcriptome_mapping_pct) & transcriptome_mapping_pct > 50)
-pass_mito <- !is.na(mito_rna_pct) & mito_rna_pct < 10
+pass_mito <- !is.na(mito_rna_pct) & mito_rna_pct < 50
 pass_ribo <- !is.na(ribo_rna_pct) & ribo_rna_pct < 1
 
 # Centralized threshold definitions drive both counts and failed-sample reporting.
@@ -1482,8 +1482,8 @@ threshold_defs <- list(
 		pass = pass_shannon_or_transcriptome
 	),
 	list(
-		metric = "mitochondrial_mapping_pct_lt10",
-		rule = "Mitochondrial mapping percentage < 10%",
+		metric = "mitochondrial_mapping_pct_lt50",
+		rule = "Mitochondrial mapping percentage < 50%",
 		pass = pass_mito
 	),
 	list(
