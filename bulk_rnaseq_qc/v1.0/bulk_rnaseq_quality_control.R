@@ -938,6 +938,55 @@ with_plot_guard({
 	save_plot(p$hist / p$boxplot, "shannon_diversity.png", 6, 6)
 }, "shannon")
 
+with_plot_guard({
+	if (sex_col %in% colnames(pheno_data)) {
+		chr_y_ids <- get_annotation_gene_ids(
+			annotation_gtf,
+			seqnames = c("chrY", "Y"),
+			exclude_par = TRUE
+		)
+		chr_y_ids <- intersect(chr_y_ids, rownames(normalized_counts))
+
+		if (length(chr_y_ids) == 0) {
+			logr::log_print(
+				"No chrY genes found in expression matrix after annotation overlap. Skipping chrY-by-sex plot.",
+				console = FALSE
+			)
+			return(NULL)
+		}
+
+		chr_y_mean <- colMeans(normalized_counts[chr_y_ids, , drop = FALSE], na.rm = TRUE)
+		plot_df <- data.frame(
+			sample_id = names(chr_y_mean),
+			chr_y_mean_counts = as.numeric(chr_y_mean),
+			group = as.character(pheno_data[names(chr_y_mean), sex_col]),
+			stringsAsFactors = FALSE
+		)
+
+		plot_df$group <- as.factor(plot_df$group)
+		p <- ggplot2::ggplot(
+			plot_df,
+			ggplot2::aes(x = group, y = chr_y_mean_counts, fill = group)
+		) +
+			ggplot2::geom_boxplot(outlier.alpha = 0.2) +
+			ggplot2::geom_jitter(width = 0.15, alpha = 0.75, size = 2, color = "gray20") +
+			ggplot2::labs(
+				title = "chrY Mean Normalized Counts by Sex",
+				x = sex_col,
+				y = "Mean normalized chrY counts",
+				fill = sex_col
+			) +
+			ggplot2::theme_bw()
+
+		save_plot(p, "chrY_mean_counts_by_sex.png", 8, 5)
+	} else {
+		logr::log_print(
+			paste0("Sex column '", sex_col, "' not found. Skipping chrY-by-sex plot."),
+			console = FALSE
+		)
+	}
+}, "chrY by sex")
+
 # PCA is optional and runs only when user-provided grouping variables are available.
 if (length(group_vars) == 0) {
 	logr::log_print("Skipping PCA plot block because --group_vars was not provided.", console = FALSE)

@@ -217,6 +217,7 @@ Typical plot outputs include:
 - Salmon/HISAT2 mapping summaries.
 - RSeQC mapping category summaries.
 - RIN, mitochondrial RNA %, ribosomal RNA %, Shannon diversity.
+- chrY mean normalized counts by sex (when `--sex_col` is present).
 - PCA panels for available `group_vars`.
 
 ## Notes and Validation Rules
