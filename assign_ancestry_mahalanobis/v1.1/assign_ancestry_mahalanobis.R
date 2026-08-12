@@ -384,7 +384,7 @@ for (sd in sd_cutoffs) {
         out = dataset_samples[dataset_samples[, new_col] == ancestry,]
         write.table(
             out[, c('FID', 'IID')],
-            file=paste0(out_dir, dataset, '_', tolower(ancestry), '_', new_col, '_keep.tsv'),
+            file=paste0(out_dir, dataset, '_', tolower(ancestry), '_', sd, '_stddev_keep.tsv'),
             quote=FALSE,
             sep="\t",
             row.names=F
