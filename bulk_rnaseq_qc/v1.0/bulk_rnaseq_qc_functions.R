@@ -100,6 +100,41 @@ reshape_long_plot <- function(df, x_col_name = "x") {
 		return(data.frame())
 	}
 	df <- set_sample_rownames(df)
+	sample_col <- get_sample_column(df)
+	value_cols <- setdiff(colnames(df), sample_col %||% character(0))
+	tuple_cols <- value_cols[vapply(
+		df[value_cols],
+		function(col_values) any(grepl(",", as.character(col_values), fixed = TRUE), na.rm = TRUE),
+		logical(1)
+	)]
+	if (length(tuple_cols) > 0) {
+		tuple_mat <- as.matrix(df[, tuple_cols, drop = FALSE])
+		long_parts <- vector("list", length = nrow(tuple_mat) * ncol(tuple_mat))
+		part_idx <- 0L
+		for (row_idx in seq_len(nrow(tuple_mat))) {
+			for (col_idx in seq_len(ncol(tuple_mat))) {
+				cell_value <- as.character(tuple_mat[row_idx, col_idx])
+				nums <- regmatches(
+					cell_value,
+					gregexpr("-?[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?", cell_value, perl = TRUE)
+				)[[1]]
+				if (length(nums) >= 2) {
+					part_idx <- part_idx + 1L
+					long_parts[[part_idx]] <- data.frame(
+						value = as.numeric(nums[2]),
+						x_value = as.numeric(nums[1]),
+						stringsAsFactors = FALSE
+					)
+				}
+			}
+		}
+		if (part_idx == 0L) {
+			return(data.frame())
+		}
+		out <- do.call(rbind, long_parts[seq_len(part_idx)])
+		colnames(out)[colnames(out) == "x_value"] <- x_col_name
+		return(out)
+	}
 	num_cols <- colnames(df)[vapply(df, is.numeric, logical(1))]
 	if (length(num_cols) == 0) {
 		# Try coercion if all values arrived as character.

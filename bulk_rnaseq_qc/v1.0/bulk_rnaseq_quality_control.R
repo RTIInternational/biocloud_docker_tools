@@ -174,12 +174,19 @@ plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod
 	}
 	value_col <- if ("values" %in% colnames(metric_df)) {
 		"values"
-	} else {
+	} else if (ncol(metric_df) > 0) {
 		colnames(metric_df)[1]
+	} else {
+		NA_character_
+	}
+	values <- if (!is.na(value_col) && value_col %in% colnames(metric_df)) {
+		suppressWarnings(as.numeric(metric_df[[value_col]]))
+	} else {
+		rep(NA_real_, nrow(metric_df))
 	}
 	plot_df <- data.frame(
 		sample_id = rownames(metric_df),
-		values = suppressWarnings(as.numeric(metric_df[[value_col]])),
+		values = values,
 		stringsAsFactors = FALSE
 	)
 
