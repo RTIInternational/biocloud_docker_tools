@@ -1,7 +1,9 @@
 pacman::p_load(
 	logr, dplyr, tibble, stringr, DESeq2, tximport, patchwork, ggplot2,
-	omixjutsu
+	SummarizedExperiment
 )
+
+source("bulk_rnaseq_qc_functions.R")
 
 args <- commandArgs(TRUE)
 
@@ -167,9 +169,17 @@ compute_feature_fraction <- function(count_matrix, feature_ids) {
 
 # Generate paired histogram and boxplot summaries for percent-based QC metrics.
 plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod") {
+	if (is.null(metric_df) || !is.data.frame(metric_df) || nrow(metric_df) == 0) {
+		stop("Metric table is empty.")
+	}
+	value_col <- if ("values" %in% colnames(metric_df)) {
+		"values"
+	} else {
+		colnames(metric_df)[1]
+	}
 	plot_df <- data.frame(
 		sample_id = rownames(metric_df),
-		values = metric_df$values,
+		values = suppressWarnings(as.numeric(metric_df[[value_col]])),
 		stringsAsFactors = FALSE
 	)
 
@@ -241,12 +251,24 @@ get_annotation_gene_ids <- function(gtf_path, seqnames = NULL, gene_types = NULL
 }
 
 extract_fastq_id <- function(x) {
-	id <- as.character(x)
+	get_one_id <- function(value) {
+		id <- trimws(as.character(value))
+		id <- gsub('^"|"$', "", id)
+		parts <- trimws(strsplit(id, " | ", fixed = TRUE)[[1]])
+		parts <- parts[nzchar(parts)]
+		if (length(parts) > 1 && parts[1] %in% c("aggregated_qc_logs")) {
+			id <- parts[2]
+		} else if (length(parts) > 0) {
+			id <- parts[1]
+		}
+		id <- vapply(strsplit(id, "...", fixed = TRUE), `[[`, character(1), 1)
+		id <- sub("\\.split\\.[0-9]+$", "", id)
+		id
+	}
+	id <- vapply(x, get_one_id, character(1))
 	# MultiQC rownames typically look like:
 	# "Sample_001 | Sample_001.trimmed.R1" or "Sample_001...something"
 	# Use fixed splitting to avoid regex escaping edge cases.
-	id <- vapply(strsplit(id, " | ", fixed = TRUE), `[[`, character(1), 1)
-	id <- vapply(strsplit(id, "...", fixed = TRUE), `[[`, character(1), 1)
 	id
 }
 
@@ -303,16 +325,30 @@ subset_qc_df <- function(df, ids) {
 	if (use_normalized_match) {
 		row_key <- normalize_sample_id(row_values[keep])
 		id_key <- normalize_sample_id(id_values)
+		if (anyDuplicated(row_key)) {
+			dedup <- !duplicated(row_key)
+			out <- out[dedup, , drop = FALSE]
+			row_key <- row_key[dedup]
+		}
 		rownames(out) <- row_key
+		matched_ids <- id_values[id_key %in% row_key]
 		ord <- match(id_key[id_key %in% row_key], row_key)
 	} else {
 		row_key <- row_values[keep]
 		id_key <- id_values
+		if (anyDuplicated(row_key)) {
+			dedup <- !duplicated(row_key)
+			out <- out[dedup, , drop = FALSE]
+			row_key <- row_key[dedup]
+		}
 		rownames(out) <- row_key
+		matched_ids <- id_key[id_key %in% row_key]
 		ord <- match(id_key[id_key %in% row_key], row_key)
 	}
 
-	out[ord, , drop = FALSE]
+	out <- out[ord, , drop = FALSE]
+	rownames(out) <- matched_ids
+	out
 }
 
 # Recursively subset nested QC objects that mix lists and data frames.
@@ -363,6 +399,24 @@ extract_trimmed_pairs <- function(df) {
 		return(list(trimmed_r1 = empty, trimmed_r2 = empty))
 	}
 
+	# Handle axis-by-sample matrices where sample IDs are columns and first column
+	# is x-axis bins (e.g., Position or %GC). Convert to sample-row format first.
+	if (!"Sample" %in% colnames(df) && ncol(df) > 2) {
+		axis_vals <- as.character(df[[1]])
+		axis_vals <- trimws(gsub('^"|"$', "", axis_vals))
+		data_part <- df[, -1, drop = FALSE]
+		col_ids <- trimws(gsub('^"|"$', "", colnames(data_part)))
+		looks_like_sample_cols <- any(grepl("\\|", col_ids)) ||
+			any(grepl("(\\.R1|\\.R2|_R1|_R2)", col_ids))
+		if (looks_like_sample_cols && nrow(data_part) > 0) {
+			transposed <- as.data.frame(t(as.matrix(data_part)), stringsAsFactors = FALSE)
+			feature_names <- make.unique(ifelse(nzchar(axis_vals), axis_vals, as.character(seq_along(axis_vals))))
+			colnames(transposed) <- feature_names
+			transposed$Sample <- col_ids
+			df <- transposed
+		}
+	}
+
 	sample_labels <- if ("Sample" %in% colnames(df)) {
 		as.character(df$Sample)
 	} else {
@@ -372,6 +426,7 @@ extract_trimmed_pairs <- function(df) {
 		sample_labels <- as.character(seq_len(nrow(df)))
 	}
 	sample_labels <- trimws(as.character(sample_labels))
+	sample_labels <- gsub('^"|"$', "", sample_labels)
 
 	is_unpaired <- grepl("\\.unpaired$", sample_labels)
 	is_trimmed <- grepl("trimmed", sample_labels, ignore.case = TRUE)
@@ -384,10 +439,10 @@ extract_trimmed_pairs <- function(df) {
 	r1 <- df[r1_mask, , drop = FALSE]
 	r2 <- df[r2_mask, , drop = FALSE]
 	if (nrow(r1) > 0) {
-		rownames(r1) <- extract_fastq_id(sample_labels[r1_mask])
+		rownames(r1) <- make.unique(extract_fastq_id(sample_labels[r1_mask]))
 	}
 	if (nrow(r2) > 0) {
-		rownames(r2) <- extract_fastq_id(sample_labels[r2_mask])
+		rownames(r2) <- make.unique(extract_fastq_id(sample_labels[r2_mask]))
 	}
 
 	list(trimmed_r1 = r1, trimmed_r2 = r2)
@@ -420,6 +475,28 @@ split_by_trim_status <- function(df) {
 		))
 	}
 
+	# Some MultiQC plot tables are axis-by-sample matrices where sample IDs are
+	# columns and the first column is x-axis bins (e.g., Position, %GC).
+	# Convert those to sample-by-feature rows before trim/read splitting.
+	if (!"Sample" %in% colnames(df) && ncol(df) > 2) {
+		axis_col <- colnames(df)[1]
+		axis_vals <- as.character(df[[1]])
+		axis_vals <- trimws(gsub('^"|"$', "", axis_vals))
+		data_part <- df[, -1, drop = FALSE]
+		col_ids <- trimws(gsub('^"|"$', "", colnames(data_part)))
+
+		looks_like_sample_cols <- any(grepl("\\|", col_ids, fixed = FALSE)) ||
+			any(grepl("(\\.R1|\\.R2|_R1|_R2)", col_ids))
+
+		if (looks_like_sample_cols && nrow(data_part) > 0) {
+			transposed <- as.data.frame(t(as.matrix(data_part)), stringsAsFactors = FALSE)
+			feature_names <- make.unique(ifelse(nzchar(axis_vals), axis_vals, as.character(seq_along(axis_vals))))
+			colnames(transposed) <- feature_names
+			transposed$Sample <- col_ids
+			df <- transposed
+		}
+	}
+
 	id_src <- if ("Sample" %in% colnames(df)) {
 		as.character(df$Sample)
 	} else {
@@ -431,9 +508,10 @@ split_by_trim_status <- function(df) {
 	}
 
 	id_src <- trimws(as.character(id_src))
-	is_r1 <- grepl("(\\\\.R1|_R1)(\\\\.unpaired)?$", id_src)
-	is_r2 <- grepl("(\\\\.R2|_R2)(\\\\.unpaired)?$", id_src)
-	is_unpaired <- grepl("\\\\.unpaired$", id_src)
+	id_src <- gsub('^"|"$', "", id_src)
+	is_r1 <- grepl("(\\.R1|_R1)(\\.unpaired)?$", id_src)
+	is_r2 <- grepl("(\\.R2|_R2)(\\.unpaired)?$", id_src)
+	is_unpaired <- grepl("\\.unpaired$", id_src)
 	is_trimmed <- grepl("trimmed", id_src, ignore.case = TRUE)
 
 	out <- list(
@@ -450,7 +528,7 @@ split_by_trim_status <- function(df) {
 			row_ids <- extract_fastq_id(if (
 				"Sample" %in% colnames(out[[nm]])
 			) as.character(out[[nm]]$Sample) else rownames(out[[nm]]))
-			rownames(out[[nm]]) <- row_ids
+			rownames(out[[nm]]) <- make.unique(row_ids)
 		}
 	}
 
@@ -460,7 +538,7 @@ split_by_trim_status <- function(df) {
 logr::sep("Load QC and expression inputs")
 
 # Load MultiQC-derived data and normalize expected nested structures.
-qc_data <- omixjutsu::load_paired_end_qc_data(data_dir = multiqc_dir)
+qc_data <- load_paired_end_qc_data(data_dir = multiqc_dir)
 logr::log_print("Loaded multiqc-derived qc_data object.", console = FALSE)
 
 for (nm in c(
@@ -532,7 +610,7 @@ if (length(shared_ids) == 0) {
 	stop("No overlapping sample IDs between txi counts columns and phenotype rownames.")
 }
 
-txi <- omixjutsu::subset_txi(txi = txi, ids = shared_ids, dimension = 2)
+txi <- subset_txi(txi = txi, ids = shared_ids, dimension = 2)
 pheno_data <- pheno_data[shared_ids, , drop = FALSE]
 
 dds <- DESeq2::DESeqDataSetFromTximport(txi, colData = pheno_data, design = ~1)
@@ -622,14 +700,28 @@ recover_fastqc_subset <- function(df, ids) {
 	if (use_normalized_match) {
 		row_key <- normalize_sample_id(row_values[keep])
 		id_key <- normalize_sample_id(id_values)
+		if (anyDuplicated(row_key)) {
+			dedup <- !duplicated(row_key)
+			out <- out[dedup, , drop = FALSE]
+			row_key <- row_key[dedup]
+		}
 		rownames(out) <- row_key
+		matched_ids <- id_values[id_key %in% row_key]
 		ord <- match(id_key[id_key %in% row_key], row_key)
 	} else {
 		row_key <- row_values[keep]
+		if (anyDuplicated(row_key)) {
+			dedup <- !duplicated(row_key)
+			out <- out[dedup, , drop = FALSE]
+			row_key <- row_key[dedup]
+		}
 		rownames(out) <- row_key
+		matched_ids <- id_values[id_values %in% row_key]
 		ord <- match(id_values[id_values %in% row_key], row_key)
 	}
-	out[ord, , drop = FALSE]
+	out <- out[ord, , drop = FALSE]
+	rownames(out) <- matched_ids
+	out
 }
 
 # FastQC recovery path: try generic subset, then FastQC-specific matching, then raw fallback.
@@ -662,7 +754,7 @@ if (trimmed_r1_n == 0 || trimmed_r2_n == 0) {
 		"FastQC trimmed data still empty; reloading raw FastQC from MultiQC and using raw parsed trimmed R1/R2 for plotting.",
 		console = FALSE
 	)
-	raw_qc <- omixjutsu::load_paired_end_qc_data(data_dir = multiqc_dir)
+	raw_qc <- load_paired_end_qc_data(data_dir = multiqc_dir)
 	if ("fastqc" %in% names(raw_qc)) {
 		fastqc_df <- raw_qc$fastqc
 		sample_labels <- if ("Sample" %in% colnames(fastqc_df)) {
@@ -671,15 +763,15 @@ if (trimmed_r1_n == 0 || trimmed_r2_n == 0) {
 			rownames(fastqc_df)
 		}
 		sample_labels <- trimws(as.character(sample_labels))
-		r1_mask <- grepl("\\\\.trimmed\\\\.R1$", sample_labels)
-		r2_mask <- grepl("\\\\.trimmed\\\\.R2$", sample_labels)
+		r1_mask <- grepl("\\.trimmed\\.R1$", sample_labels)
+		r2_mask <- grepl("\\.trimmed\\.R2$", sample_labels)
 		raw_r1 <- fastqc_df[r1_mask, , drop = FALSE]
 		raw_r2 <- fastqc_df[r2_mask, , drop = FALSE]
 		if (nrow(raw_r1) > 0) {
-			rownames(raw_r1) <- extract_fastq_id(sample_labels[r1_mask])
+			rownames(raw_r1) <- make.unique(extract_fastq_id(sample_labels[r1_mask]))
 		}
 		if (nrow(raw_r2) > 0) {
-			rownames(raw_r2) <- extract_fastq_id(sample_labels[r2_mask])
+			rownames(raw_r2) <- make.unique(extract_fastq_id(sample_labels[r2_mask]))
 		}
 
 		qc_data$fastqc$trimmed_r1 <- recover_fastqc_subset(raw_r1, qc_ids)
@@ -717,18 +809,36 @@ logr::log_print(
 	console = FALSE
 )
 
+if ("trimmomatic_dropped_pct" %in% group_vars) {
+	trimmomatic_dropped_for_pca <- collect_metric({
+		td <- qc_data$trimmomatic
+		td <- td[qc_ids, , drop = FALSE]
+		as_numeric <- suppressWarnings(as.numeric(td[, "dropped_pct"]))
+		data.frame(trimmomatic_dropped_pct = as_numeric, row.names = qc_ids)
+	}, "trimmomatic_dropped_pct_for_pca")
+	if (!is.null(trimmomatic_dropped_for_pca)) {
+		pheno_data$trimmomatic_dropped_pct <- trimmomatic_dropped_for_pca[rownames(pheno_data), 1]
+		SummarizedExperiment::colData(dds)$trimmomatic_dropped_pct <- pheno_data$trimmomatic_dropped_pct
+		SummarizedExperiment::colData(dds_vst)$trimmomatic_dropped_pct <- pheno_data$trimmomatic_dropped_pct
+		logr::log_print(
+			"Added trimmomatic_dropped_pct to phenotype data for PCA grouping.",
+			console = FALSE
+		)
+	}
+}
+
 logr::sep("Plot QC summaries")
 
 # Build plotting inputs from parsed FastQC data, with deterministic raw fallback.
 fastqc_plot_data <- NULL
 fastqc_plot_data <- tryCatch(
 	{
-		raw_fastqc <- omixjutsu::load_paired_end_qc_data(data_dir = multiqc_dir)$fastqc
-		parsed_fastqc <- omixjutsu::parse_by_trim_status(
+		raw_fastqc <- load_paired_end_qc_data(data_dir = multiqc_dir)$fastqc
+		parsed_fastqc <- parse_by_trim_status(
 			raw_fastqc,
 			paired_end = TRUE,
-			r1_query = "(\\\\.R1|_R1)",
-			r2_query = "(\\\\.R2|_R2)"
+			r1_query = "(\\.R1|_R1)",
+			r2_query = "(\\.R2|_R2)"
 		)
 		list(
 			trimmed_r1 = parsed_fastqc$trimmed_r1,
@@ -764,7 +874,7 @@ if (nrow(fastqc_trimmed_r1_for_plot) == 0 || nrow(fastqc_trimmed_r2_for_plot) ==
 		"Direct parse returned empty FastQC trimmed tables for plotting; applying raw suffix-based fallback.",
 		console = FALSE
 	)
-	raw_fastqc_df <- omixjutsu::load_paired_end_qc_data(data_dir = multiqc_dir)$fastqc
+	raw_fastqc_df <- load_paired_end_qc_data(data_dir = multiqc_dir)$fastqc
 	raw_labels <- if ("Sample" %in% colnames(raw_fastqc_df)) {
 		as.character(raw_fastqc_df$Sample)
 	} else {
@@ -787,29 +897,29 @@ logr::log_print(
 )
 
 with_plot_guard({
-	p3 <- omixjutsu::plot_seq_depth(fastqc_trimmed_r1_for_plot, sort = TRUE) +
+	p3 <- plot_seq_depth(fastqc_trimmed_r1_for_plot, sort = TRUE) +
 		ggplot2::ggtitle("Post-Trimmomatic paired R1 reads")
-	p4 <- omixjutsu::plot_seq_depth(fastqc_trimmed_r2_for_plot, sort = TRUE) +
+	p4 <- plot_seq_depth(fastqc_trimmed_r2_for_plot, sort = TRUE) +
 		ggplot2::ggtitle("Post-Trimmomatic paired R2 reads")
-	h3 <- omixjutsu::plot_seq_depth_hist(fastqc_trimmed_r1_for_plot) +
+	h3 <- plot_seq_depth_hist(fastqc_trimmed_r1_for_plot) +
 		ggplot2::ggtitle("Post-Trimmomatic paired R1 reads")
-	h4 <- omixjutsu::plot_seq_depth_hist(fastqc_trimmed_r2_for_plot) +
+	h4 <- plot_seq_depth_hist(fastqc_trimmed_r2_for_plot) +
 		ggplot2::ggtitle("Post-Trimmomatic paired R2 reads")
 	save_plot((p3 + h3) / (p4 + h4), "fastqc_seq_depth_posttrimmomatic_paired.png", 12.5, 8)
 }, "seq depth")
 
 with_plot_guard({
-	p3 <- omixjutsu::plot_unique_read_pct(
+	p3 <- plot_unique_read_pct(
 		fastqc_trimmed_r1_for_plot, sort = TRUE, fill = "red4"
 	) + ggplot2::ggtitle("Post-Trimmomatic paired R1 reads")
-	p4 <- omixjutsu::plot_unique_read_pct(
+	p4 <- plot_unique_read_pct(
 		fastqc_trimmed_r2_for_plot, sort = TRUE, fill = "red4"
 	) + ggplot2::ggtitle("Post-Trimmomatic paired R2 reads")
 	save_plot(p3 + p4, "fastqc_unique_pct_posttrimmomatic_paired.png", 12.5, 4.5)
 }, "unique read percent")
 
 with_plot_guard({
-	p <- omixjutsu::plot_phred_per_bp(
+	p <- plot_phred_per_bp(
 		qc_data$phred_bp[c("trimmed_r1", "trimmed_r2")],
 		labels = c("R1", "R2"),
 		line_colors = c("goldenrod2", "steelblue4"),
@@ -819,7 +929,7 @@ with_plot_guard({
 }, "phred per bp")
 
 with_plot_guard({
-	p <- omixjutsu::plot_gc_content(
+	p <- plot_gc_content(
 		qc_data$gc_content[c("trimmed_r1", "trimmed_r2")],
 		labels = c("R1", "R2"),
 		line_colors = c("goldenrod2", "steelblue4"),
@@ -829,7 +939,7 @@ with_plot_guard({
 }, "gc content")
 
 with_plot_guard({
-	p_trim <- omixjutsu::plot_trimmomatic_paired(
+	p_trim <- plot_trimmomatic_paired(
 		data = qc_data$trimmomatic,
 		binsize = c(2.5, 0.25)
 	)
@@ -837,22 +947,22 @@ with_plot_guard({
 }, "trimmomatic")
 
 with_plot_guard({
-	p <- omixjutsu::plot_salmon_stats(qc_data$salmon)
+	p <- plot_salmon_stats(qc_data$salmon)
 	save_plot(p, "salmon_input_vs_mapped.png", 5, 4)
 }, "salmon scatter")
 
 with_plot_guard({
-	p <- omixjutsu::plot_hisat2_stats(qc_data$hisat2)
+	p <- plot_hisat2_stats(qc_data$hisat2)
 	save_plot(p, "hisat2_mapping_stats.png", 6, 5)
 }, "hisat2 scatter")
 
 with_plot_guard({
-	p <- omixjutsu::plot_hisat2_vs_salmon(qc_data$hisat2, qc_data$salmon)
+	p <- plot_hisat2_vs_salmon(qc_data$hisat2, qc_data$salmon)
 	save_plot(p, "salmon_vs_hisat2_mapping_rate.png", 5, 5)
 }, "salmon vs hisat2")
 
 with_plot_guard({
-	p <- omixjutsu::plot_mapping_categories(
+	p <- plot_mapping_categories(
 		qc_data$rseqc_alignment_category,
 		sort = TRUE,
 		consolidate = TRUE
@@ -862,7 +972,7 @@ with_plot_guard({
 
 with_plot_guard({
 	if (rin_col %in% colnames(pheno_data)) {
-		p <- omixjutsu::plot_rin(
+		p <- plot_rin(
 			data = pheno_data[, rin_col, drop = FALSE],
 			return_data = FALSE,
 			colors = "gray30",
@@ -930,7 +1040,7 @@ with_plot_guard({
 logr::log_print("Completed ribosomal plot block.", console = FALSE)
 
 with_plot_guard({
-	p <- omixjutsu::plot_shannon_index(
+	p <- plot_shannon_index(
 		data = DESeq2::counts(dds, normalized = TRUE),
 		min_value = 10,
 		colors = "gray30"
@@ -1149,7 +1259,7 @@ if (length(group_vars) == 0) {
 logr::sep("Build QC metrics table")
 
 # Re-load raw QC where needed to compute metric tables from consistent trimmed subsets.
-raw_qc_for_metrics <- omixjutsu::load_paired_end_qc_data(data_dir = multiqc_dir)
+raw_qc_for_metrics <- load_paired_end_qc_data(data_dir = multiqc_dir)
 phred_trimmed_for_metrics <- if ("phred_seq" %in% names(raw_qc_for_metrics)) {
 	extract_trimmed_pairs(raw_qc_for_metrics$phred_seq)
 } else {
@@ -1176,8 +1286,6 @@ qc_metrics_list <- list()
 # Collect each metric independently so one missing modality does not collapse the table.
 qc_metrics_list$trimmomatic_dropped_pct <- collect_metric({
 	td <- qc_data$trimmomatic
-	td$Sample <- stringr::str_split_fixed(td$Sample, " ", 3)[, 1]
-	rownames(td) <- td$Sample
 	td <- td[qc_ids, , drop = FALSE]
 	out <- td[, "dropped_pct", drop = FALSE]
 	colnames(out) <- "trimmomatic_dropped_pct"
@@ -1185,7 +1293,7 @@ qc_metrics_list$trimmomatic_dropped_pct <- collect_metric({
 }, "trimmomatic_dropped_pct")
 
 qc_metrics_list$mean_phred_r1 <- collect_metric({
-	out <- omixjutsu::plot_phred_mean(
+	out <- plot_phred_mean(
 		data = phred_trimmed_for_metrics$trimmed_r1,
 		return_data = TRUE
 	)
@@ -1195,7 +1303,7 @@ qc_metrics_list$mean_phred_r1 <- collect_metric({
 }, "mean_phred_r1")
 
 qc_metrics_list$mean_phred_r2 <- collect_metric({
-	out <- omixjutsu::plot_phred_mean(
+	out <- plot_phred_mean(
 		data = phred_trimmed_for_metrics$trimmed_r2,
 		return_data = TRUE
 	)
@@ -1205,7 +1313,7 @@ qc_metrics_list$mean_phred_r2 <- collect_metric({
 }, "mean_phred_r2")
 
 qc_metrics_list$mean_pct_gc_r1 <- collect_metric({
-	out <- omixjutsu::plot_gc_mean(
+	out <- plot_gc_mean(
 		data = gc_trimmed_for_metrics$trimmed_r1,
 		return_data = TRUE
 	)
@@ -1215,7 +1323,7 @@ qc_metrics_list$mean_pct_gc_r1 <- collect_metric({
 }, "mean_pct_gc_r1")
 
 qc_metrics_list$mean_pct_gc_r2 <- collect_metric({
-	out <- omixjutsu::plot_gc_mean(
+	out <- plot_gc_mean(
 		data = gc_trimmed_for_metrics$trimmed_r2,
 		return_data = TRUE
 	)
@@ -1225,7 +1333,7 @@ qc_metrics_list$mean_pct_gc_r2 <- collect_metric({
 }, "mean_pct_gc_r2")
 
 qc_metrics_list$pct_unique_r1 <- collect_metric({
-	out <- omixjutsu::plot_unique_read_pct(
+	out <- plot_unique_read_pct(
 		data = fastqc_trimmed_r1_for_plot,
 		sort = FALSE,
 		return_data = TRUE
@@ -1236,7 +1344,7 @@ qc_metrics_list$pct_unique_r1 <- collect_metric({
 }, "pct_unique_r1")
 
 qc_metrics_list$pct_unique_r2 <- collect_metric({
-	out <- omixjutsu::plot_unique_read_pct(
+	out <- plot_unique_read_pct(
 		data = fastqc_trimmed_r2_for_plot,
 		sort = FALSE,
 		return_data = TRUE
@@ -1247,21 +1355,21 @@ qc_metrics_list$pct_unique_r2 <- collect_metric({
 }, "pct_unique_r2")
 
 qc_metrics_list$salmon_mapping_pct <- collect_metric({
-	out <- omixjutsu::plot_salmon_mapping_pct(data = qc_data$salmon, return_data = TRUE)
+	out <- plot_salmon_mapping_pct(data = qc_data$salmon, return_data = TRUE)
 	out <- out[qc_ids, "values", drop = FALSE]
 	colnames(out) <- "salmon_mapping_pct"
 	out
 }, "salmon_mapping_pct")
 
 qc_metrics_list$effective_seq_depth <- collect_metric({
-	out <- omixjutsu::plot_salmon_mapped_reads(data = qc_data$salmon, return_data = TRUE)
+	out <- plot_salmon_mapped_reads(data = qc_data$salmon, return_data = TRUE)
 	out <- out[qc_ids, "values", drop = FALSE]
 	colnames(out) <- "effective_seq_depth"
 	out
 }, "effective_seq_depth")
 
 qc_metrics_list$mapping_categories <- collect_metric({
-	out <- omixjutsu::plot_mapping_categories(
+	out <- plot_mapping_categories(
 		qc_data$rseqc_alignment_category,
 		sort = TRUE,
 		consolidate = TRUE,
@@ -1273,13 +1381,13 @@ qc_metrics_list$mapping_categories <- collect_metric({
 }, "mapping_categories")
 
 qc_metrics_list$gene_mapping_pct <- collect_metric({
-	map_data <- omixjutsu::plot_mapping_categories(
+	map_data <- plot_mapping_categories(
 		qc_data$rseqc_alignment_category,
 		sort = TRUE,
 		consolidate = TRUE,
 		return_data = TRUE
 	)
-	out <- omixjutsu::plot_gene_mapping_rate(
+	out <- plot_gene_mapping_rate(
 		data = map_data[, c("Exonic", "Intronic"), drop = FALSE],
 		group = NULL,
 		return_data = TRUE
@@ -1290,13 +1398,13 @@ qc_metrics_list$gene_mapping_pct <- collect_metric({
 }, "gene_mapping_pct")
 
 qc_metrics_list$dna_contamination_ratio <- collect_metric({
-	map_data <- omixjutsu::plot_mapping_categories(
+	map_data <- plot_mapping_categories(
 		qc_data$rseqc_alignment_category,
 		sort = TRUE,
 		consolidate = TRUE,
 		return_data = TRUE
 	)
-	out <- omixjutsu::plot_dna_contamination_ratio(
+	out <- plot_dna_contamination_ratio(
 		data = map_data[, c("Intergenic", "Intronic"), drop = FALSE],
 		group = NULL,
 		return_data = TRUE
@@ -1325,7 +1433,7 @@ qc_metrics_list$ribo_rna_pct <- collect_metric({
 }, "ribo_rna_pct")
 
 qc_metrics_list$shannon_index <- collect_metric({
-	out <- omixjutsu::plot_shannon_index(
+	out <- plot_shannon_index(
 		data = DESeq2::counts(dds, normalized = TRUE),
 		min_value = 10,
 		return = TRUE
@@ -1345,7 +1453,7 @@ if (sex_col %in% colnames(pheno_data)) {
 			exclude_par = TRUE
 		)
 		chr_y_ids <- intersect(chr_y_ids, rownames(dds_vst))
-		out <- omixjutsu::plot_partitioned_mean_expression(
+		out <- plot_partitioned_mean_expression(
 			dds_tmp,
 			group_var = sex_col,
 			feature_ids = chr_y_ids,
@@ -1364,7 +1472,7 @@ if (sex_col %in% colnames(pheno_data)) {
 			exclude_par = TRUE
 		)
 		chr_y_ids <- intersect(chr_y_ids, rownames(dds_vst))
-		out <- omixjutsu::plot_partitioned_pc(
+		out <- plot_partitioned_pc(
 			dds_vst,
 			pc = 1,
 			group_var = sex_col,
@@ -1396,6 +1504,13 @@ qc_metrics <- tibble::rownames_to_column(as.data.frame(qc_metrics), var = "sampl
 # Join computed metrics back onto phenotype for one analysis-ready sample table.
 pheno_out <- pheno_data
 pheno_out$sample_id <- rownames(pheno_out)
+duplicate_metric_cols <- intersect(
+	setdiff(colnames(qc_metrics), "sample_id"),
+	colnames(pheno_out)
+)
+if (length(duplicate_metric_cols) > 0) {
+	pheno_out <- pheno_out[, setdiff(colnames(pheno_out), duplicate_metric_cols), drop = FALSE]
+}
 rnaseq_pheno_qc <- dplyr::left_join(pheno_out, qc_metrics, by = "sample_id")
 
 qc_out_file <- file.path(table_dir, paste0(run_name, "_bulk_rnaseq_qc_metrics.tsv"))

@@ -19,7 +19,7 @@ Container image default command:
 ## Inputs
 
 Required flags:
-- `--multiqc_dir <path>`: Directory containing parsed/aligned outputs expected by `omixjutsu::load_paired_end_qc_data()`.
+- `--multiqc_dir <path>`: Directory containing parsed/aligned outputs consumed by the local QC loader in `bulk_rnaseq_qc_functions.R`.
 - `--txi_rds <path>`: `tximport`-like `.rds` object containing at least `counts`.
 - `--pheno_tsv <path>`: Tab-delimited phenotype file with a sample ID column.
 - `--annotation_gtf <path>`: GTF used to derive mitochondrial/ribosomal/chrY feature sets.
@@ -34,7 +34,7 @@ Optional flags:
 
 ### Required contents of `--multiqc_dir`
 
-The QC loader (`omixjutsu::load_paired_end_qc_data`) expects the following files to be present in the `--multiqc_dir` directory:
+The QC loader (`load_paired_end_qc_data` in `bulk_rnaseq_qc_functions.R`) expects the following files to be present in the `--multiqc_dir` directory:
 
 - `multiqc_fastqc.txt`
 - `multiqc_hisat2.txt`
@@ -86,8 +86,8 @@ The following versions are installed by the Dockerfile.
 
 | Component | Version / Pin | Source |
 |---|---|---|
-| `rocker/r-ver` | `4.4.1` | Docker base image |
-| Bioconductor release | `3.20` | `BiocManager::install(version = '3.20')` |
+| `rocker/r-ver` | `4.6.1` | Docker base image |
+| Bioconductor release | `3.23` | `BiocManager::install(version = '3.23')` |
 
 ### R Package Managers
 
@@ -107,51 +107,44 @@ The following versions are installed by the Dockerfile.
 | `stringr` | `1.5.1` | CRAN (`remotes::install_version`) |
 | `patchwork` | `1.3.1` | CRAN (`remotes::install_version`) |
 | `ggplot2` | `3.5.2` | CRAN (`remotes::install_version`) |
-| `RcppEigen` | `0.3.4.0.2` | CRAN (`remotes::install_version`) |
 
 ### Bioconductor R Packages
 
 | Package | Version / Pin | Source |
 |---|---|---|
-| `DESeq2` | Installed from Bioconductor `3.20` | `BiocManager::install` |
-| `tximport` | Installed from Bioconductor `3.20` | `BiocManager::install` |
-| `IHW` | Installed from Bioconductor `3.20` | `BiocManager::install` |
-| `lpsymphony` | Installed from Bioconductor `3.20` | `BiocManager::install` |
+| `DESeq2` | Installed from Bioconductor `3.23` | `BiocManager::install` |
+| `tximport` | Installed from Bioconductor `3.23` | `BiocManager::install` |
+| `IHW` | Installed from Bioconductor `3.23` | `BiocManager::install` |
 
-### GitHub R Packages
+### Local QC Helper Script
 
-| Package | Version / Pin | Source |
-|---|---|---|
-| `omixjutsu` | `bryancquach/omixjutsu@d530c725c18567c69f00a3476388d6c8839b720f` | GitHub (`remotes::install_github`) |
+| Component | Source |
+|---|---|
+| `bulk_rnaseq_qc_functions.R` | Repository-local replacement for prior package-specific QC helpers |
 
 ### System Packages Installed via apt-get
 
-These are installed from Debian/Ubuntu repositories in the base image and are explicitly version-pinned in the Dockerfile.
+These are installed from Debian/Ubuntu repositories in the base image.
 
 | Package | Version / Pin |
 |---|---|
-| `build-essential` | `12.9ubuntu3` |
-| `gfortran` | `4:11.2.0-1ubuntu1` |
-| `coinor-libsymphony-dev` | `5.6.17+dfsg-1` |
-| `libglpk-dev` | `5.0-1` |
-| `libuv1-dev` | `1.43.0-1ubuntu0.1` |
-| `libcurl4-openssl-dev` | `7.81.0-1ubuntu1.25` |
-| `libssl-dev` | `3.0.2-0ubuntu1.26` |
-| `libxml2-dev` | `2.9.13+dfsg-1ubuntu0.12` |
-| `libgit2-dev` | `1.1.0+dfsg.1-4.1ubuntu0.1` |
-| `libfontconfig1-dev` | `2.13.1-4.2ubuntu5` |
-| `libfreetype6-dev` | `2.11.1+dfsg-1ubuntu0.3` |
-| `libfribidi-dev` | `1.0.8-2ubuntu3.1` |
-| `libharfbuzz-dev` | `2.7.4-1ubuntu3.2` |
-| `libjpeg-dev` | `8c-2ubuntu10` |
-| `libpng-dev` | `1.6.37-3ubuntu0.5` |
-| `libtiff5-dev` | `4.3.0-6ubuntu0.13` |
-| `zlib1g-dev` | `1:1.2.11.dfsg-2ubuntu9.2` |
-| `libbz2-dev` | `1.0.8-5build1` |
-| `liblzma-dev` | `5.2.5-2ubuntu1.1` |
-| `r-cran-rcppeigen` | `0.3.3.9.1-1` |
-| `ca-certificates` | `20260601~22.04.1` |
-| `git` | `1:2.34.1-1ubuntu1.17` |
+| `build-essential` | Installed via apt-get |
+| `gfortran` | Installed via apt-get |
+| `libcurl4-openssl-dev` | Installed via apt-get |
+| `libssl-dev` | Installed via apt-get |
+| `libxml2-dev` | Installed via apt-get |
+| `libfontconfig1-dev` | Installed via apt-get |
+| `libfreetype6-dev` | Installed via apt-get |
+| `libfribidi-dev` | Installed via apt-get |
+| `libharfbuzz-dev` | Installed via apt-get |
+| `libjpeg-dev` | Installed via apt-get |
+| `libpng-dev` | Installed via apt-get |
+| `libtiff5-dev` | Installed via apt-get |
+| `zlib1g-dev` | Installed via apt-get |
+| `libbz2-dev` | Installed via apt-get |
+| `liblzma-dev` | Installed via apt-get |
+| `ca-certificates` | Installed via apt-get |
+| `git` | Installed via apt-get |
 
 ## Run with Docker
 
@@ -243,6 +236,7 @@ Threshold summary in the report includes rules such as:
 
 - `Dockerfile`: container definition and dependency installation.
 - `bulk_rnaseq_quality_control.R`: main QC pipeline script.
+- `bulk_rnaseq_qc_functions.R`: helper functions for QC loading, plotting, and metric extraction.
 - `README.md`: usage and output documentation.
 
 ## Contact
