@@ -18,17 +18,39 @@ safe_read_tsv <- function(path) {
 	)
 }
 
+resolve_input_file <- function(data_dir, stems, exts = c("txt", "tsv")) {
+	for (stem in stems) {
+		for (ext in exts) {
+			candidate <- file.path(data_dir, paste0(stem, ".", ext))
+			if (file.exists(candidate)) {
+				return(candidate)
+			}
+		}
+	}
+	file.path(data_dir, paste0(stems[1], ".", exts[1]))
+}
+
 normalize_sample_labels <- function(x) {
 	get_one_label <- function(value) {
 		label <- trimws(as.character(value))
 		label <- gsub('^"|"$', "", label)
 		parts <- trimws(strsplit(label, " | ", fixed = TRUE)[[1]])
 		parts <- parts[nzchar(parts)]
-		if (length(parts) > 1 && parts[1] %in% c("aggregated_qc_logs")) {
-			label <- parts[2]
-		} else if (length(parts) > 0) {
-			label <- parts[1]
+		if (length(parts) > 0) {
+			ignore_parts <- c("agg_multiqc_input_dir", "aggregated_qc_logs")
+			candidate_parts <- parts[!tolower(parts) %in% ignore_parts]
+			if (length(candidate_parts) == 0) {
+				candidate_parts <- parts
+			}
+			# Prefer the first non-adapter token, which is typically the sample ID.
+			no_adapter_idx <- which(!grepl(" - ", candidate_parts, fixed = TRUE))
+			if (length(no_adapter_idx) > 0) {
+				label <- candidate_parts[no_adapter_idx[1]]
+			} else {
+				label <- candidate_parts[1]
+			}
 		}
+		label <- sub(" - .*$", "", label)
 		label <- sub("\\.\\.\\..*$", "", label)
 		label <- sub("\\.split\\.[0-9]+$", "", label)
 		label
@@ -157,17 +179,20 @@ reshape_long_plot <- function(df, x_col_name = "x") {
 
 load_paired_end_qc_data <- function(data_dir) {
 	paths <- list(
-		fastqc = file.path(data_dir, "multiqc_fastqc.txt"),
-		hisat2 = file.path(data_dir, "multiqc_hisat2.txt"),
-		rseqc_bam_stat = file.path(data_dir, "multiqc_rseqc_bam_stat.txt"),
-		rseqc_read_distribution = file.path(data_dir, "multiqc_rseqc_read_distribution.txt"),
-		salmon = file.path(data_dir, "multiqc_salmon.txt"),
-		trimmomatic = file.path(data_dir, "multiqc_trimmomatic.txt"),
-		phred_bp = file.path(data_dir, "fastqc_per_base_sequence_quality_plot.txt"),
-		phred_seq = file.path(data_dir, "fastqc_per_sequence_quality_scores_plot.txt"),
-		gc_content = file.path(data_dir, "fastqc_per_sequence_gc_content_plot.txt"),
-		seq_duplication = file.path(data_dir, "fastqc_sequence_duplication_levels_plot.txt"),
-		adapter_content = file.path(data_dir, "fastqc_adapter_content_plot.txt")
+		fastqc = resolve_input_file(data_dir, c("multiqc_fastqc")),
+		hisat2 = resolve_input_file(data_dir, c("multiqc_hisat2")),
+		rseqc_bam_stat = resolve_input_file(data_dir, c("multiqc_rseqc_bam_stat")),
+		rseqc_read_distribution = resolve_input_file(data_dir, c("multiqc_rseqc_read_distribution")),
+		salmon = resolve_input_file(data_dir, c("multiqc_salmon")),
+		trimmomatic = resolve_input_file(data_dir, c("multiqc_trimmomatic")),
+		phred_bp = resolve_input_file(data_dir, c("fastqc_per_base_sequence_quality_plot")),
+		phred_seq = resolve_input_file(data_dir, c("fastqc_per_sequence_quality_scores_plot")),
+		gc_content = resolve_input_file(
+			data_dir,
+			c("fastqc_per_sequence_gc_content_plot_Counts", "fastqc_per_sequence_gc_content_plot")
+		),
+		seq_duplication = resolve_input_file(data_dir, c("fastqc_sequence_duplication_levels_plot")),
+		adapter_content = resolve_input_file(data_dir, c("fastqc_adapter_content_plot"))
 	)
 
 	out <- list(
@@ -498,18 +523,96 @@ plot_hisat2_vs_salmon <- function(hisat2, salmon) {
 
 extract_mapping_categories <- function(data) {
 	df <- set_sample_rownames(data)
-	exonic_col <- find_numeric_column(df, c("exonic", "exon"))
-	intronic_col <- find_numeric_column(df, c("intronic", "intron"))
-	intergenic_col <- find_numeric_column(df, c("intergenic"))
-	if (is.null(exonic_col) || is.null(intronic_col) || is.null(intergenic_col)) {
+	cn <- colnames(df)
+	cn_key <- gsub("[^a-z0-9]", "", tolower(cn))
+
+	pick_one_by_patterns <- function(patterns) {
+		idx <- integer(0)
+		for (pat in patterns) {
+			idx <- c(idx, grep(pat, cn, ignore.case = TRUE, perl = TRUE))
+		}
+		idx <- unique(idx)
+		if (length(idx) == 0) {
+			return(NULL)
+		}
+
+		# Prefer explicit percent fields, then count fields, avoid base-length fields.
+		idx <- idx[!grepl("total[_\\.]?bases", cn[idx], ignore.case = TRUE)]
+		if (length(idx) == 0) {
+			return(NULL)
+		}
+		idx_pct <- idx[grepl("tag[_\\.]?pct|pct|percent|percentage", cn[idx], ignore.case = TRUE)]
+		if (length(idx_pct) > 0) {
+			return(cn[idx_pct[1]])
+		}
+		idx_count <- idx[grepl("tag[_\\.]?count|count", cn[idx], ignore.case = TRUE)]
+		if (length(idx_count) > 0) {
+			return(cn[idx_count[1]])
+		}
+		cn[idx[1]]
+	}
+
+	pick_many <- function(group_patterns) {
+		unique(Filter(Negate(is.null), lapply(group_patterns, pick_one_by_patterns)))
+	}
+
+	# Match both legacy OmixJutsu-style names and MultiQC v1.35 rseqc names.
+	intergenic_cols <- pick_many(list(
+		c("^other[_\\.]?intergenic"),
+		c("^downstream[_\\.]?10kb", "^tes[_\\.]?down[_\\.]?10kb"),
+		c("^upstream[_\\.]?10kb", "^tss[_\\.]?up[_\\.]?10kb")
+	))
+	intronic_cols <- pick_many(list(
+		c("^introns?([_\\.]|$)", "^intron([_\\.]|$)")
+	))
+	exonic_cols <- pick_many(list(
+		c("^3[_\\.]?utr[_\\.]?exons?", "^utr[_\\.]?3"),
+		c("^5[_\\.]?utr[_\\.]?exons?", "^utr[_\\.]?5"),
+		c("^cds[_\\.]?exons?", "^cds([_\\.]|$)")
+	))
+
+	# Fallback to pre-consolidated category columns when legacy component columns are absent.
+	if (length(intergenic_cols) == 0) {
+		intergenic_col <- find_numeric_column(df, c("intergenic"))
+		if (!is.null(intergenic_col)) intergenic_cols <- intergenic_col
+	}
+	if (length(intronic_cols) == 0) {
+		intronic_col <- find_numeric_column(df, c("intronic", "intron"))
+		if (!is.null(intronic_col)) intronic_cols <- intronic_col
+	}
+	if (length(exonic_cols) == 0) {
+		exonic_col <- find_numeric_column(df, c("exonic", "exon"))
+		if (!is.null(exonic_col)) exonic_cols <- exonic_col
+	}
+
+	if (length(intergenic_cols) == 0 || length(intronic_cols) == 0 || length(exonic_cols) == 0) {
 		stop("Could not identify exonic, intronic, and intergenic mapping columns.")
 	}
+
+	sum_selected_cols <- function(cols) {
+		mat <- as.data.frame(lapply(cols, function(col) as_numeric_vector(df[[col]])), stringsAsFactors = FALSE)
+		rowSums(as.matrix(mat), na.rm = TRUE)
+	}
+
+	intergenic_vals <- sum_selected_cols(intergenic_cols)
+	intronic_vals <- sum_selected_cols(intronic_cols)
+	exonic_vals <- sum_selected_cols(exonic_cols)
+
 	out <- data.frame(
-		Exonic = as_numeric_vector(df[[exonic_col]]),
-		Intronic = as_numeric_vector(df[[intronic_col]]),
-		Intergenic = as_numeric_vector(df[[intergenic_col]]),
+		Exonic = as.numeric(exonic_vals),
+		Intronic = as.numeric(intronic_vals),
+		Intergenic = as.numeric(intergenic_vals),
 		row.names = rownames(df)
 	)
+
+	# If values are fractional shares (0-1), convert to percentages.
+	row_total <- rowSums(out[, c("Exonic", "Intronic", "Intergenic")], na.rm = TRUE)
+	if (is.finite(stats::median(row_total, na.rm = TRUE)) && stats::median(row_total, na.rm = TRUE) <= 1.5) {
+		out$Exonic <- out$Exonic * 100
+		out$Intronic <- out$Intronic * 100
+		out$Intergenic <- out$Intergenic * 100
+	}
+
 	out
 }
 
@@ -658,35 +761,72 @@ plot_phred_mean <- function(data, return_data = TRUE) {
 
 plot_gc_mean <- function(data, return_data = TRUE) {
 	df <- set_sample_rownames(data)
-	num_cols <- colnames(df)[vapply(df, is.numeric, logical(1))]
-	if (length(num_cols) == 0) {
-		coerced <- lapply(df, as_numeric_vector)
-		num_ok <- vapply(coerced, function(v) sum(!is.na(v)) > 0, logical(1))
-		num_cols <- names(num_ok)[num_ok]
-		for (nm in num_cols) {
-			df[[nm]] <- coerced[[nm]]
+	value_cols <- setdiff(colnames(df), get_sample_column(df) %||% character(0))
+	tuple_cols <- value_cols[vapply(
+		df[value_cols],
+		function(col_values) any(grepl(",", as.character(col_values), fixed = TRUE), na.rm = TRUE),
+		logical(1)
+	)]
+
+	if (length(tuple_cols) > 0) {
+		tuple_mat <- as.matrix(df[, tuple_cols, drop = FALSE])
+		gc_mat <- matrix(NA_real_, nrow = nrow(tuple_mat), ncol = ncol(tuple_mat))
+		count_mat <- matrix(NA_real_, nrow = nrow(tuple_mat), ncol = ncol(tuple_mat))
+		for (row_idx in seq_len(nrow(tuple_mat))) {
+			for (col_idx in seq_len(ncol(tuple_mat))) {
+				nums <- regmatches(
+					as.character(tuple_mat[row_idx, col_idx]),
+					gregexpr("-?[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?", as.character(tuple_mat[row_idx, col_idx]), perl = TRUE)
+				)[[1]]
+				if (length(nums) >= 2) {
+					gc_mat[row_idx, col_idx] <- as.numeric(nums[1])
+					count_mat[row_idx, col_idx] <- as.numeric(nums[2])
+				}
+			}
+		}
+		denom <- rowSums(count_mat, na.rm = TRUE)
+		vals <- ifelse(denom > 0, rowSums(gc_mat * count_mat, na.rm = TRUE) / denom, NA_real_)
+	} else {
+		num_cols <- colnames(df)[vapply(df, is.numeric, logical(1))]
+		if (length(num_cols) == 0) {
+			coerced <- lapply(df, as_numeric_vector)
+			num_ok <- vapply(coerced, function(v) sum(!is.na(v)) > 0, logical(1))
+			num_cols <- names(num_ok)[num_ok]
+			for (nm in num_cols) {
+				df[[nm]] <- coerced[[nm]]
+			}
+		}
+		if (length(num_cols) == 0) {
+			return(data.frame(values = numeric(0)))
+		}
+
+		gc_bins <- as_numeric_vector(num_cols)
+		if (sum(!is.na(gc_bins)) >= 3 && max(gc_bins, na.rm = TRUE) <= 1.5) {
+			# Some schemas encode GC bins as fractions (0-1); convert to percent.
+			gc_bins <- gc_bins * 100
+		}
+		use_weighted <- sum(!is.na(gc_bins)) >= 3
+
+		if (use_weighted) {
+			mat <- as.matrix(df[, num_cols, drop = FALSE])
+			storage.mode(mat) <- "numeric"
+			valid_bins <- !is.na(gc_bins)
+			mat <- mat[, valid_bins, drop = FALSE]
+			gc_bins <- gc_bins[valid_bins]
+
+			# Weighted mean GC per sample: sum(%GC * counts_or_density) / sum(counts_or_density).
+			denom <- rowSums(mat, na.rm = TRUE)
+			numer <- as.numeric(mat %*% gc_bins)
+			vals <- ifelse(denom > 0, numer / denom, NA_real_)
+		} else {
+			# Fallback for unexpected schemas where GC bin positions are unavailable.
+			vals <- rowMeans(df[, num_cols, drop = FALSE], na.rm = TRUE)
 		}
 	}
-	if (length(num_cols) == 0) {
-		return(data.frame(values = numeric(0)))
-	}
-	gc_bins <- as_numeric_vector(num_cols)
-	use_weighted <- sum(!is.na(gc_bins)) >= 3
 
-	if (use_weighted) {
-		mat <- as.matrix(df[, num_cols, drop = FALSE])
-		storage.mode(mat) <- "numeric"
-		valid_bins <- !is.na(gc_bins)
-		mat <- mat[, valid_bins, drop = FALSE]
-		gc_bins <- gc_bins[valid_bins]
-
-		# Weighted mean GC per sample: sum(%GC * density) / sum(density).
-		denom <- rowSums(mat, na.rm = TRUE)
-		numer <- as.numeric(mat %*% gc_bins)
-		vals <- ifelse(denom > 0, numer / denom, NA_real_)
-	} else {
-		# Fallback for unexpected schemas where GC bin positions are unavailable.
-		vals <- rowMeans(df[, num_cols, drop = FALSE], na.rm = TRUE)
+	if (sum(!is.na(vals)) > 0 && stats::median(vals, na.rm = TRUE) <= 1.5) {
+		# Defensive scaling when computed GC values are fractional rather than percent.
+		vals <- vals * 100
 	}
 	out <- data.frame(values = vals, row.names = rownames(df))
 	if (return_data) {

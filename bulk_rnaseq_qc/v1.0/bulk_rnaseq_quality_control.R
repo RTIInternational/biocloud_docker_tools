@@ -263,11 +263,22 @@ extract_fastq_id <- function(x) {
 		id <- gsub('^"|"$', "", id)
 		parts <- trimws(strsplit(id, " | ", fixed = TRUE)[[1]])
 		parts <- parts[nzchar(parts)]
-		if (length(parts) > 1 && parts[1] %in% c("aggregated_qc_logs")) {
-			id <- parts[2]
-		} else if (length(parts) > 0) {
-			id <- parts[1]
+		if (length(parts) > 0) {
+			ignore_parts <- c("agg_multiqc_input_dir", "aggregated_qc_logs")
+			candidate_parts <- parts[!tolower(parts) %in% ignore_parts]
+			if (length(candidate_parts) == 0) {
+				candidate_parts <- parts
+			}
+
+			# Prefer the first clean sample-like token over read/adapter-expanded tokens.
+			no_adapter_idx <- which(!grepl(" - ", candidate_parts, fixed = TRUE))
+			if (length(no_adapter_idx) > 0) {
+				id <- candidate_parts[no_adapter_idx[1]]
+			} else {
+				id <- candidate_parts[1]
+			}
 		}
+		id <- sub(" - .*$", "", id)
 		id <- vapply(strsplit(id, "...", fixed = TRUE), `[[`, character(1), 1)
 		id <- sub("\\.split\\.[0-9]+$", "", id)
 		id
@@ -281,11 +292,26 @@ extract_fastq_id <- function(x) {
 
 normalize_sample_id <- function(x) {
 	x <- trimws(as.character(x))
+	x <- basename(x)
+	x <- sub(" - .*$", "", x)
+	x <- sub("\\.(fastq|fq)(\\.gz)?$", "", x, ignore.case = TRUE)
+	x <- sub("\\.bam$", "", x, ignore.case = TRUE)
+	x <- sub("_L[0-9]{3}_R[12]_[0-9]{3}$", "", x, ignore.case = TRUE)
+	x <- sub("_R[12]_[0-9]{3}$", "", x, ignore.case = TRUE)
+	x <- sub("_R[12]$", "", x, ignore.case = TRUE)
+	x <- sub("\\.R[12]$", "", x, ignore.case = TRUE)
+	x <- sub("([._-])(trimmed|untrimmed)$", "", x, ignore.case = TRUE)
+	x <- sub("\\.split\\.[0-9]+$", "", x, ignore.case = TRUE)
+	x <- gsub("[._-]+$", "", x)
 	x <- tolower(x)
 	x <- sub("^sample[_-]*", "", x)
 	x <- sub("^0+", "", x)
 	x[x == ""] <- "0"
 	x
+}
+
+normalize_sample_id_compact <- function(x) {
+	gsub("[^a-z0-9]", "", normalize_sample_id(x))
 }
 
 # Subset and reorder per-sample QC frames to match phenotype/txi sample IDs.
@@ -322,6 +348,12 @@ subset_qc_df <- function(df, ids) {
 		id_norm <- normalize_sample_id(id_values)
 		keep <- row_norm %in% id_norm
 		use_normalized_match <- any(keep)
+		if (!use_normalized_match) {
+			row_norm_compact <- normalize_sample_id_compact(row_values)
+			id_norm_compact <- normalize_sample_id_compact(id_values)
+			keep <- row_norm_compact %in% id_norm_compact
+			use_normalized_match <- any(keep)
+		}
 	}
 
 	out <- df[keep, , drop = FALSE]
@@ -332,6 +364,10 @@ subset_qc_df <- function(df, ids) {
 	if (use_normalized_match) {
 		row_key <- normalize_sample_id(row_values[keep])
 		id_key <- normalize_sample_id(id_values)
+		if (!any(row_key %in% id_key)) {
+			row_key <- normalize_sample_id_compact(row_values[keep])
+			id_key <- normalize_sample_id_compact(id_values)
+		}
 		if (anyDuplicated(row_key)) {
 			dedup <- !duplicated(row_key)
 			out <- out[dedup, , drop = FALSE]
@@ -392,6 +428,10 @@ align_metric_output <- function(metric_df, qc_ids, value_col = "values") {
 	src_ids <- extract_fastq_id(src_ids)
 	src_norm <- normalize_sample_id(src_ids)
 	qc_norm <- normalize_sample_id(qc_ids)
+	if (!any(qc_norm %in% src_norm)) {
+		src_norm <- normalize_sample_id_compact(src_ids)
+		qc_norm <- normalize_sample_id_compact(qc_ids)
+	}
 
 	vals <- suppressWarnings(as.numeric(metric_df[[value_col]]))
 	idx <- match(qc_norm, src_norm)
@@ -651,6 +691,20 @@ if (
 		),
 		console = FALSE
 	)
+	logr::log_print(
+		paste(
+			"FastQC overlap after normalized ID mapping:",
+			length(intersect(normalize_sample_id(pre_fastqc_ids), normalize_sample_id(qc_ids)))
+		),
+		console = FALSE
+	)
+	logr::log_print(
+		paste(
+			"FastQC overlap after compact ID mapping:",
+			length(intersect(normalize_sample_id_compact(pre_fastqc_ids), normalize_sample_id_compact(qc_ids)))
+		),
+		console = FALSE
+	)
 }
 
 for (nm in names(qc_data)) {
@@ -699,6 +753,12 @@ recover_fastqc_subset <- function(df, ids) {
 		id_norm <- normalize_sample_id(id_values)
 		keep <- row_norm %in% id_norm
 		use_normalized_match <- any(keep)
+		if (!use_normalized_match) {
+			row_norm_compact <- normalize_sample_id_compact(row_values)
+			id_norm_compact <- normalize_sample_id_compact(id_values)
+			keep <- row_norm_compact %in% id_norm_compact
+			use_normalized_match <- any(keep)
+		}
 	}
 	out <- df[keep, , drop = FALSE]
 	if (nrow(out) == 0) {
@@ -707,6 +767,10 @@ recover_fastqc_subset <- function(df, ids) {
 	if (use_normalized_match) {
 		row_key <- normalize_sample_id(row_values[keep])
 		id_key <- normalize_sample_id(id_values)
+		if (!any(row_key %in% id_key)) {
+			row_key <- normalize_sample_id_compact(row_values[keep])
+			id_key <- normalize_sample_id_compact(id_values)
+		}
 		if (anyDuplicated(row_key)) {
 			dedup <- !duplicated(row_key)
 			out <- out[dedup, , drop = FALSE]
@@ -1104,56 +1168,112 @@ with_plot_guard({
 	}
 }, "chrY by sex")
 
-# PCA is optional and runs only when user-provided grouping variables are available.
-if (length(group_vars) == 0) {
-	logr::log_print("Skipping PCA plot block because --group_vars was not provided.", console = FALSE)
-} else {
-	with_plot_guard({
-		available_group_vars <- group_vars[group_vars %in% colnames(pheno_data)]
-		if ("mitochondrial_mapping_rate" %in% colnames(pheno_data) &&
-			!"mitochondrial_mapping_rate" %in% available_group_vars) {
-			available_group_vars <- c(available_group_vars, "mitochondrial_mapping_rate")
-		}
-		if (length(available_group_vars) == 0) {
-			logr::log_print(
-				"Skipping PCA plot block because none of the provided --group_vars are present in phenotype data.",
-				console = FALSE
-			)
-			return(NULL)
-		}
-		# Compute PCA once, then render one panel per grouping variable.
-		assay_mat <- SummarizedExperiment::assay(dds_vst)
-		row_vars <- matrixStats::rowVars(assay_mat)
-		keeper_rows <- order(row_vars, decreasing = TRUE)[seq_len(min(20000, length(row_vars)))]
-		pca <- prcomp(
-			t(assay_mat[keeper_rows, , drop = FALSE]),
-			center = TRUE,
-			scale. = FALSE
+# Build a PCA patch over selected samples and configured group variables.
+build_pca_patch <- function(sample_ids_subset = NULL) {
+	available_group_vars <- group_vars[group_vars %in% colnames(pheno_data)]
+	if ("mitochondrial_mapping_rate" %in% colnames(pheno_data) &&
+		!"mitochondrial_mapping_rate" %in% available_group_vars) {
+		available_group_vars <- c(available_group_vars, "mitochondrial_mapping_rate")
+	}
+	if (length(available_group_vars) == 0) {
+		logr::log_print(
+			"Skipping PCA because none of the provided --group_vars are present in phenotype data.",
+			console = FALSE
 		)
-		pct_var <- pca$sdev^2 / sum(pca$sdev^2)
-		x_title <- paste0("PC1: ", round(pct_var[1] * 100), "% variance")
-		y_title <- paste0("PC2: ", round(pct_var[2] * 100), "% variance")
+		return(NULL)
+	}
 
-		plot_data_base <- data.frame(
-			PC1 = pca$x[, 1],
-			PC2 = pca$x[, 2],
-			sample_id = colnames(dds_vst),
-			stringsAsFactors = FALSE
+	assay_mat_full <- SummarizedExperiment::assay(dds_vst)
+	if (is.null(sample_ids_subset)) {
+		sample_keep <- colnames(assay_mat_full)
+	} else {
+		sample_keep <- intersect(colnames(assay_mat_full), as.character(sample_ids_subset))
+	}
+
+	if (length(sample_keep) < 3) {
+		logr::log_print(
+			paste0("Skipping PCA because fewer than 3 samples are available after filtering (n=", length(sample_keep), ")."),
+			console = FALSE
 		)
+		return(NULL)
+	}
 
-		p_list <- list()
+	assay_mat <- assay_mat_full[, sample_keep, drop = FALSE]
+	row_vars <- matrixStats::rowVars(assay_mat)
+	keeper_rows <- order(row_vars, decreasing = TRUE)[seq_len(min(20000, length(row_vars)))]
+	pca <- prcomp(
+		t(assay_mat[keeper_rows, , drop = FALSE]),
+		center = TRUE,
+		scale. = FALSE
+	)
+	pct_var <- pca$sdev^2 / sum(pca$sdev^2)
+	x_title <- paste0("PC1: ", round(pct_var[1] * 100), "% variance")
+	y_title <- paste0("PC2: ", round(pct_var[2] * 100), "% variance")
 
-		for (gv in available_group_vars) {
-			p_tmp <- tryCatch(
-				{
-					plot_df <- plot_data_base
-					group_values <- SummarizedExperiment::colData(dds_vst)[[gv]]
-					plot_df$group <- group_values
+	plot_data_base <- data.frame(
+		PC1 = pca$x[, 1],
+		PC2 = pca$x[, 2],
+		sample_id = sample_keep,
+		stringsAsFactors = FALSE
+	)
 
-					if (all(is.na(plot_df$group))) {
-						stop("all values are NA")
-					}
+	p_list <- list()
 
+	for (gv in available_group_vars) {
+		p_tmp <- tryCatch(
+			{
+				plot_df <- plot_data_base
+				group_values <- as.vector(SummarizedExperiment::colData(dds_vst)[sample_keep, gv, drop = TRUE])
+				plot_df$group <- group_values
+
+				if (all(is.na(plot_df$group))) {
+					stop("all values are NA")
+				}
+
+				p <- ggplot2::ggplot(
+					plot_df,
+					ggplot2::aes(x = PC1, y = PC2, fill = group)
+				) +
+					ggplot2::geom_point(size = 3, alpha = 1, shape = 21, color = "white") +
+					ggplot2::labs(x = x_title, y = y_title, fill = gv, title = gv) +
+					ggplot2::theme(
+						plot.margin = grid::unit(c(0.5, 0.5, 0.5, 0.5), units = "cm"),
+						title = ggplot2::element_text(size = 18),
+						axis.text = ggplot2::element_text(size = 18),
+						axis.title = ggplot2::element_text(size = 18),
+						axis.title.y = ggplot2::element_text(vjust = 3),
+						axis.title.x = ggplot2::element_text(vjust = -1),
+						legend.title = ggplot2::element_text(size = 16),
+						legend.text = ggplot2::element_text(size = 16)
+					)
+
+				data_min <- min(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
+				data_max <- max(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
+				if (is.finite(data_min) && is.finite(data_max)) {
+					axis_min <- switch(
+						as.character(sign(data_min)),
+						`-1` = data_min * 1.05,
+						`1` = data_min * 0.95,
+						`0` = data_min - (diff(c(data_min, data_max)) * 0.05)
+					)
+					axis_max <- switch(
+						as.character(sign(data_max)),
+						`-1` = data_max * 0.95,
+						`1` = data_max * 1.05,
+						`0` = data_max + (diff(c(data_min, data_max)) * 0.05)
+					)
+					p <- p + ggplot2::xlim(axis_min, axis_max) + ggplot2::ylim(axis_min, axis_max)
+				}
+
+				if (is.numeric(plot_df$group) || is.integer(plot_df$group)) {
+					p + ggplot2::scale_fill_gradient(
+						low = "khaki1",
+						high = "red4",
+						na.value = "grey80"
+					)
+				} else {
+					plot_df$group <- as.factor(plot_df$group)
+					n_lvls <- nlevels(plot_df$group)
 					p <- ggplot2::ggplot(
 						plot_df,
 						ggplot2::aes(x = PC1, y = PC2, fill = group)
@@ -1171,8 +1291,6 @@ if (length(group_vars) == 0) {
 							legend.text = ggplot2::element_text(size = 16)
 						)
 
-					data_min <- min(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
-					data_max <- max(plot_df$PC1, plot_df$PC2, na.rm = TRUE)
 					if (is.finite(data_min) && is.finite(data_max)) {
 						axis_min <- switch(
 							as.character(sign(data_min)),
@@ -1189,76 +1307,44 @@ if (length(group_vars) == 0) {
 						p <- p + ggplot2::xlim(axis_min, axis_max) + ggplot2::ylim(axis_min, axis_max)
 					}
 
-					if (is.numeric(plot_df$group) || is.integer(plot_df$group)) {
-						p + ggplot2::scale_fill_gradient(
-							low = "khaki1",
-							high = "red4",
-							na.value = "grey80"
-						)
+					if (n_lvls <= 8) {
+						p + ggplot2::scale_fill_brewer(palette = ifelse(gv %in% c(sex_col, "Race"), "Dark2", "Set2"), na.value = "grey80")
 					} else {
-						plot_df$group <- as.factor(plot_df$group)
-						n_lvls <- nlevels(plot_df$group)
-						p <- ggplot2::ggplot(
-							plot_df,
-							ggplot2::aes(x = PC1, y = PC2, fill = group)
-						) +
-							ggplot2::geom_point(size = 3, alpha = 1, shape = 21, color = "white") +
-							ggplot2::labs(x = x_title, y = y_title, fill = gv, title = gv) +
-							ggplot2::theme(
-								plot.margin = grid::unit(c(0.5, 0.5, 0.5, 0.5), units = "cm"),
-								title = ggplot2::element_text(size = 18),
-								axis.text = ggplot2::element_text(size = 18),
-								axis.title = ggplot2::element_text(size = 18),
-								axis.title.y = ggplot2::element_text(vjust = 3),
-								axis.title.x = ggplot2::element_text(vjust = -1),
-								legend.title = ggplot2::element_text(size = 16),
-								legend.text = ggplot2::element_text(size = 16)
-							)
-
-						if (is.finite(data_min) && is.finite(data_max)) {
-							axis_min <- switch(
-								as.character(sign(data_min)),
-								`-1` = data_min * 1.05,
-								`1` = data_min * 0.95,
-								`0` = data_min - (diff(c(data_min, data_max)) * 0.05)
-							)
-							axis_max <- switch(
-								as.character(sign(data_max)),
-								`-1` = data_max * 0.95,
-								`1` = data_max * 1.05,
-								`0` = data_max + (diff(c(data_min, data_max)) * 0.05)
-							)
-							p <- p + ggplot2::xlim(axis_min, axis_max) + ggplot2::ylim(axis_min, axis_max)
-						}
-
-						if (n_lvls <= 8) {
-							p + ggplot2::scale_fill_brewer(palette = ifelse(gv %in% c(sex_col, "Race"), "Dark2", "Set2"), na.value = "grey80")
-						} else {
-							p + ggplot2::scale_fill_hue(na.value = "grey80")
-						}
+						p + ggplot2::scale_fill_hue(na.value = "grey80")
 					}
-				},
-				error = function(e) {
-					logr::log_print(
-						paste0("Skipping PCA group var '", gv, "' due to error: ", e$message),
-						console = FALSE
-					)
-					NULL
 				}
-			)
-
-			if (!is.null(p_tmp)) {
-				p_list[[length(p_list) + 1]] <- p_tmp
+			},
+			error = function(e) {
+				logr::log_print(
+					paste0("Skipping PCA group var '", gv, "' due to error: ", e$message),
+					console = FALSE
+				)
+				NULL
 			}
-		}
+		)
 
-		if (length(p_list) == 0) {
-			logr::log_print("All PCA group variables were skipped; no PCA plot generated.", console = FALSE)
-			return(NULL)
+		if (!is.null(p_tmp)) {
+			p_list[[length(p_list) + 1]] <- p_tmp
 		}
+	}
 
-		p_patch <- patchwork::wrap_plots(p_list, ncol = 2)
-		save_plot(p_patch, "pca_plots_pc1_pc2.png", 16, 14)
+	if (length(p_list) == 0) {
+		logr::log_print("All PCA group variables were skipped; no PCA plot generated.", console = FALSE)
+		return(NULL)
+	}
+
+	patchwork::wrap_plots(p_list, ncol = 2)
+}
+
+# PCA is optional and runs only when user-provided grouping variables are available.
+if (length(group_vars) == 0) {
+	logr::log_print("Skipping PCA plot block because --group_vars was not provided.", console = FALSE)
+} else {
+	with_plot_guard({
+		p_patch <- build_pca_patch()
+		if (!is.null(p_patch)) {
+			save_plot(p_patch, "pca_plots_pc1_pc2.png", 16, 14)
+		}
 	}, "pca")
 	logr::log_print("Completed PCA plot block.", console = FALSE)
 }
@@ -1376,14 +1462,20 @@ qc_metrics_list$effective_seq_depth <- collect_metric({
 }, "effective_seq_depth")
 
 qc_metrics_list$mapping_categories <- collect_metric({
-	out <- plot_mapping_categories(
+	map_data <- plot_mapping_categories(
 		qc_data$rseqc_alignment_category,
 		sort = TRUE,
 		consolidate = TRUE,
 		return_data = TRUE
 	)
-	out <- out[qc_ids, , drop = FALSE]
-	colnames(out) <- c("intergenic_mapping_pct", "intron_mapping_pct", "exon_mapping_pct")
+	map_data <- subset_qc_df(map_data, qc_ids)
+	out <- data.frame(
+		intergenic_mapping_pct = map_data[qc_ids, "Intergenic", drop = TRUE],
+		intron_mapping_pct = map_data[qc_ids, "Intronic", drop = TRUE],
+		exon_mapping_pct = map_data[qc_ids, "Exonic", drop = TRUE],
+		row.names = qc_ids,
+		stringsAsFactors = FALSE
+	)
 	out
 }, "mapping_categories")
 
@@ -1394,6 +1486,7 @@ qc_metrics_list$gene_mapping_pct <- collect_metric({
 		consolidate = TRUE,
 		return_data = TRUE
 	)
+	map_data <- subset_qc_df(map_data, qc_ids)
 	out <- plot_gene_mapping_rate(
 		data = map_data[, c("Exonic", "Intronic"), drop = FALSE],
 		group = NULL,
@@ -1411,6 +1504,7 @@ qc_metrics_list$dna_contamination_ratio <- collect_metric({
 		consolidate = TRUE,
 		return_data = TRUE
 	)
+	map_data <- subset_qc_df(map_data, qc_ids)
 	out <- plot_dna_contamination_ratio(
 		data = map_data[, c("Intergenic", "Intronic"), drop = FALSE],
 		group = NULL,
@@ -1511,6 +1605,16 @@ qc_metrics <- tibble::rownames_to_column(as.data.frame(qc_metrics), var = "sampl
 # Join computed metrics back onto phenotype for one analysis-ready sample table.
 pheno_out <- pheno_data
 pheno_out$sample_id <- rownames(pheno_out)
+
+# Avoid duplicate mitochondrial-rate representations in the final table.
+# Keep mito_rna_pct from computed QC metrics and drop the legacy phenotype copy.
+if (
+	"mito_rna_pct" %in% colnames(qc_metrics) &&
+	"mitochondrial_mapping_rate" %in% colnames(pheno_out)
+) {
+	pheno_out <- pheno_out[, setdiff(colnames(pheno_out), "mitochondrial_mapping_rate"), drop = FALSE]
+}
+
 duplicate_metric_cols <- intersect(
 	setdiff(colnames(qc_metrics), "sample_id"),
 	colnames(pheno_out)
@@ -1708,6 +1812,28 @@ write.table(
 
 logr::log_print("Threshold summary written to:", console = FALSE, blank_after = FALSE)
 logr::log_print(summary_out_file, console = FALSE)
+
+if (length(group_vars) == 0) {
+	logr::log_print("Skipping QC-pass-only PCA because --group_vars was not provided.", console = FALSE)
+} else {
+	pass_all_thresholds <- Reduce(`&`, lapply(threshold_defs, function(td) {
+		pass_vec <- td$pass
+		pass_vec[is.na(pass_vec)] <- FALSE
+		pass_vec
+	}))
+	pass_sample_ids <- sample_ids[pass_all_thresholds]
+
+	with_plot_guard({
+		p_pass_patch <- build_pca_patch(sample_ids_subset = pass_sample_ids)
+		if (!is.null(p_pass_patch)) {
+			save_plot(p_pass_patch, "pca_plots_pc1_pc2_qc_pass_only.png", 16, 14)
+			logr::log_print(
+				paste0("Saved QC-pass-only PCA plot for ", length(pass_sample_ids), " samples."),
+				console = FALSE
+			)
+		}
+	}, "pca qc-pass-only")
+}
 
 logr::sep("Build HTML report")
 
