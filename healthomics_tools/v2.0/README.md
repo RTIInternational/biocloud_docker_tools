@@ -9,6 +9,7 @@ Tools for managing workflows and workflow runs in AWS HealthOmics.
 - [Prerequisites](#prerequisites)
 - [Create Workflow](#create-workflow)
 - [Create Workflow Version](#create-workflow-version)
+- [Create Run Cache](#create-run-cache)
 - [Start Run](#start-run)
 - [Cancel Runs](#cancel-runs)
 - [Delete Runs](#delete-runs)
@@ -58,14 +59,14 @@ docker run -ti \
 
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
-| aws_profile | AWS profile to use for credentials | string  |  |  | Yes |
-| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
-| repo_dir | Base path for Git repository containing workflow definition | string |  |  | Yes |
-| main | Path to main workflow definition file | string |  |  | Yes |
-| name | Name to assign to workflow | string |  |  | Yes |
-| description | Description of workflow | string |  |  | Yes |
-| readme | Path to README file for wf | string |  |  | Yes |
-| engine | Engine to use for workflow | string | `WDL`, `NEXTFLOW`, `CWL`  | `WDL` | No |
+| aws_profile | AWS profile to use for credentials | string | | | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string | | | Yes |
+| repo_dir | Base path for Git repository containing workflow definition | string | | | Yes |
+| main | Path to main workflow definition file | string | | | Yes |
+| name | Name to assign to workflow | string | | | Yes |
+| description | Description of workflow | string | | | Yes |
+| readme | Path to README file for wf | string | | | Yes |
+| engine | Engine to use for workflow | string | `WDL`, `NEXTFLOW`, `CWL` | `WDL` | No |
 | storage_capacity | Default storage capacity in GB for workflow | integer | See note [^1] | `2000` | No |
 
 ### Notes
@@ -112,21 +113,69 @@ docker run -ti \
 
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
-| aws_profile | AWS profile to use for credentials | string  |  |  | Yes |
-| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
-| repo_dir | Base path for Git repository containing workflow definition | string |  |  | Yes |
-| main | Path to main workflow definition file | string |  |  | Yes |
-| workflow_id | ID of the existing workflow for which a new version will be created | string |  |  | Yes |
-| name | Name to assign to workflow | string |  |  | Yes |
-| description | Description of workflow | string |  |  | Yes |
-| readme | Path to README file for wf | string |  |  | Yes |
-| engine | Engine to use for workflow | string | `WDL`, `NEXTFLOW`, `CWL`  | `WDL` | No |
+| aws_profile | AWS profile to use for credentials | string | | | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string | | | Yes |
+| repo_dir | Base path for Git repository containing workflow definition | string | | | Yes |
+| main | Path to main workflow definition file | string | | | Yes |
+| workflow_id | ID of the existing workflow for which a new version will be created | string | | | Yes |
+| name | Name to assign to workflow | string | | | Yes |
+| description | Description of workflow | string | | | Yes |
+| readme | Path to README file for wf | string | | | Yes |
+| engine | Engine to use for workflow | string | `WDL`, `NEXTFLOW`, `CWL` | `WDL` | No |
 | storage_capacity | Default storage capacity in GB for workflow | integer | See note [^1] | `2000` | No |
 
 ### Notes
 
 - For the WDL workflow file specified with `main`, there must be accompanying dependencies and parameters json files with specific naming conventions. For example, if the WDL file specified with `main` is `example_wf.wdl`, there must be a `example_wf_dependencies.json` and `example_wf_parameters.json` file in the same directory.
 
+## Create Run Cache
+
+### Command
+
+``` sh
+# Define variables
+AWS_CREDENTIALS_DIR=/path/to/.aws
+CHARGE_CODE=charge_code
+AWS_PROFILE=aws_profile
+CACHE_S3_LOCATION=s3://bucket/path/for/cache
+NAME=""
+DESCRIPTION=""
+CACHE_BEHAVIOR=""
+CACHE_BUCKET_OWNER_ID=""
+DOCKER_IMAGE="<DOCKER_IMAGE>:<TAG>"
+
+# Create run cache
+docker run -ti \
+    -v "$AWS_CREDENTIALS_DIR":"$AWS_CREDENTIALS_DIR" \
+    -e task=create_run_cache \
+    -e aws_profile="$AWS_PROFILE" \
+    -e AWS_SHARED_CREDENTIALS_FILE="$AWS_CREDENTIALS_DIR/credentials" \
+    -e charge_code="$CHARGE_CODE" \
+    -e cache_s3_location="$CACHE_S3_LOCATION" \
+    -e name="$NAME" \
+    -e description="$DESCRIPTION" \
+    -e cache_behavior="$CACHE_BEHAVIOR" \
+    -e cache_bucket_owner_id="$CACHE_BUCKET_OWNER_ID" \
+    --rm "$DOCKER_IMAGE"
+```
+
+### Parameters
+
+| Parameter | Description | Type | Choices | Default Value | Required |
+| --------- | ------ | ---- | ------- | ------------- | -------- |
+| aws_profile | AWS profile to use for credentials | string | | | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string | | | Yes |
+| charge_code | RTI charge code | string | | | Yes |
+| cache_s3_location | S3 location for storing cached task outputs; must be immediately accessible (not archived) | string | | | Yes |
+| name | Name to assign to the run cache | string | | | No |
+| description | Description of the run cache | string | | | No |
+| cache_behavior | Default cache behavior for runs that use this cache | string | `CACHE_ON_FAILURE`, `CACHE_ALWAYS` | `CACHE_ON_FAILURE` | No |
+| cache_bucket_owner_id | AWS account ID of the expected owner of the S3 bucket for the run cache | string | | | No |
+
+### Notes
+
+- The created run cache's `id`, `arn`, and `status` are printed to stdout.
+- Pass the resulting cache ID to `start_run`'s `cache_id` parameter to use this cache for a run.
 
 ## Start Run
 
@@ -198,22 +247,22 @@ docker run -ti \
 
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
-| aws_profile | AWS profile to use for credentials | string  |  |  | Yes |
-| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
-| charge_code | RTI charge code | string |  |  | Yes |
-| workflow_id | HealthOmics ID of workflow to run | string |  |  | Yes |
-| workflow_version_name | Name of workflow version to run | String |  |  | No |
-| workflow_owner_id | 12-digit account ID of the workflow owner; only required to run a workflow shared from another account | string |  |  | No |
-| run_group_id | ID of the run group to associate with the run, used to cap compute resources/concurrency | string |  |  | No |
-| run_id | ID of an existing run to duplicate | string |  |  | No |
-| role_arn | Service role ARN for the run; defaults to `arn:aws:iam::<account_id>:role/OmicsWorkflow` for the caller's account | string |  |  | No |
-| name | Name to assign to run | string |  |  | Yes |
-| cache_id | ID of cache to use for the run | string |  |  | No |
-| cache_behavior | Cache behavior for the run | string | `CACHE_ON_FAILURE`, `CACHE_ALWAYS` |  | No |
-| parameters | Path to JSON file containing run parameters | string |  |  | Yes |
-| output_uri | S3 path for workflow output | string |  |  | Yes |
-| run_metadata_output_dir | Directory to which run metadata will be output | string |  |  | Yes |
-| workflow_type | Type of workflow to run | string |  `PRIVATE`, `READY2RUN` | `PRIVATE` | No |
+| aws_profile | AWS profile to use for credentials | string | | | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string | | | Yes |
+| charge_code | RTI charge code | string | | | Yes |
+| workflow_id | HealthOmics ID of workflow to run | string | | | Yes |
+| workflow_version_name | Name of workflow version to run | String | | | No |
+| workflow_owner_id | 12-digit account ID of the workflow owner; only required to run a workflow shared from another account | string | | | No |
+| run_group_id | ID of the run group to associate with the run, used to cap compute resources/concurrency | string | | | No |
+| run_id | ID of an existing run to duplicate | string | | | No |
+| role_arn | Service role ARN for the run; defaults to `arn:aws:iam::<account_id>:role/OmicsWorkflow` for the caller's account | string | | | No |
+| name | Name to assign to run | string | | | Yes |
+| cache_id | ID of cache to use for the run | string | | | No |
+| cache_behavior | Cache behavior for the run | string | `CACHE_ON_FAILURE`, `CACHE_ALWAYS` | | No |
+| parameters | Path to JSON file containing run parameters | string | | | Yes |
+| output_uri | S3 path for workflow output | string | | | Yes |
+| run_metadata_output_dir | Directory to which run metadata will be output | string | | | Yes |
+| workflow_type | Type of workflow to run | string | `PRIVATE`, `READY2RUN` | `PRIVATE` | No |
 | priority | Priority for run | integer | See note [^1] | `100` | No |
 | storage_type | Storage type for run | string | `STATIC`, `DYNAMIC` | `STATIC` | No |
 | storage_capacity | Storage capacity for run in GB if storage type = `STATIC` | integer | See note [^1] | `2000` | No |
@@ -221,14 +270,14 @@ docker run -ti \
 | retention_mode | Retention mode for run | string | `RETAIN`, `REMOVE` | `RETAIN` | No |
 | networking_mode | Networking mode for the run | string | `RESTRICTED`, `VPC` | Unset (AWS defaults to `RESTRICTED`) | No |
 | scratch_storage_mode | Scratch storage mode for the run (ephemeral storage mounted at `/tmp`); applies only to CPU tasks | string | `LOCAL`, `SHARED` | Unset (AWS defaults to `SHARED`) | No |
-| configuration_name | Configuration name to use for the workflow run | string |  |  | No |
+| configuration_name | Configuration name to use for the workflow run | string | | | No |
 
 [^1]: This range is enforced by the AWS HealthOmics API, not by the wrapper scripts themselves; the scripts only validate that the value is an integer.
 
 ### Notes
 
 - A metadata JSON file for the run is written to `run_metadata_output_dir/<name>_metadata.json`.
-
+- To use the `cache_id`/`cache_behavior` parameters, a run cache must already exist; create one first with [Create Run Cache](#create-run-cache) and pass its `id` as `cache_id`.
 
 ## Cancel Runs
 
@@ -259,12 +308,11 @@ docker run -ti \
 
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
-| aws_profile | AWS profile to use for credentials | string |  |  | Yes |
-| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
-| run_ids | Run IDs of runs to cancel (separated by commas) | string |  |  | No |
-| run_statuses | Run statuses of runs to cancel (separated by commas) | string | `PENDING`, `STARTING`, `RUNNING`, `STOPPING` |  | No |
+| aws_profile | AWS profile to use for credentials | string | | | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string | | | Yes |
+| run_ids | Run IDs of runs to cancel (separated by commas) | string | | | No |
+| run_statuses | Run statuses of runs to cancel (separated by commas) | string | `PENDING`, `STARTING`, `RUNNING`, `STOPPING` | | No |
 | delete_run_data | Whether to delete run data after cancelling runs | boolean | `TRUE`, `FALSE` | `FALSE` | No |
-
 
 ## Delete Runs
 
@@ -293,11 +341,10 @@ docker run -ti \
 
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
-| aws_profile | AWS profile to use for credentials | string |  |  | Yes |
-| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
-| run_ids | Run IDs of runs to delete (separated by commas) | string |  |  | No |
-| run_statuses | Run statuses of runs to delete (separated by commas) | string | `PENDING`, `STARTING`, `RUNNING`, `STOPPING`, `COMPLETED`, `DELETED`, `CANCELLED`, `FAILED` |  | No |
-
+| aws_profile | AWS profile to use for credentials | string | | | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string | | | Yes |
+| run_ids | Run IDs of runs to delete (separated by commas) | string | | | No |
+| run_statuses | Run statuses of runs to delete (separated by commas) | string | `PENDING`, `STARTING`, `RUNNING`, `STOPPING`, `COMPLETED`, `DELETED`, `CANCELLED`, `FAILED` | | No |
 
 ## Retrieve Run Results
 
@@ -329,8 +376,7 @@ docker run -ti \
 
 | Parameter | Description | Type | Choices | Default Value | Required |
 | --------- | ------ | ---- | ------- | ------------- | -------- |
-| aws_profile | AWS profile to use for credentials | string |  |  | Yes |
-| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string  |  |  | Yes |
-| run_id | ID of run for which to retrieve results | string |  |  | Yes |
-| target_dir | Target directory for run results | string |  |  | Yes |
-
+| aws_profile | AWS profile to use for credentials | string | | | Yes |
+| AWS_SHARED_CREDENTIALS_FILE | Path to AWS shared credential file | string | | | Yes |
+| run_id | ID of run for which to retrieve results | string | | | Yes |
+| target_dir | Target directory for run results | string | | | Yes |

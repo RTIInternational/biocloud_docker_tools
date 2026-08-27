@@ -48,6 +48,14 @@ if [[ "$task" == "create_wf_version" ]]; then
 
 fi
 
+if [[ "$task" == "create_run_cache" ]]; then
+
+    # Create run cache
+    build_args aws_profile charge_code cache_s3_location name description cache_behavior cache_bucket_owner_id
+    python3 /opt/create_run_cache.py "${py_args[@]}"
+
+fi
+
 if [[ "$task" == "start_run" ]]; then
 
     # Start run
