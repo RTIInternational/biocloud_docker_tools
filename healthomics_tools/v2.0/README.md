@@ -16,8 +16,8 @@ Tools for managing workflows and workflow runs in AWS HealthOmics.
 
 ## Prerequisites
 
-- All host paths referenced by parameters (`repo_dir`, `main`, `readme`, `parameters`, `run_metadata_output_dir`, `target_dir`, etc.) must resolve to paths *inside* the container. Mount the relevant host directory with `-v "<HOST_DIR>":"<CONTAINER_DIR>"` and pass container-relative paths for these parameters.
-- `AWS_SHARED_CREDENTIALS_FILE` must point to a credentials file path that is reachable inside the container (i.e. under the mounted `<CONTAINER_DIR>`), and `aws_profile` must reference a profile defined in that file.
+- All host paths referenced by parameters (`repo_dir`, `main`, `readme`, `parameters`, `run_metadata_output_dir`, `target_dir`, etc.) must resolve to paths *inside* the container. Mount the relevant host directory to the identical path in the container (e.g. `-v "$REPO_DIR":"$REPO_DIR"`) so the same path works on both sides.
+- `AWS_SHARED_CREDENTIALS_FILE` must point to a credentials file path that is reachable inside the container (i.e. under a mounted directory), and `aws_profile` must reference a profile defined in that file.
 - For `start_run`, the IAM role used (`role_arn`, or the default `arn:aws:iam::<account_id>:role/OmicsWorkflow` if not specified) must already exist and have permission to access AWS HealthOmics, S3, CloudWatch Logs, and EC2 as described in the [AWS HealthOmics service role documentation](https://docs.aws.amazon.com/omics/latest/dev/setting-up.html).
 
 ## Create Workflow
@@ -25,19 +25,33 @@ Tools for managing workflows and workflow runs in AWS HealthOmics.
 ### Command
 
 ``` sh
+# Define variables
+REPO_DIR=/path/to/repo_dir
+AWS_CREDENTIALS_DIR=/path/to/.aws
+AWS_PROFILE=aws_profile
+MAIN_WDL=$REPO_DIR/path/to/main.wdl
+NAME=workflow_name
+DESCRIPTION="Workflow description"
+README_PATH=$REPO_DIR/path/to/README.md
+ENGINE=WDL
+STORAGE_CAPACITY=2000
+DOCKER_IMAGE="<DOCKER_IMAGE>:<TAG>"
+
+# Create workflow
 docker run -ti \
-    -v "<HOST_DIR>":"<CONTAINER_DIR>" \
+    -v "$REPO_DIR":"$REPO_DIR" \
+    -v "$AWS_CREDENTIALS_DIR":"$AWS_CREDENTIALS_DIR" \
     -e task=create_wf \
-    -e aws_profile="<AWS_PROFILE>" \
-    -e AWS_SHARED_CREDENTIALS_FILE="<AWS_SHARED_CREDENTIAL_FILE>" \
-    -e repo_dir="<REPO_DIR>" \
-    -e main="<MAIN_WDL>" \
-    -e name="<NAME>" \
-    -e description="<DESCRIPTION>" \
-    -e readme="<README>" \
-    -e engine="<ENGINE>" \
-    -e storage_capacity="<STORAGE_CAPACITY>" \
-    --rm "<DOCKER_IMAGE>":"<TAG>"
+    -e aws_profile="$AWS_PROFILE" \
+    -e AWS_SHARED_CREDENTIALS_FILE="$AWS_CREDENTIALS_DIR/credentials" \
+    -e repo_dir="$REPO_DIR" \
+    -e main="$MAIN_WDL" \
+    -e name="$NAME" \
+    -e description="$DESCRIPTION" \
+    -e readme="$README_PATH" \
+    -e engine="$ENGINE" \
+    -e storage_capacity="$STORAGE_CAPACITY" \
+    --rm "$DOCKER_IMAGE"
 ```
 
 ### Parameters
@@ -63,20 +77,35 @@ docker run -ti \
 ### Command
 
 ``` sh
+# Define variables
+REPO_DIR=/path/to/repo_dir
+AWS_CREDENTIALS_DIR=/path/to/.aws
+AWS_PROFILE=aws_profile
+WORKFLOW_ID=workflow_id
+MAIN_WDL=$REPO_DIR/path/to/main.wdl
+NAME=workflow_name
+DESCRIPTION="Workflow description"
+README_PATH=$REPO_DIR/path/to/README.md
+ENGINE=WDL
+STORAGE_CAPACITY=2000
+DOCKER_IMAGE="<DOCKER_IMAGE>:<TAG>"
+
+# Create workflow version
 docker run -ti \
-    -v "<HOST_DIR>":"<CONTAINER_DIR>" \
+    -v "$REPO_DIR":"$REPO_DIR" \
+    -v "$AWS_CREDENTIALS_DIR":"$AWS_CREDENTIALS_DIR" \
     -e task=create_wf_version \
-    -e aws_profile="<AWS_PROFILE>" \
-    -e AWS_SHARED_CREDENTIALS_FILE="<AWS_SHARED_CREDENTIAL_FILE>" \
-    -e repo_dir="<REPO_DIR>" \
-    -e workflow_id="<WORKFLOW_ID>" \
-    -e main="<MAIN_WDL>" \
-    -e name="<NAME>" \
-    -e description="<DESCRIPTION>" \
-    -e readme="<README>" \
-    -e engine="<ENGINE>" \
-    -e storage_capacity="<STORAGE_CAPACITY>" \
-    --rm "<DOCKER_IMAGE>":"<TAG>"
+    -e aws_profile="$AWS_PROFILE" \
+    -e AWS_SHARED_CREDENTIALS_FILE="$AWS_CREDENTIALS_DIR/credentials" \
+    -e repo_dir="$REPO_DIR" \
+    -e workflow_id="$WORKFLOW_ID" \
+    -e main="$MAIN_WDL" \
+    -e name="$NAME" \
+    -e description="$DESCRIPTION" \
+    -e readme="$README_PATH" \
+    -e engine="$ENGINE" \
+    -e storage_capacity="$STORAGE_CAPACITY" \
+    --rm "$DOCKER_IMAGE"
 ```
 
 ### Parameters
@@ -104,35 +133,65 @@ docker run -ti \
 ### Command
 
 ``` sh
+# Define variables
+DATA_DIR=/path/to/data/dir
+AWS_CREDENTIALS_DIR=/path/to/.aws
+CHARGE_CODE=charge_code
+AWS_PROFILE=aws_profile
+WORKFLOW_ID=workflow_id
+WORKFLOW_VERSION_NAME=""
+WORKFLOW_OWNER_ID=""
+RUN_GROUP_ID=""
+RUN_ID=""
+ROLE_ARN=""
+NAME=run_name
+CACHE_ID=""
+CACHE_BEHAVIOR=""
+JSON_INPUTS_PATH=$DATA_DIR/path/to/json/inputs
+OUTPUT_URI=/s3/path/for/workflow/output
+RUN_METADATA_OUTPUT_DIR=$DATA_DIR/path/to/run_metadata_output_dir
+WORKFLOW_TYPE=PRIVATE
+PRIORITY=100
+STORAGE_TYPE=STATIC
+STORAGE_CAPACITY=2000
+LOG_LEVEL=ALL
+RETENTION_MODE=RETAIN
+NETWORKING_MODE=""
+SCRATCH_STORAGE_MODE=""
+CONFIGURATION_NAME=""
+DOCKER_IMAGE="<DOCKER_IMAGE>:<TAG>"
+
+# Start run
 docker run -ti \
     -u $(id -u):$(id -g) \
-    -v "<HOST_DIR>":"<CONTAINER_DIR>" \
+    -v "$DATA_DIR":"$DATA_DIR" \
+    -v "$AWS_CREDENTIALS_DIR":"$AWS_CREDENTIALS_DIR" \
     -e task=start_run \
-    -e charge_code="<CHARGE_CODE>" \
-    -e aws_profile="<AWS_PROFILE>" \
-    -e AWS_SHARED_CREDENTIALS_FILE="<AWS_SHARED_CREDENTIAL_FILE>" \
-    -e workflow_id="<WORKFLOW_ID>" \
-    -e workflow_version_name="<WORKFLOW_VERSION_NAME>" \
-    -e workflow_owner_id="<WORKFLOW_OWNER_ID>" \
-    -e run_group_id="<RUN_GROUP_ID>" \
-    -e run_id="<RUN_ID>" \
-    -e role_arn="<ROLE_ARN>" \
-    -e name="<NAME>" \
-    -e cache_id="<CACHE_ID>" \
-    -e cache_behavior="<CACHE_BEHAVIOR>" \
-    -e parameters="<PARAMETERS>" \
-    -e output_uri="<OUTPUT_URI>" \
-    -e run_metadata_output_dir="<RUN_METADATA_OUTPUT_DIR>" \
-    -e workflow_type="<WORKFLOW_TYPE>" \
-    -e priority="<PRIORITY>" \
-    -e storage_type="<STORAGE_TYPE>" \
-    -e storage_capacity="<STORAGE_CAPACITY>" \
-    -e log_level="<LOG_LEVEL>" \
-    -e retention_mode="<RETENTION_MODE>" \
-    -e networking_mode="<NETWORKING_MODE>" \
-    -e scratch_storage_mode="<SCRATCH_STORAGE_MODE>" \
-    -e configuration_name="<CONFIGURATION_NAME>" \
-    --rm "<DOCKER_IMAGE:TAG>"
+    -e charge_code="$CHARGE_CODE" \
+    -e aws_profile="$AWS_PROFILE" \
+    -e AWS_SHARED_CREDENTIALS_FILE="$AWS_CREDENTIALS_DIR/credentials" \
+    -e workflow_id="$WORKFLOW_ID" \
+    -e workflow_version_name="$WORKFLOW_VERSION_NAME" \
+    -e workflow_owner_id="$WORKFLOW_OWNER_ID" \
+    -e run_group_id="$RUN_GROUP_ID" \
+    -e run_id="$RUN_ID" \
+    -e role_arn="$ROLE_ARN" \
+    -e name="$NAME" \
+    -e cache_id="$CACHE_ID" \
+    -e cache_behavior="$CACHE_BEHAVIOR" \
+    -e parameters="$JSON_INPUTS_PATH" \
+    -e output_uri="$OUTPUT_URI" \
+    -e run_metadata_output_dir="$RUN_METADATA_OUTPUT_DIR" \
+    -e workflow_type="$WORKFLOW_TYPE" \
+    -e priority="$PRIORITY" \
+    -e storage_type="$STORAGE_TYPE" \
+    -e storage_capacity="$STORAGE_CAPACITY" \
+    -e log_level="$LOG_LEVEL" \
+    -e retention_mode="$RETENTION_MODE" \
+    -e networking_mode="$NETWORKING_MODE" \
+    -e scratch_storage_mode="$SCRATCH_STORAGE_MODE" \
+    -e configuration_name="$CONFIGURATION_NAME" \
+    --rm "$DOCKER_IMAGE"
 ```
 
 ### Parameters
@@ -176,15 +235,24 @@ docker run -ti \
 ### Command
 
 ``` sh
+# Define variables
+AWS_CREDENTIALS_DIR=/path/to/.aws
+AWS_PROFILE=aws_profile
+RUN_IDS=""
+RUN_STATUSES=""
+DELETE_RUN_DATA=FALSE
+DOCKER_IMAGE="<DOCKER_IMAGE>:<TAG>"
+
+# Cancel runs
 docker run -ti \
-    -v "<HOST_DIR>":"<CONTAINER_DIR>" \
+    -v "$AWS_CREDENTIALS_DIR":"$AWS_CREDENTIALS_DIR" \
     -e task=cancel_runs \
-    -e aws_profile="<AWS_PROFILE>" \
-    -e AWS_SHARED_CREDENTIALS_FILE="<AWS_SHARED_CREDENTIAL_FILE>" \
-    -e run_ids="<RUN_IDS>" \
-    -e run_statuses="<RUN_STATUSES>" \
-    -e delete_run_data="<DELETE_RUN_DATA>" \
-    --rm "<DOCKER_IMAGE>":"<TAG>"
+    -e aws_profile="$AWS_PROFILE" \
+    -e AWS_SHARED_CREDENTIALS_FILE="$AWS_CREDENTIALS_DIR/credentials" \
+    -e run_ids="$RUN_IDS" \
+    -e run_statuses="$RUN_STATUSES" \
+    -e delete_run_data="$DELETE_RUN_DATA" \
+    --rm "$DOCKER_IMAGE"
 ```
 
 ### Parameters
@@ -203,14 +271,22 @@ docker run -ti \
 ### Command
 
 ``` sh
+# Define variables
+AWS_CREDENTIALS_DIR=/path/to/.aws
+AWS_PROFILE=aws_profile
+RUN_IDS=""
+RUN_STATUSES=""
+DOCKER_IMAGE="<DOCKER_IMAGE>:<TAG>"
+
+# Delete runs
 docker run -ti \
-    -v "<HOST_DIR>":"<CONTAINER_DIR>" \
+    -v "$AWS_CREDENTIALS_DIR":"$AWS_CREDENTIALS_DIR" \
     -e task=delete_runs \
-    -e aws_profile="<AWS_PROFILE>" \
-    -e AWS_SHARED_CREDENTIALS_FILE="<AWS_SHARED_CREDENTIAL_FILE>" \
-    -e run_ids="<RUN_IDS>" \
-    -e run_statuses="<RUN_STATUSES>" \
-    --rm "<DOCKER_IMAGE>":"<TAG>"
+    -e aws_profile="$AWS_PROFILE" \
+    -e AWS_SHARED_CREDENTIALS_FILE="$AWS_CREDENTIALS_DIR/credentials" \
+    -e run_ids="$RUN_IDS" \
+    -e run_statuses="$RUN_STATUSES" \
+    --rm "$DOCKER_IMAGE"
 ```
 
 ### Parameters
@@ -228,15 +304,25 @@ docker run -ti \
 ### Command
 
 ``` sh
+# Define variables
+DATA_DIR=/path/to/data/dir
+AWS_CREDENTIALS_DIR=/path/to/.aws
+AWS_PROFILE=aws_profile
+RUN_ID=run_id
+TARGET_DIR=$DATA_DIR/path/to/target_dir
+DOCKER_IMAGE="<DOCKER_IMAGE>:<TAG>"
+
+# Retrieve run results
 docker run -ti \
     -u $(id -u):$(id -g) \
-    -v "<HOST_DIR>":"<CONTAINER_DIR>" \
+    -v "$DATA_DIR":"$DATA_DIR" \
+    -v "$AWS_CREDENTIALS_DIR":"$AWS_CREDENTIALS_DIR" \
     -e task=retrieve_run_results \
-    -e aws_profile="<AWS_PROFILE>" \
-    -e AWS_SHARED_CREDENTIALS_FILE="<AWS_SHARED_CREDENTIAL_FILE>" \
-    -e run_id="<RUN_ID>" \
-    -e target_dir="<TARGET_DIR>" \
-    --rm "<DOCKER_IMAGE>":"<TAG>"
+    -e aws_profile="$AWS_PROFILE" \
+    -e AWS_SHARED_CREDENTIALS_FILE="$AWS_CREDENTIALS_DIR/credentials" \
+    -e run_id="$RUN_ID" \
+    -e target_dir="$TARGET_DIR" \
+    --rm "$DOCKER_IMAGE"
 ```
 
 ### Parameters
