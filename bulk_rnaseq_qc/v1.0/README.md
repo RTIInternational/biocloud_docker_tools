@@ -112,9 +112,16 @@ The following versions are installed by the Dockerfile.
 
 | Package | Version / Pin | Source |
 |---|---|---|
-| `DESeq2` | Installed from Bioconductor `3.23` | `BiocManager::install` |
-| `tximport` | Installed from Bioconductor `3.23` | `BiocManager::install` |
-| `IHW` | Installed from Bioconductor `3.23` | `BiocManager::install` |
+| `DESeq2` | `1.52.0` | Bioconductor `3.23` |
+| `tximport` | `1.40.0` | Bioconductor `3.23` |
+| `IHW` | `1.40.0` | Bioconductor `3.23` |
+
+Bioconductor packages are installed with:
+
+```r
+BiocManager::install(version = "3.23", ask = FALSE, update = FALSE)
+BiocManager::install(c("DESeq2", "tximport", "IHW"), ask = FALSE, update = FALSE)
+```
 
 ### Local QC Helper Script
 
@@ -194,6 +201,7 @@ The script creates:
 - `<output_dir>/<run_name>_quality_control/`
   - `bulk_rnaseq_qc.log`
   - `<run_name>_qc_summary.html`
+  - `<run_name>_qc_summary.md`
   - `plots/`
   - `tables/`
 
@@ -203,6 +211,7 @@ Key tables:
 
 Key report:
 - `<run_name>_qc_summary.html`: links to tables/log and embeds all generated QC plots.
+- `<run_name>_qc_summary.md`: GitHub-flavored Markdown report with threshold tables and embedded plots.
 
 Typical plot outputs include:
 - FastQC sequence depth, unique read percentage, phred per base, GC content.

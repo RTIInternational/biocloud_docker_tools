@@ -34,7 +34,9 @@ RUN Rscript -e "options(repos = c(CRAN = 'https://cloud.r-project.org')); instal
 # Install CRAN packages used by the script with pinned versions.
 RUN Rscript -e "options(repos = c(CRAN = 'https://cloud.r-project.org')); remotes::install_version('logr', version = '1.3.9', repos = 'https://cloud.r-project.org'); remotes::install_version('dplyr', version = '1.1.4', repos = 'https://cloud.r-project.org'); remotes::install_version('tibble', version = '3.3.0', repos = 'https://cloud.r-project.org'); remotes::install_version('stringr', version = '1.5.1', repos = 'https://cloud.r-project.org'); remotes::install_version('patchwork', version = '1.3.1', repos = 'https://cloud.r-project.org'); remotes::install_version('ggplot2', version = '3.5.2', repos = 'https://cloud.r-project.org')"
 
-# Pin Bioconductor release for R 4.6.x and install required Bioc packages.
+# Pin Bioconductor release 3.23 for R 4.6.x.
+# Resolved package versions for this release: DESeq2 1.52.0, tximport 1.40.0,
+# and IHW 1.40.0.
 RUN Rscript -e "BiocManager::install(version = '3.23', ask = FALSE, update = FALSE); BiocManager::install(c('DESeq2', 'tximport', 'IHW'), ask = FALSE, update = FALSE)"
 
 WORKDIR /opt/
