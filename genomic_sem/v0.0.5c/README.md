@@ -17,6 +17,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `gsem_usermodel.R` | `usermodel()` |
 | `gsem_enrich.R` | `enrich()` |
 | `gsem_merge_rds.R` | Merges split RDS outputs (`userGWAS` / `usermodel`) |
+| `gsem_preprocessing.py` | Preprocesses summary statistics (column mapping, rsID extraction) |
 
 ## 1) gsem_munge.R
 
@@ -318,6 +319,37 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 - Requires either `--output_prefix` or `--output_rds`.
 - Supports merging data frames/matrices (via row-binding), lists of data frames/matrices (element-wise row-binding across lists), and vectors.
 - Automatically saves merged results to RDS and creates a tab-delimited `.txt` table when the merged object is a data frame or matrix.
+
+## 11) gsem_preprocessing.py
+
+### Purpose
+
+- Preprocesses GWAS summary statistics files prior to GenomicSEM analysis by extracting and standardizing column names according to user-specified mappings, extracting rsIDs from variant identifiers (matching `/rs\d+/`), and writing out a gzipped TSV.
+
+### CLI parameters
+
+| Flag | Required | Type | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--sumstats_file` | Yes | string | none | Path to input summary statistics file. |
+| `--col_variant_id` | Yes | string | none | Column name containing variant identifiers. rsID will be extracted if present. |
+| `--col_effect_allele` | Yes | string | none | Column name containing effect allele (A1/ALT). |
+| `--col_non_effect_allele` | Yes | string | none | Column name containing non-effect allele (A2/REF). |
+| `--col_effect` | Yes | string | none | Column name containing effect size estimate (beta / log odds). |
+| `--col_p` | Yes | string | none | Column name containing p-value. |
+| `--out_file` | Yes | string | none | Output file path (automatically gzipped with `.gz` appended if missing). |
+| `--sumstats_sep` | No | string | `\s+` | Field separator/delimiter of input file. |
+| `--col_z` | No | string | `None` | Optional column name containing Z-scores. |
+| `--col_se` | No | string | `None` | Optional column name containing standard errors. |
+| `--col_n` | No | string | `None` | Optional column name containing sample sizes. |
+| `--col_effect_allele_freq` | No | string | `None` | Optional column name containing effect allele frequency (EAF/MAF). |
+| `--col_info` | No | string | `None` | Optional column name containing imputation info score. |
+| `--col_direction` | No | string | `None` | Optional column name containing direction information. |
+
+### Validation/behavior
+
+- Extracts specified columns and renames them by dropping the `col_` prefix (e.g., `col_variant_id` → `variant_id`).
+- Formats rsID in the `variant_id` column when a regex match is found.
+- Outputs a gzipped tab-delimited file.
 
 ## General implementation behavior across scripts
 
