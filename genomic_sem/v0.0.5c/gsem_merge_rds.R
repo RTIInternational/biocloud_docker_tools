@@ -165,11 +165,11 @@ saveRDS(merged_result, file = rds_file)
 
 ## Save merged text file if result is data.frame or matrix
 if (is.data.frame(merged_result) || is.matrix(merged_result)) {
-  txt_file <- paste0(output_prefix, ".txt")
-  cat("Saving merged output to text file:", txt_file, "\n")
+  tsv_file <- paste0(output_prefix, ".tsv")
+  cat("Saving merged output to TSV file:", tsv_file, "\n")
   write.table(
     merged_result,
-    file = txt_file,
+    file = tsv_file,
     sep = "\t",
     row.names = FALSE,
     quote = FALSE
@@ -180,5 +180,5 @@ cat("Merge completed successfully.\n")
 cat("Results saved to:\n")
 cat("  RDS file: ", rds_file, "\n")
 if (is.data.frame(merged_result) || is.matrix(merged_result)) {
-  cat("  Text file: ", txt_file, "\n")
+  cat("  TSV file: ", tsv_file, "\n")
 }

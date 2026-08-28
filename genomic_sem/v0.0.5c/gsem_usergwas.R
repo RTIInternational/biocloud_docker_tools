@@ -231,3 +231,51 @@ saveRDS(
   user_gwas,
   file = rds_file
 )
+
+## Save user GWAS output to text file(s)
+if (is.data.frame(user_gwas) || is.matrix(user_gwas)) {
+  tsv_file <- paste0(opt$output_prefix, ".tsv")
+  cat("Saving user GWAS output to TSV file:", tsv_file, "\n")
+  write.table(
+    user_gwas,
+    file = tsv_file,
+    sep = "\t",
+    row.names = FALSE,
+    quote = FALSE
+  )
+} else if (is.list(user_gwas)) {
+  # If sub components or list of data frames returned
+  if (!is.null(names(user_gwas)) && length(names(user_gwas)) > 0) {
+    for (nm in names(user_gwas)) {
+      comp <- user_gwas[[nm]]
+      if (is.data.frame(comp) || is.matrix(comp)) {
+        tsv_file <- paste0(opt$output_prefix, "_", nm, ".tsv")
+        cat("Saving component", nm, "to TSV file:", tsv_file, "\n")
+        write.table(
+          comp,
+          file = tsv_file,
+          sep = "\t",
+          row.names = FALSE,
+          quote = FALSE
+        )
+      }
+    }
+  } else {
+    for (i in seq_along(user_gwas)) {
+      comp <- user_gwas[[i]]
+      if (is.data.frame(comp) || is.matrix(comp)) {
+        tsv_file <- paste0(opt$output_prefix, "_part", i, ".tsv")
+        cat("Saving component part", i, "to TSV file:", tsv_file, "\n")
+        write.table(
+          comp,
+          file = tsv_file,
+          sep = "\t",
+          row.names = FALSE,
+          quote = FALSE
+        )
+      }
+    }
+  }
+}
+
+cat("User GWAS analysis completed successfully.\n")

@@ -183,7 +183,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `--ldsc_rds` | Yes | character | none | RDS containing LDSC output. |
 | `--sumstats` | Yes | character | none | Summary statistics file from `sumstats()` (RDS or text table). |
 | `--estimation_method` | Yes | character | `"DWLS"` | Estimation method for GWAS model. |
-| `--output_prefix` | Yes | character | none | Prefix for output `.rds`. |
+| `--output_prefix` | Yes | character | none | Prefix for output `.rds` and `.tsv` files. |
 | `--toler` | No | float | `FALSE` | Matrix inversion tolerance. |
 | `--snpse` | No | float | `FALSE` | SNP SE override. |
 | `--gc` | No | character | `"standard"` | Genomic control mode: `standard`, `conserv`, or `none`. |
@@ -216,7 +216,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `--sumstats` | Yes | character | none | Summary statistics file from `sumstats()` (RDS or text table). |
 | `--model_lavaan` | Yes | character | none | Lavaan model file path. |
 | `--estimation_method` | Yes | character | `"DWLS"` | Estimation method for user GWAS model. |
-| `--output_prefix` | Yes | character | none | Prefix for output `.rds`. |
+| `--output_prefix` | Yes | character | none | Prefix for output `.rds` and `.tsv` files. |
 | `--not_printwarn` | No | flag | `FALSE` | If set, suppress per-SNP lavaan warnings/errors. |
 | `--sub` | No | character (CSV) | `NULL` | Comma-separated subset of model lines to return. |
 | `--toler` | No | float | `FALSE` | Matrix inversion tolerance. |
@@ -302,7 +302,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 
 ### Purpose
 
-- Merges split RDS outputs from partitioned/chunked runs (such as per-chromosome or split runs of `userGWAS()` or `usermodel()`) into a single consolidated `.rds` file (and `.txt` if the output is a data frame or matrix).
+- Merges split RDS outputs from partitioned/chunked runs (such as per-chromosome or split runs of `userGWAS()` or `usermodel()`) into a single consolidated `.rds` file (and `.tsv` if the output is a data frame or matrix).
 
 ### CLI parameters
 
@@ -310,7 +310,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | --- | --- | --- | --- | --- |
 | `--rds_files` | Conditional | character (CSV) | none | Comma-separated list of RDS files to merge. |
 | `--rds_file_list` | Conditional | character | none | File containing paths to RDS files to merge, one per line. |
-| `--output_prefix` | Conditional | character | none | Output prefix for merged `.rds` and `.txt` files. |
+| `--output_prefix` | Conditional | character | none | Output prefix for merged `.rds` and `.tsv` files. |
 | `--output_rds` | Conditional | character | none | Explicit path for the merged `.rds` output file. |
 
 ### Validation/behavior
@@ -318,7 +318,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 - Requires either `--rds_files` or `--rds_file_list` (with existing files).
 - Requires either `--output_prefix` or `--output_rds`.
 - Supports merging data frames/matrices (via row-binding), lists of data frames/matrices (element-wise row-binding across lists), and vectors.
-- Automatically saves merged results to RDS and creates a tab-delimited `.txt` table when the merged object is a data frame or matrix.
+- Automatically saves merged results to RDS and creates a tab-delimited `.tsv` table when the merged object is a data frame or matrix.
 
 ## 11) gsem_preprocessing.py
 

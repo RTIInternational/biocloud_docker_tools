@@ -14,7 +14,10 @@ option_list <- list(
   make_option(
     "--sumstats",
     type = "character",
-    help = "Summary statistics file from sumstats function (RDS or text table) (required)"
+    help = paste(
+      "Summary statistics file from sumstats function",
+      "(RDS or text table) (required)"
+    )
   ),
   make_option(
     "--estimation_method",
@@ -164,3 +167,52 @@ saveRDS(
   common_factor_gwas,
   file = rds_file
 )
+
+## Save common factor GWAS output to text file(s)
+if (is.data.frame(common_factor_gwas) || is.matrix(common_factor_gwas)) {
+  tsv_file <- paste0(opt$output_prefix, ".tsv")
+  cat("Saving common factor GWAS output to TSV file:", tsv_file, "\n")
+  write.table(
+    common_factor_gwas,
+    file = tsv_file,
+    sep = "\t",
+    row.names = FALSE,
+    quote = FALSE
+  )
+} else if (is.list(common_factor_gwas)) {
+  if (
+    !is.null(names(common_factor_gwas)) && length(names(common_factor_gwas)) > 0
+  ) {
+    for (nm in names(common_factor_gwas)) {
+      comp <- common_factor_gwas[[nm]]
+      if (is.data.frame(comp) || is.matrix(comp)) {
+        tsv_file <- paste0(opt$output_prefix, "_", nm, ".tsv")
+        cat("Saving component", nm, "to TSV file:", tsv_file, "\n")
+        write.table(
+          comp,
+          file = tsv_file,
+          sep = "\t",
+          row.names = FALSE,
+          quote = FALSE
+        )
+      }
+    }
+  } else {
+    for (i in seq_along(common_factor_gwas)) {
+      comp <- common_factor_gwas[[i]]
+      if (is.data.frame(comp) || is.matrix(comp)) {
+        tsv_file <- paste0(opt$output_prefix, "_part", i, ".tsv")
+        cat("Saving component part", i, "to TSV file:", tsv_file, "\n")
+        write.table(
+          comp,
+          file = tsv_file,
+          sep = "\t",
+          row.names = FALSE,
+          quote = FALSE
+        )
+      }
+    }
+  }
+}
+
+cat("Common factor GWAS analysis completed successfully.\n")
