@@ -929,3 +929,59 @@ plot_partitioned_pc <- function(dds_vst, pc = 1, group_var, center = TRUE, scale
 	}
 	out
 }
+
+# Compute feature-level expression fractions as percentages of sample totals.
+compute_feature_fraction <- function(count_matrix, feature_ids) {
+	feature_ids <- intersect(feature_ids, rownames(count_matrix))
+	out <- data.frame(values = rep(NA_real_, ncol(count_matrix)), row.names = colnames(count_matrix))
+	if (length(feature_ids) == 0) {
+		return(out)
+	}
+	total_counts <- colSums(count_matrix, na.rm = TRUE)
+	feature_counts <- colSums(count_matrix[feature_ids, , drop = FALSE], na.rm = TRUE)
+	out$values <- ifelse(total_counts > 0, (feature_counts / total_counts) * 100, NA_real_)
+	out
+}
+
+# Generate paired histogram and horizontal boxplot summaries for percentage metrics.
+plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod") {
+	if (is.null(metric_df) || !is.data.frame(metric_df) || nrow(metric_df) == 0) {
+		stop("Metric table is empty.")
+	}
+	value_col <- if ("values" %in% colnames(metric_df)) "values" else colnames(metric_df)[1]
+	values <- suppressWarnings(as.numeric(metric_df[[value_col]]))
+	plot_df <- data.frame(sample_id = rownames(metric_df), values = values, stringsAsFactors = FALSE)
+	hist_plot <- ggplot2::ggplot(plot_df, ggplot2::aes(x = values)) +
+		ggplot2::geom_histogram(bins = 30, fill = "gray30", color = "white") +
+		ggplot2::labs(title = title_text, x = "Percent of normalized counts", y = "Sample count") +
+		ggplot2::theme_bw()
+	box_plot <- ggplot2::ggplot(plot_df, ggplot2::aes(x = "", y = values)) +
+		ggplot2::geom_boxplot(fill = fill_color, outlier.alpha = 0) +
+		ggplot2::geom_jitter(width = 0.12, alpha = 0.5, color = "gray30") +
+		ggplot2::labs(x = NULL, y = "Percent of normalized counts") +
+		ggplot2::theme_bw() +
+		ggplot2::coord_flip()
+	list(hist = hist_plot, boxplot = box_plot)
+}
+
+# Stream matching gene IDs from a GTF without loading the full annotation into R.
+get_annotation_gene_ids <- function(gtf_path, seqnames = NULL, gene_types = NULL, exclude_par = FALSE) {
+	conditions <- c("$0 !~ /^#/", "$3 == \"gene\"")
+	if (!is.null(seqnames) && length(seqnames) > 0) {
+		seq_expr <- paste(sprintf("$1 == \"%s\"", seqnames), collapse = " || ")
+		conditions <- c(conditions, paste0("(", seq_expr, ")"))
+	}
+	if (!is.null(gene_types) && length(gene_types) > 0) {
+		type_expr <- paste(vapply(gene_types, function(gt) {
+			paste0("($9 ~ /gene_type \\\"", gt, "\\\"/ || $9 ~ /gene_biotype \\\"", gt, "\\\"/)")
+		}, character(1)), collapse = " || ")
+		conditions <- c(conditions, paste0("(", type_expr, ")"))
+	}
+	if (exclude_par) {
+		conditions <- c(conditions, "!(($1 == \"chrY\" || $1 == \"Y\") && (($4 <= 2781479 && $5 >= 10001) || ($4 <= 57217415 && $5 >= 56887903)))")
+	}
+	awk_program <- paste0(paste(conditions, collapse = " && "), " { if (match($9, /gene_id \\\"[^\\\"]+\\\"/)) { id = substr($9, RSTART + 9, RLENGTH - 10); print id } }")
+	awk_cmd <- paste("awk -F '\\t'", shQuote(awk_program), shQuote(gtf_path), "2>/dev/null")
+	ids <- system(awk_cmd, intern = TRUE, ignore.stderr = TRUE)
+	unique(ids[nzchar(ids)])
+}
