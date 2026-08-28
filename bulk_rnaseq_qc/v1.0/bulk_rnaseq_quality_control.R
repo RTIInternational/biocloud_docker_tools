@@ -170,7 +170,7 @@ compute_feature_fraction <- function(count_matrix, feature_ids) {
 	out
 }
 
-# Generate paired histogram and boxplot summaries for percent-based QC metrics.
+# Generate paired histogram and horizontal boxplot summaries for percent-based QC metrics.
 plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod") {
 	if (is.null(metric_df) || !is.data.frame(metric_df) || nrow(metric_df) == 0) {
 		stop("Metric table is empty.")
@@ -212,7 +212,7 @@ plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod
 	list(hist = hist_plot, boxplot = box_plot)
 }
 
-# Stream gene IDs from GTF using awk filters to avoid loading full annotation into R.
+# Stream gene IDs from a GTF using awk filters to avoid loading the full annotation into R.
 get_annotation_gene_ids <- function(gtf_path, seqnames = NULL, gene_types = NULL, exclude_par = FALSE) {
 	conditions <- c("$0 !~ /^#/", "$3 == \"gene\"")
 
@@ -261,6 +261,7 @@ get_annotation_gene_ids <- function(gtf_path, seqnames = NULL, gene_types = NULL
 	unique(ids[nzchar(ids)])
 }
 
+# Extract the sample identifier from a MultiQC/FastQ label.
 extract_fastq_id <- function(x) {
 	get_one_id <- function(value) {
 		id <- trimws(as.character(value))
@@ -294,6 +295,7 @@ extract_fastq_id <- function(x) {
 	id
 }
 
+# Normalize sample identifiers by removing common file, lane, and read suffixes.
 normalize_sample_id <- function(x) {
 	x <- trimws(as.character(x))
 	x <- basename(x)
@@ -314,11 +316,12 @@ normalize_sample_id <- function(x) {
 	x
 }
 
+# Create a punctuation-insensitive normalized sample identifier.
 normalize_sample_id_compact <- function(x) {
 	gsub("[^a-z0-9]", "", normalize_sample_id(x))
 }
 
-# Subset and reorder per-sample QC frames to match phenotype/txi sample IDs.
+# Subset and reorder a per-sample QC frame to match phenotype/txi sample IDs.
 subset_qc_df <- function(df, ids) {
 	if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) {
 		return(df)
@@ -409,7 +412,7 @@ subset_qc_object <- function(obj, ids) {
 	obj
 }
 
-# Align metric tables to QC IDs and coerce value columns to numeric output vectors.
+# Align a metric table to QC IDs and coerce its value column to numeric output.
 align_metric_output <- function(metric_df, qc_ids, value_col = "values") {
 	out <- data.frame(values = rep(NA_real_, length(qc_ids)), row.names = qc_ids)
 
@@ -443,7 +446,7 @@ align_metric_output <- function(metric_df, qc_ids, value_col = "values") {
 	out
 }
 
-# Recover paired trimmed R1/R2 rows from mixed FastQC-like tables.
+# Recover paired trimmed R1/R2 rows from mixed FastQC-like tables after fallback matching.
 extract_trimmed_pairs <- function(df) {
 	empty <- data.frame()
 	if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) {
@@ -499,7 +502,7 @@ extract_trimmed_pairs <- function(df) {
 	list(trimmed_r1 = r1, trimmed_r2 = r2)
 }
 
-# Capture per-metric failures without terminating the full QC workflow.
+# Capture a metric failure without terminating the full QC workflow.
 collect_metric <- function(expr, metric_name) {
 	tryCatch(
 		expr,
@@ -742,6 +745,7 @@ logr::log_print(
 	console = FALSE
 )
 
+# Recover FastQC rows using explicit labels and normalized sample identifiers.
 recover_fastqc_subset <- function(df, ids) {
 	if (is.null(df) || !is.data.frame(df) || nrow(df) == 0) {
 		return(df)

@@ -1,9 +1,11 @@
 # Helper functions for reading MultiQC exports, normalizing sample IDs, and
 # computing QC metrics used by bulk_rnaseq_quality_control.R.
+# Return the first non-NULL value, providing a compact defaulting operator.
 `%||%` <- function(x, y) {
 	if (!is.null(x)) x else y
 }
 
+# Read a tab-delimited QC export with consistent parsing options.
 safe_read_tsv <- function(path) {
 	if (!file.exists(path)) {
 		stop(paste("Missing required file:", path))
@@ -33,6 +35,7 @@ resolve_input_file <- function(data_dir, stems, exts = c("txt", "tsv")) {
 	file.path(data_dir, paste0(stems[1], ".", exts[1]))
 }
 
+# Convert MultiQC labels into comparable sample-level identifiers.
 normalize_sample_labels <- function(x) {
 	get_one_label <- function(value) {
 		label <- trimws(as.character(value))
@@ -97,6 +100,7 @@ set_sample_rownames <- function(df) {
 	df
 }
 
+# Find the first column whose name matches one of the supplied patterns.
 find_numeric_column <- function(df, patterns, default = NULL) {
 	cn <- colnames(df)
 	if (length(cn) == 0) {
@@ -111,6 +115,7 @@ find_numeric_column <- function(df, patterns, default = NULL) {
 	default
 }
 
+# Coerce percentages, counts, and character values to numeric values.
 as_numeric_vector <- function(x) {
 	if (is.factor(x)) {
 		x <- as.character(x)
@@ -122,6 +127,7 @@ as_numeric_vector <- function(x) {
 	suppressWarnings(as.numeric(x))
 }
 
+# Convert wide or tuple-valued QC tables into plotting-friendly long form.
 reshape_long_plot <- function(df, x_col_name = "x") {
 	if (!is.data.frame(df) || nrow(df) == 0) {
 		return(data.frame())
@@ -217,6 +223,7 @@ load_paired_end_qc_data <- function(data_dir) {
 	out
 }
 
+# Restrict tximport matrices to the samples retained for QC analysis.
 subset_txi <- function(txi, ids, dimension = 2) {
 	if (!is.list(txi)) {
 		stop("txi must be a list-like tximport object")
@@ -236,6 +243,7 @@ subset_txi <- function(txi, ids, dimension = 2) {
 	txi
 }
 
+# Split FastQC rows into read orientation, trimming, and unpaired groups.
 parse_by_trim_status <- function(raw_fastqc, paired_end = TRUE, r1_query = "(\\.R1|_R1)", r2_query = "(\\.R2|_R2)") {
 	if (!is.data.frame(raw_fastqc) || nrow(raw_fastqc) == 0) {
 		empty <- data.frame()
@@ -288,6 +296,7 @@ plot_seq_depth <- function(data, sort = TRUE) {
 		ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
 }
 
+# Plot the distribution of sequence depths across samples.
 plot_seq_depth_hist <- function(data) {
 	df <- set_sample_rownames(data)
 	col_depth <- find_numeric_column(df, c("total.*sequences", "sequences", "reads", "input"))
@@ -302,6 +311,7 @@ plot_seq_depth_hist <- function(data) {
 		ggplot2::theme_bw()
 }
 
+# Plot or return the percentage of unique reads for each sample.
 plot_unique_read_pct <- function(data, sort = TRUE, fill = "red4", return_data = FALSE) {
 	df <- set_sample_rownames(data)
 	col_unique <- find_numeric_column(df, c("%?.*unique", "unique.*pct", "deduplicated", "duplication"))
@@ -330,6 +340,7 @@ plot_unique_read_pct <- function(data, sort = TRUE, fill = "red4", return_data =
 		ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
 }
 
+# Plot median per-base Phred quality for each read group.
 plot_phred_per_bp <- function(data, labels = c("R1", "R2"), line_colors = c("goldenrod2", "steelblue4"), alpha = 0.5) {
 	if (!is.list(data) || length(data) == 0) {
 		stop("Expected list of per-base phred data frames.")
@@ -356,6 +367,7 @@ plot_phred_per_bp <- function(data, labels = c("R1", "R2"), line_colors = c("gol
 		ggplot2::theme_bw()
 }
 
+# Plot median read GC distributions for each read group.
 plot_gc_content <- function(data, labels = c("R1", "R2"), line_colors = c("goldenrod2", "steelblue4"), alpha = 0.5) {
 	if (!is.list(data) || length(data) == 0) {
 		stop("Expected list of GC-content data frames.")
@@ -382,6 +394,7 @@ plot_gc_content <- function(data, labels = c("R1", "R2"), line_colors = c("golde
 		ggplot2::theme_bw()
 }
 
+# Plot excluded and retained read percentages from Trimmomatic output.
 plot_trimmomatic_paired <- function(data, binsize = c(2.5, 0.25)) {
 	df <- set_sample_rownames(data)
 	drop_col <- find_numeric_column(df, c("dropped.*pct", "dropped", "discard", "unpaired"))
@@ -408,6 +421,7 @@ plot_trimmomatic_paired <- function(data, binsize = c(2.5, 0.25)) {
 	list(excluded = p_excluded, retained = p_retained)
 }
 
+# Extract or return Salmon transcriptome mapping percentages.
 plot_salmon_mapping_pct <- function(data, return_data = FALSE) {
 	df <- set_sample_rownames(data)
 	map_col <- find_numeric_column(df, c("mapped.*pct", "mapping.*pct", "% mapped", "mapping rate", "percent.*mapped", "mapping"))
@@ -422,6 +436,7 @@ plot_salmon_mapping_pct <- function(data, return_data = FALSE) {
 	out
 }
 
+# Extract or return Salmon mapped read depth in millions.
 plot_salmon_mapped_reads <- function(data, return_data = FALSE) {
 	df <- set_sample_rownames(data)
 	reads_col <- find_numeric_column(df, c("mapped.*reads", "num.*mapped", "aligned.*reads", "reads"))
@@ -436,6 +451,7 @@ plot_salmon_mapped_reads <- function(data, return_data = FALSE) {
 	out
 }
 
+# Plot Salmon input reads against mapped reads.
 plot_salmon_stats <- function(data) {
 	df <- set_sample_rownames(data)
 	input_col <- find_numeric_column(df, c("input.*reads", "total.*reads", "processed", "reads"))
@@ -453,6 +469,7 @@ plot_salmon_stats <- function(data) {
 		ggplot2::theme_bw()
 }
 
+# Plot overall and unique HISAT2 alignment rates.
 plot_hisat2_stats <- function(data) {
 	df <- set_sample_rownames(data)
 	overall_col <- find_numeric_column(df, c("overall.*alignment", "overall.*rate", "aligned.*pct", "mapping.*pct", "percent.*aligned", "alignment.*rate"))
@@ -476,6 +493,7 @@ plot_hisat2_stats <- function(data) {
 	}
 }
 
+# Compare HISAT2 and Salmon mapping rates after sample-level aggregation.
 plot_hisat2_vs_salmon <- function(hisat2, salmon) {
 	hisat_df <- set_sample_rownames(hisat2)
 	salmon_df <- set_sample_rownames(salmon)
@@ -528,6 +546,7 @@ plot_hisat2_vs_salmon <- function(hisat2, salmon) {
 		ggplot2::theme_bw()
 }
 
+# Consolidate RSeQC mapping components into exonic, intronic, and intergenic percentages.
 extract_mapping_categories <- function(data) {
 	df <- set_sample_rownames(data)
 	cn <- colnames(df)
@@ -623,6 +642,7 @@ extract_mapping_categories <- function(data) {
 	out
 }
 
+# Plot or return consolidated RSeQC mapping categories.
 plot_mapping_categories <- function(data, sort = TRUE, consolidate = TRUE, return_data = FALSE) {
 	out <- extract_mapping_categories(data)
 	if (return_data) {
@@ -649,6 +669,7 @@ plot_mapping_categories <- function(data, sort = TRUE, consolidate = TRUE, retur
 		ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
 }
 
+# Plot or return RNA integrity number distributions.
 plot_rin <- function(data, return_data = FALSE, colors = "gray30", box_fill = "goldenrod", jitter_alpha = 0.5) {
 	df <- as.data.frame(data)
 	vals <- as_numeric_vector(df[[1]])
@@ -669,6 +690,7 @@ plot_rin <- function(data, return_data = FALSE, colors = "gray30", box_fill = "g
 	list(hist = hist, boxplot = boxplot)
 }
 
+# Calculate and plot Shannon diversity from normalized expression counts.
 plot_shannon_index <- function(data, min_value = 10, colors = "gray30", return_data = FALSE, return = FALSE) {
 	mat <- as.matrix(data)
 	mat[is.na(mat)] <- 0
@@ -703,6 +725,7 @@ plot_shannon_index <- function(data, min_value = 10, colors = "gray30", return_d
 	list(hist = hist, boxplot = boxplot)
 }
 
+# Calculate the count-weighted mean Phred score for each sample.
 plot_phred_mean <- function(data, return_data = TRUE) {
 	df <- set_sample_rownames(data)
 	if (!is.data.frame(df) || nrow(df) == 0) {
@@ -768,6 +791,7 @@ plot_phred_mean <- function(data, return_data = TRUE) {
 	out
 }
 
+# Calculate the count-weighted mean GC percentage for each sample.
 plot_gc_mean <- function(data, return_data = TRUE) {
 	df <- set_sample_rownames(data)
 	value_cols <- setdiff(colnames(df), get_sample_column(df) %||% character(0))
@@ -844,6 +868,7 @@ plot_gc_mean <- function(data, return_data = TRUE) {
 	out
 }
 
+# Calculate the combined exonic plus intronic gene-mapping percentage.
 plot_gene_mapping_rate <- function(data, group = NULL, return_data = TRUE) {
 	df <- as.data.frame(data)
 	if (!all(c("Exonic", "Intronic") %in% colnames(df))) {
@@ -857,6 +882,7 @@ plot_gene_mapping_rate <- function(data, group = NULL, return_data = TRUE) {
 	out
 }
 
+# Calculate the intergenic-to-intronic mapping ratio.
 plot_dna_contamination_ratio <- function(data, group = NULL, return_data = TRUE) {
 	df <- as.data.frame(data)
 	if (!all(c("Intergenic", "Intronic") %in% colnames(df))) {
@@ -873,6 +899,7 @@ plot_dna_contamination_ratio <- function(data, group = NULL, return_data = TRUE)
 	out
 }
 
+# Calculate mean expression for selected features partitioned by sample group.
 plot_partitioned_mean_expression <- function(dds, group_var, feature_ids, invert_cols = TRUE, return_data = TRUE) {
 	mat <- SummarizedExperiment::assay(dds)
 	feature_ids <- intersect(feature_ids, rownames(mat))
@@ -887,6 +914,7 @@ plot_partitioned_mean_expression <- function(dds, group_var, feature_ids, invert
 	out
 }
 
+# Calculate a principal-component score for selected features by sample group.
 plot_partitioned_pc <- function(dds_vst, pc = 1, group_var, center = TRUE, scale = FALSE, feature_ids, return_data = TRUE) {
 	mat <- SummarizedExperiment::assay(dds_vst)
 	feature_ids <- intersect(feature_ids, rownames(mat))
