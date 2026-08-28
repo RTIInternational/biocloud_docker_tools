@@ -16,6 +16,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `gsem_usergwas.R` | `userGWAS()` |
 | `gsem_usermodel.R` | `usermodel()` |
 | `gsem_enrich.R` | `enrich()` |
+| `gsem_merge_rds.R` | Merges split RDS outputs (`userGWAS` / `usermodel`) |
 
 ## 1) gsem_munge.R
 
@@ -295,6 +296,28 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 - Required fields are checked for `NULL`.
 - `params` and optional `fixparam` are read as line-based text files.
 - `rm.flank` is set to `!not_rm_flank`; `base` is set to `!not_base`.
+
+## 10) gsem_merge_rds.R
+
+### Purpose
+
+- Merges split RDS outputs from partitioned/chunked runs (such as per-chromosome or split runs of `userGWAS()` or `usermodel()`) into a single consolidated `.rds` file (and `.txt` if the output is a data frame or matrix).
+
+### CLI parameters
+
+| Flag | Required | Type | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--rds_files` | Conditional | character (CSV) | none | Comma-separated list of RDS files to merge. |
+| `--rds_file_list` | Conditional | character | none | File containing paths to RDS files to merge, one per line. |
+| `--output_prefix` | Conditional | character | none | Output prefix for merged `.rds` and `.txt` files. |
+| `--output_rds` | Conditional | character | none | Explicit path for the merged `.rds` output file. |
+
+### Validation/behavior
+
+- Requires either `--rds_files` or `--rds_file_list` (with existing files).
+- Requires either `--output_prefix` or `--output_rds`.
+- Supports merging data frames/matrices (via row-binding), lists of data frames/matrices (element-wise row-binding across lists), and vectors.
+- Automatically saves merged results to RDS and creates a tab-delimited `.txt` table when the merged object is a data frame or matrix.
 
 ## General implementation behavior across scripts
 
