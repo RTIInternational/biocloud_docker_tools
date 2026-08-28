@@ -180,7 +180,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | Flag | Required | Type | Default | Description |
 | --- | --- | --- | --- | --- |
 | `--ldsc_rds` | Yes | character | none | RDS containing LDSC output. |
-| `--sumstats_rds` | Yes | character | none | Table-like sumstats file read via `read.table()`. |
+| `--sumstats` | Yes | character | none | Summary statistics file from `sumstats()` (RDS or text table). |
 | `--estimation_method` | Yes | character | `"DWLS"` | Estimation method for GWAS model. |
 | `--output_prefix` | Yes | character | none | Prefix for output `.rds`. |
 | `--toler` | No | float | `FALSE` | Matrix inversion tolerance. |
@@ -212,7 +212,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | Flag | Required | Type | Default | Description |
 | --- | --- | --- | --- | --- |
 | `--ldsc_rds` | Yes | character | none | RDS containing LDSC output. |
-| `--sumstats_rds` | Yes | character | none | Table-like sumstats file read via `read.table()`. |
+| `--sumstats` | Yes | character | none | Summary statistics file from `sumstats()` (RDS or text table). |
 | `--model_lavaan` | Yes | character | none | Lavaan model file path. |
 | `--estimation_method` | Yes | character | `"DWLS"` | Estimation method for user GWAS model. |
 | `--output_prefix` | Yes | character | none | Prefix for output `.rds`. |

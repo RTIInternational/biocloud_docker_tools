@@ -12,9 +12,9 @@ option_list <- list(
     help = "RDS file containing LDSC output (required)"
   ),
   make_option(
-    "--sumstats_rds",
+    "--sumstats",
     type = "character",
-    help = "RDS file containing sumstats function output (required)"
+    help = "Summary statistics file from sumstats function (RDS or text table) (required)"
   ),
   make_option(
     "--model_lavaan",
@@ -139,7 +139,7 @@ opt <- parse_args(parser)
 ## Check for required parameters
 required_parameters <- c(
   "ldsc_rds",
-  "sumstats_rds",
+  "sumstats",
   "model_lavaan",
   "estimation_method",
   "output_prefix"
@@ -192,11 +192,15 @@ model <- readLines(opt$model_lavaan)
 ldsc_output <- readRDS(opt$ldsc_rds)
 
 ## Read summary statistics from files
-sumstats <- read.table(
-  opt$sumstats_rds,
-  header = TRUE,
-  stringsAsFactors = FALSE
-)
+sumstats <- if (grepl("\\.rds$", opt$sumstats, ignore.case = TRUE)) {
+  readRDS(opt$sumstats)
+} else {
+  read.table(
+    opt$sumstats,
+    header = TRUE,
+    stringsAsFactors = FALSE
+  )
+}
 
 ## Run user GWAS
 cat("Running user GWAS...\n")

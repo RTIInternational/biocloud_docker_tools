@@ -183,3 +183,14 @@ saveRDS(
   sumstats,
   file = rds_file
 )
+
+## Save sumstats output to a text file
+txt_file <- paste0(opt$output_prefix, ".tsv")
+cat("Saving sumstats output to text file:", txt_file, "\n")
+write.table(
+  sumstats,
+  file = txt_file,
+  sep = "\t",
+  row.names = FALSE,
+  quote = FALSE
+)

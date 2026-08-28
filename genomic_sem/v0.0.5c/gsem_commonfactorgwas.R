@@ -12,9 +12,9 @@ option_list <- list(
     help = "RDS file containing LDSC output (required)"
   ),
   make_option(
-    "--sumstats_rds",
+    "--sumstats",
     type = "character",
-    help = "RDS file containing sumstats function output (required)"
+    help = "Summary statistics file from sumstats function (RDS or text table) (required)"
   ),
   make_option(
     "--estimation_method",
@@ -95,7 +95,7 @@ opt <- parse_args(parser)
 ## Check for required parameters
 required_parameters <- c(
   "ldsc_rds",
-  "sumstats_rds",
+  "sumstats",
   "estimation_method",
   "output_prefix"
 )
@@ -131,11 +131,15 @@ setwd(output_dir)
 ldsc_output <- readRDS(opt$ldsc_rds)
 
 ## Read summary statistics from files
-sumstats <- read.table(
-  opt$sumstats_rds,
-  header = TRUE,
-  stringsAsFactors = FALSE
-)
+sumstats <- if (grepl("\\.rds$", opt$sumstats, ignore.case = TRUE)) {
+  readRDS(opt$sumstats)
+} else {
+  read.table(
+    opt$sumstats,
+    header = TRUE,
+    stringsAsFactors = FALSE
+  )
+}
 
 ## Run common factor GWAS
 cat("Running common factor GWAS...\n")
