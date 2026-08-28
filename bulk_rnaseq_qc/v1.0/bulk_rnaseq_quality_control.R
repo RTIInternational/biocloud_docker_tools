@@ -1,3 +1,5 @@
+# Bulk RNA-seq QC pipeline: load inputs, compute sample metrics, generate plots,
+# apply QC thresholds, and write HTML/Markdown summaries.
 pacman::p_load(
 	logr, dplyr, tibble, stringr, DESeq2, tximport, patchwork, ggplot2,
 	SummarizedExperiment
@@ -7,6 +9,7 @@ source("bulk_rnaseq_qc_functions.R")
 
 args <- commandArgs(TRUE)
 
+# Convert command-line arguments into a named list for the pipeline configuration.
 # Parse command-line inputs as strict --flag value pairs.
 parse_flag_args <- function(cli_args) {
 	if (length(cli_args) %% 2 != 0) {
@@ -1170,7 +1173,8 @@ with_plot_guard({
 	}
 }, "chrY by sex")
 
-# Build a PCA patch over selected samples and configured group variables.
+# Build a PCA patch over selected samples and configured group variables. The
+# optional sample subset is used for the QC-pass-only PCA report.
 build_pca_patch <- function(sample_ids_subset = NULL) {
 	available_group_vars <- group_vars[group_vars %in% colnames(pheno_data)]
 	if ("mitochondrial_mapping_rate" %in% colnames(pheno_data) &&
@@ -1351,6 +1355,7 @@ if (length(group_vars) == 0) {
 	logr::log_print("Completed PCA plot block.", console = FALSE)
 }
 
+# Recompute metrics from consistently aligned QC data and write the sample table.
 logr::sep("Build QC metrics table")
 
 # Re-load raw QC where needed to compute metric tables from consistent trimmed subsets.
@@ -1837,6 +1842,7 @@ if (length(group_vars) == 0) {
 	}, "pca qc-pass-only")
 }
 
+# Build linked HTML and GitHub-flavored Markdown reports from the same outputs.
 logr::sep("Build HTML report")
 
 # Minimal escaping helper so report tables are safe to embed in HTML.

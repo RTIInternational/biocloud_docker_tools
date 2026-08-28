@@ -1,3 +1,5 @@
+# Helper functions for reading MultiQC exports, normalizing sample IDs, and
+# computing QC metrics used by bulk_rnaseq_quality_control.R.
 `%||%` <- function(x, y) {
 	if (!is.null(x)) x else y
 }
@@ -18,6 +20,7 @@ safe_read_tsv <- function(path) {
 	)
 }
 
+# Resolve the first existing .txt or .tsv file for a known MultiQC export stem.
 resolve_input_file <- function(data_dir, stems, exts = c("txt", "tsv")) {
 	for (stem in stems) {
 		for (ext in exts) {
@@ -58,6 +61,7 @@ normalize_sample_labels <- function(x) {
 	vapply(x, get_one_label, character(1))
 }
 
+# Identify the sample column when a MultiQC table stores sample IDs as data.
 get_sample_column <- function(df) {
 	cn <- colnames(df)
 	cand <- cn[grepl("^(sample|samplename|sample_name)$", cn, ignore.case = TRUE)]
@@ -67,6 +71,7 @@ get_sample_column <- function(df) {
 	NULL
 }
 
+# Preserve sample IDs as row names so downstream metric tables can be aligned.
 set_sample_rownames <- function(df) {
 	if (!is.data.frame(df) || nrow(df) == 0) {
 		return(df)
@@ -177,6 +182,7 @@ reshape_long_plot <- function(df, x_col_name = "x") {
 	out
 }
 
+# Load all MultiQC tables consumed by the QC workflow.
 load_paired_end_qc_data <- function(data_dir) {
 	paths <- list(
 		fastqc = resolve_input_file(data_dir, c("multiqc_fastqc")),
@@ -261,6 +267,7 @@ parse_by_trim_status <- function(raw_fastqc, paired_end = TRUE, r1_query = "(\\.
 	)
 }
 
+# Plotting helpers return ggplot objects unless an explicit metric table is requested.
 plot_seq_depth <- function(data, sort = TRUE) {
 	df <- set_sample_rownames(data)
 	col_depth <- find_numeric_column(df, c("total.*sequences", "sequences", "reads", "input"))
