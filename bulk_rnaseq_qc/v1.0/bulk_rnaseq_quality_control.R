@@ -203,7 +203,8 @@ plot_fraction_summary <- function(metric_df, title_text, fill_color = "goldenrod
 		ggplot2::geom_boxplot(fill = fill_color, outlier.alpha = 0) +
 		ggplot2::geom_jitter(width = 0.12, alpha = 0.5, color = "gray30") +
 		ggplot2::labs(x = NULL, y = "Percent of normalized counts") +
-		ggplot2::theme_bw()
+		ggplot2::theme_bw() +
+		ggplot2::coord_flip()
 
 	list(hist = hist_plot, boxplot = box_plot)
 }
@@ -1157,7 +1158,8 @@ with_plot_guard({
 				y = "Mean normalized chrY counts",
 				fill = sex_col
 			) +
-			ggplot2::theme_bw()
+			ggplot2::theme_bw() +
+			ggplot2::coord_flip()
 
 		save_plot(p, "chrY_mean_counts_by_sex.png", 8, 5)
 	} else {
@@ -1970,6 +1972,84 @@ html_lines <- c(
 writeLines(html_lines, con = report_file)
 logr::log_print("HTML report written to:", console = FALSE, blank_after = FALSE)
 logr::log_print(report_file, console = FALSE)
+
+# Render a GitHub-flavored Markdown report using the same QC outputs.
+markdown_escape <- function(x) {
+	x <- as.character(x)
+	x[is.na(x)] <- "NA"
+	x <- gsub("|", "\\\\|", x, fixed = TRUE)
+	x <- gsub("\r?\n", " ", x)
+	x
+}
+
+df_to_markdown_table <- function(df, max_rows = NULL) {
+	if (is.null(df) || nrow(df) == 0) {
+		return("_No rows available._")
+	}
+	if (!is.null(max_rows)) {
+		df <- utils::head(df, max_rows)
+	}
+	header <- paste0("| ", paste(markdown_escape(colnames(df)), collapse = " | "), " |")
+	separator <- paste0("| ", paste(rep("---", ncol(df)), collapse = " | "), " |")
+	body <- apply(df, 1, function(row_values) {
+		paste0("| ", paste(markdown_escape(row_values), collapse = " | "), " |")
+	})
+	paste(c(header, separator, body), collapse = "\n")
+}
+
+markdown_plots <- if (length(plot_files) == 0) {
+	"_No plot images were found._"
+} else {
+	paste0(
+		vapply(
+			plot_files,
+			function(pf) {
+				plot_title <- sub("\\.png$", "", pf)
+				if (startsWith(plot_title, paste0(run_name, "_"))) {
+					plot_title <- substring(plot_title, nchar(run_name) + 2)
+				}
+				paste0(
+					"### ", markdown_escape(plot_title), "\n\n",
+					"![", markdown_escape(plot_title), "](", file.path("plots", pf), ")"
+				)
+			},
+			character(1)
+		),
+		collapse = "\n"
+	)
+}
+
+markdown_report_file <- file.path(out_dir, paste0(run_name, "_qc_summary.md"))
+markdown_lines <- c(
+	paste0("# ", markdown_escape(run_name), " - Bulk RNA-seq QC Summary"),
+	"",
+	paste0("**Generated:** ", markdown_escape(as.character(Sys.time()))),
+	paste0("**Total samples:** ", nrow(rnaseq_pheno_qc)),
+	paste0("**Plots found:** ", length(plot_files)),
+	"",
+	"## Output Files",
+	"",
+	paste0("- [QC metrics TSV](tables/", basename(qc_out_file), ")"),
+	paste0("- [Threshold summary TSV](tables/", basename(summary_out_file), ")"),
+	paste0("- [Log file](", basename(log_file), ")"),
+	"",
+	"## Threshold Summary",
+	"",
+	df_to_markdown_table(summary_df),
+	"",
+	"## Samples That Did Not Pass Each Filter",
+	"",
+	df_to_markdown_table(failed_samples_df),
+	"",
+	"## QC Plots",
+	"",
+	markdown_plots,
+	""
+)
+
+writeLines(markdown_lines, con = markdown_report_file)
+logr::log_print("Markdown report written to:", console = FALSE, blank_after = FALSE)
+logr::log_print(markdown_report_file, console = FALSE)
 
 logr::sep("QC pipeline complete")
 logr::log_print("Bulk RNA-seq QC finished successfully.", console = FALSE)

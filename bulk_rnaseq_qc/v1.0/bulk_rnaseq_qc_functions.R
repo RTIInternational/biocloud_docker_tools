@@ -657,7 +657,8 @@ plot_rin <- function(data, return_data = FALSE, colors = "gray30", box_fill = "g
 		ggplot2::geom_boxplot(fill = box_fill, outlier.alpha = 0) +
 		ggplot2::geom_jitter(width = 0.12, alpha = jitter_alpha, color = colors) +
 		ggplot2::labs(x = NULL, y = "RIN") +
-		ggplot2::theme_bw()
+		ggplot2::theme_bw() +
+		ggplot2::coord_flip()
 	list(hist = hist, boxplot = boxplot)
 }
 
@@ -690,7 +691,8 @@ plot_shannon_index <- function(data, min_value = 10, colors = "gray30", return_d
 		ggplot2::geom_boxplot(fill = "khaki", outlier.alpha = 0) +
 		ggplot2::geom_jitter(width = 0.12, alpha = 0.5, color = colors) +
 		ggplot2::labs(x = NULL, y = "Shannon index") +
-		ggplot2::theme_bw()
+		ggplot2::theme_bw() +
+		ggplot2::coord_flip()
 	list(hist = hist, boxplot = boxplot)
 }
 
