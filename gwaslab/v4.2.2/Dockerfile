@@ -19,6 +19,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get purge -y --auto-remove build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# Add plotting, sumstats, reference, and io CLI wrappers
+ADD plot/gwaslab_plot_*.py /opt/
+ADD sumstats/core/gwaslab_sumstats_*.py /opt/
+ADD sumstats/fix/gwaslab_sumstats_*.py /opt/
+ADD sumstats/filter/gwaslab_sumstats_*.py /opt/
+ADD sumstats/downstream/gwaslab_sumstats_*.py /opt/
+ADD reference/gwaslab_*.py /opt/
+ADD io/gwaslab_*.py /opt/
+RUN chmod 755 /opt/gwaslab_*.py
+ENV PATH="/opt:${PATH}"
+
 # Set working directory
 RUN mkdir -p /data
 WORKDIR /data
