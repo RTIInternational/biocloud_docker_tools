@@ -22,7 +22,7 @@ Required flags:
 - `--multiqc_dir <path>`: Directory containing parsed/aligned outputs consumed by the local QC loader in `bulk_rnaseq_qc_functions.R`.
 - `--txi_rds <path>`: `tximport`-like `.rds` object containing at least `counts`.
 - `--pheno_tsv <path>`: Tab-delimited phenotype file with a sample ID column.
-- `--annotation_gtf <path>`: GTF used to derive mitochondrial/ribosomal/chrY feature sets.
+- `--annotation_gtf <path>`: GTF used to derive mitochondrial/ribosomal/chrY feature sets. The chrY QC check uses hg38 pseudoautosomal region coordinates and will only be correct for hg38 annotations, not hg19.
 - `--sample_id_col <colname>`: Sample ID column in phenotype TSV.
 - `--run_name <name>`: Prefix used for outputs and report naming.
 
@@ -246,6 +246,7 @@ Typical plot outputs include:
 - Duplicate or missing sample IDs in phenotype input will stop execution.
 - If `--rin_col` is not `RIN`, the script renames that column to `RIN` internally.
 - chrY-based QC metrics are skipped if the `--sex_col` column is absent.
+- chrY-based QC metrics exclude hg38 pseudoautosomal regions; these checks are not valid for hg19 annotations unless the PAR coordinates are updated.
 
 Threshold summary in the report includes rules such as:
 - RIN > 5

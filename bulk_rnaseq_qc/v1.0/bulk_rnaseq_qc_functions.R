@@ -1057,6 +1057,7 @@ get_annotation_gene_ids <- function(gtf_path, seqnames = NULL, gene_types = NULL
 			keep <- keep & (gene_type_values %in% gene_types | gene_biotype_values %in% gene_types)
 		}
 		if (exclude_par) {
+			# These PAR intervals are hg38 coordinates; chrY checks are not valid for hg19 annotations.
 			is_chr_y <- seqname_values %in% c("chrY", "Y")
 			overlaps_par <-
 				(start_values <= 2781479 & end_values >= 10001) |
