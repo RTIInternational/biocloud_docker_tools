@@ -505,6 +505,36 @@ plot_hisat2_stats <- function(data) {
 	}
 }
 
+# Extract sample-level HISAT2 overall alignment rate.
+extract_hisat2_mapping_pct <- function(data) {
+	df <- set_sample_rownames(data)
+	overall_col <- find_numeric_column(df, c("overall.*alignment", "overall.*rate", "aligned.*pct", "mapping.*pct", "percent.*aligned", "alignment.*rate"))
+	if (is.null(overall_col)) {
+		stop("Could not identify HISAT2 mapping percentage column.")
+	}
+
+	sample_key <- normalize_sample_labels(rownames(df))
+	values <- as_numeric_vector(df[[overall_col]])
+	weights <- NULL
+	if (all(c("paired_total", "unpaired_total") %in% colnames(df))) {
+		weights <- as_numeric_vector(df$paired_total) + as_numeric_vector(df$unpaired_total)
+	}
+
+	if (!is.null(weights) && any(is.finite(weights) & weights > 0)) {
+		keep <- is.finite(values) & is.finite(weights) & weights > 0
+		agg_num <- tapply(values[keep] * weights[keep], sample_key[keep], sum)
+		agg_den <- tapply(weights[keep], sample_key[keep], sum)
+		agg_values <- agg_num / agg_den
+	} else {
+		agg_values <- tapply(values, sample_key, function(sample_values) {
+			out <- mean(sample_values, na.rm = TRUE)
+			if (is.nan(out)) NA_real_ else out
+		})
+	}
+
+	data.frame(values = as.numeric(agg_values), row.names = names(agg_values))
+}
+
 # Compare HISAT2 and Salmon mapping rates after sample-level aggregation.
 plot_hisat2_vs_salmon <- function(hisat2, salmon) {
 	hisat_df <- set_sample_rownames(hisat2)

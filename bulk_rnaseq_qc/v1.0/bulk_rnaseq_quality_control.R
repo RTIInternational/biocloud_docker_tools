@@ -763,6 +763,14 @@ qc_metrics_list$salmon_mapping_pct <- collect_metric({
 	out
 }, "salmon_mapping_pct")
 
+qc_metrics_list$hisat2_mapping_pct <- collect_metric({
+	out <- extract_hisat2_mapping_pct(qc_data$hisat2)
+	out <- subset_qc_df(out, qc_ids)
+	out <- out[qc_ids, "values", drop = FALSE]
+	colnames(out) <- "hisat2_mapping_pct"
+	out
+}, "hisat2_mapping_pct")
+
 qc_metrics_list$effective_seq_depth <- collect_metric({
 	out <- plot_salmon_mapped_reads(data = qc_data$salmon, return_data = TRUE)
 	out <- out[qc_ids, "values", drop = FALSE]
