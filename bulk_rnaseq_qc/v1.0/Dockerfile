@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.6.1
+FROM --platform=linux/arm64 rocker/r-ver:4.6.1
 
 # Add Container Labels
 LABEL maintainer="Caryn Willis <cdwillis@rti.org>"
