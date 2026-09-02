@@ -15,182 +15,55 @@ if [ -z "$AWS_SHARED_CREDENTIALS_FILE" ]; then
     exit
 fi
 
+# Builds a "--flag value" pair in py_args for each listed env var that is non-empty;
+# unset/empty vars are simply omitted so each script's own argparse defaults/requirements apply.
+build_args() {
+    py_args=()
+    for var_name in "$@"; do
+        if [ -n "${!var_name}" ]; then
+            py_args+=("--${var_name}" "${!var_name}")
+        fi
+    done
+}
+
 if [[ "$task" == "create_wf" ]]; then
-
-    # Check parameters and set to default if not provided where applicable
-    if [ -z "$repo_dir" ]; then
-        echo "--repo_dir not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$main" ]; then
-        echo "--main not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$name" ]; then
-        echo "--name not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$description" ]; then
-        echo "--description not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$readme" ]; then
-        echo "--readme not provided, exiting!"
-        exit 
-    fi
-
-    # Assign default values if parameters not provided
-    if [ -z "$engine" ]; then
-        engine="WDL"
-    fi
-    if [ -z "$storage_capacity" ]; then
-        storage_capacity=2000
-    fi
 
     # Add repo to list of safe directories
     git config --global --add safe.directory "$repo_dir"
 
     # Create workflow
-    python3 /opt/create_wf.py \
-        --aws_profile "$aws_profile" \
-        --repo_dir "$repo_dir" \
-        --main "$main" \
-        --name "$name" \
-        --description "$description" \
-        --readme "$readme" \
-        --engine "$engine" \
-        --storage_capacity $storage_capacity
+    build_args aws_profile repo_dir main name description readme engine storage_capacity
+    python3 /opt/create_wf.py "${py_args[@]}"
 
 fi
 
 if [[ "$task" == "create_wf_version" ]]; then
 
-    # Check parameters and set to default if not provided where applicable
-    if [ -z "$repo_dir" ]; then
-        echo "--repo_dir not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$workflow_id" ]; then
-        echo "--workflow_id not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$main" ]; then
-        echo "--main not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$name" ]; then
-        echo "--name not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$description" ]; then
-        echo "--description not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$readme" ]; then
-        echo "--readme not provided, exiting!"
-        exit 
-    fi
-
-    # Assign default values if parameters not provided
-    if [ -z "$engine" ]; then
-        engine="WDL"
-    fi
-    if [ -z "$storage_capacity" ]; then
-        storage_capacity=2000
-    fi
-
     # Add repo to list of safe directories
     git config --global --add safe.directory "$repo_dir"
 
     # Create workflow version
-    python3 /opt/create_wf_version.py \
-        --aws_profile "$aws_profile" \
-        --repo_dir "$repo_dir" \
-        --workflow_id "$workflow_id" \
-        --main "$main" \
-        --name "$name" \
-        --description "$description" \
-        --readme "$readme" \
-        --engine "$engine" \
-        --storage_capacity $storage_capacity
+    build_args aws_profile repo_dir workflow_id main name description readme engine storage_capacity
+    python3 /opt/create_wf_version.py "${py_args[@]}"
+
+fi
+
+if [[ "$task" == "create_run_cache" ]]; then
+
+    # Create run cache
+    build_args aws_profile charge_code cache_s3_location name description cache_behavior cache_bucket_owner_id
+    python3 /opt/create_run_cache.py "${py_args[@]}"
 
 fi
 
 if [[ "$task" == "start_run" ]]; then
 
-    # Check parameters and set to default if not provided where applicable
-    if [ -z "$charge_code" ]; then
-        echo "--charge_code not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$workflow_id" ]; then
-        echo "--workflow_id not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$parameters" ]; then
-        echo "--parameters not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$name" ]; then
-        echo "--name not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$output_uri" ]; then
-        echo "--output_uri not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$run_metadata_output_dir" ]; then
-        echo "--run_metadata_output_dir not provided, exiting!"
-        exit 
-    fi
-
-    # Assign default values if parameters not provided
-    if [ -z "$workflow_version_name" ]; then
-        workflow_version_name=""
-    fi
-    if [ -z "$cache_id" ]; then
-        parameter_cache_id="--cache_id"
-    fi
-    if [ -z "$cache_behavior" ]; then
-        parameter_cache_behavior="--cache_behavior"
-    fi
-    if [ -z "$workflow_type" ]; then
-        workflow_type="PRIVATE"
-    fi
-    if [ -z "$priority" ]; then
-        priority=100
-    fi
-    if [ -z "$storage_type" ]; then
-        storage_type="STATIC"
-    fi
-    if [ -z "$storage_capacity" ]; then
-        storage_capacity=2000
-    fi
-    if [ -z "$log_level" ]; then
-        log_level="ALL"
-    fi
-    if [ -z "$retention_mode" ]; then
-        retention_mode="RETAIN"
-    fi
-    
     # Start run
-    python3 /opt/start_run.py \
-        --charge_code "$charge_code" \
-        --aws_profile "$aws_profile" \
-        --workflow_id "$workflow_id" \
-        --workflow_version_name "$workflow_version_name" \
-        --name "$name" \
-        --cache_id "$cache_id" \
-        --cache_behavior "$cache_behavior" \
-        --parameters "$parameters" \
-        --output_uri "$output_uri" \
-        --run_metadata_output_dir "$run_metadata_output_dir" \
-        --workflow_type "$workflow_type" \
-        --priority $priority \
-        --storage_type "$storage_type" \
-        --storage_capacity $storage_capacity \
-        --log_level "$log_level" \
-        --retention_mode "$retention_mode"
+    build_args charge_code aws_profile workflow_id workflow_version_name workflow_owner_id \
+        run_group_id run_id role_arn name cache_id cache_behavior parameters output_uri \
+        run_metadata_output_dir workflow_type priority storage_type storage_capacity \
+        log_level retention_mode networking_mode scratch_storage_mode configuration_name
+    python3 /opt/start_run.py "${py_args[@]}"
 
 fi
 
@@ -201,23 +74,15 @@ if [[ "$task" == "cancel_runs" ]]; then
         exit 
     fi
 
-    param_run_ids=''
-    if [ -n "$run_ids" ]; then
-        param_run_ids="--run_ids $run_ids"
-    fi
-    param_run_statuses=''
-    if [ -n "$run_statuses" ]; then
-        param_run_statuses="--run_statuses $run_statuses"
-    fi
+    build_args aws_profile run_ids run_statuses
     if [ -n "$delete_run_data" ]; then
-        param_delete_run_data=$(echo "$delete_run_data" | perl -ne 'chomp; $deleteRunData = uc($_); if ($deleteRunData eq "TRUE" || $deleteRunData eq "T") { print "--delete_run_data" } else { print "" }')
+        delete_run_data_upper=$(echo "$delete_run_data" | tr '[:lower:]' '[:upper:]')
+        if [[ "$delete_run_data_upper" == "TRUE" || "$delete_run_data_upper" == "T" ]]; then
+            py_args+=("--delete_run_data")
+        fi
     fi
 
-    python3 /opt/cancel_runs.py \
-        --aws_profile "$aws_profile" \
-        $param_run_ids \
-        $param_run_statuses \
-        $param_delete_run_data
+    python3 /opt/cancel_runs.py "${py_args[@]}"
 
 fi
 
@@ -228,38 +93,14 @@ if [[ "$task" == "delete_runs" ]]; then
         exit 
     fi
 
-    param_run_ids=''
-    if [ -n "$run_ids" ]; then
-        param_run_ids="--run_ids $run_ids"
-    fi
-    param_run_statuses=''
-    if [ -n "$run_statuses" ]; then
-        param_run_statuses="--run_statuses $run_statuses"
-    fi
-
-    python3 /opt/delete_runs.py \
-        --aws_profile "$aws_profile" \
-        $param_run_ids \
-        $param_run_statuses
+    build_args aws_profile run_ids run_statuses
+    python3 /opt/delete_runs.py "${py_args[@]}"
 
 fi
 
 if [[ "$task" == "retrieve_run_results" ]]; then
 
-    # Check parameters and set to default if not provided where applicable
-    if [ -z "$run_id" ]; then
-        echo "--run_id not provided, exiting!"
-        exit 
-    fi
-    if [ -z "$target_dir" ]; then
-        echo "--target_dir not provided, exiting!"
-        exit 
-    fi
-
-    # Retrieve run results
-    python3 /opt/retrieve_run_results.py \
-        --aws_profile "$aws_profile" \
-        --run_id "$run_id" \
-        --target_dir "$target_dir"
+    build_args aws_profile run_id target_dir
+    python3 /opt/retrieve_run_results.py "${py_args[@]}"
 
 fi

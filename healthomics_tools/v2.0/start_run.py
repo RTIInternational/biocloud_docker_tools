@@ -76,7 +76,35 @@ parser.add_argument(
     type = str,
     default = "PRIVATE",
     required = False,
-    choices = ['PRIVATE', 'PUBLIC']
+    choices = ['PRIVATE', 'READY2RUN']
+)
+parser.add_argument(
+    '--workflow_owner_id',
+    help='12-digit account ID of the workflow owner, required for shared workflows',
+    type = str,
+    required = False,
+    default = ''
+)
+parser.add_argument(
+    '--run_group_id',
+    help='ID of the run group to associate with this run',
+    type = str,
+    required = False,
+    default = ''
+)
+parser.add_argument(
+    '--run_id',
+    help='ID of an existing run to duplicate',
+    type = str,
+    required = False,
+    default = ''
+)
+parser.add_argument(
+    '--role_arn',
+    help='Service role ARN for the run; defaults to arn:aws:iam::<account_id>:role/OmicsWorkflow',
+    type = str,
+    required = False,
+    default = ''
 )
 parser.add_argument(
     '--priority',
@@ -116,27 +144,54 @@ parser.add_argument(
     required = False,
     choices = ['RETAIN', 'REMOVE']
 )
+parser.add_argument(
+    '--networking_mode',
+    help='Networking mode for the run',
+    type = str,
+    required = False,
+    choices = ['', 'RESTRICTED', 'VPC'],
+    default = ''
+)
+parser.add_argument(
+    '--scratch_storage_mode',
+    help='Scratch storage mode for the run (ephemeral storage mounted at /tmp)',
+    type = str,
+    required = False,
+    choices = ['', 'LOCAL', 'SHARED'],
+    default = ''
+)
+parser.add_argument(
+    '--configuration_name',
+    help='Configuration name to use for the workflow run',
+    type = str,
+    required = False,
+    default = ''
+)
 args = parser.parse_args()
 
 run_metadata_output_dir = args.run_metadata_output_dir if (args.run_metadata_output_dir[-1] == "/") else (args.run_metadata_output_dir + "/")
-os.system("mkdir -p {}".format(run_metadata_output_dir))
+os.makedirs(run_metadata_output_dir, exist_ok=True)
 
 # Create map of input parameters to start_run parameters
 parameter_map = {
     "workflow_id": "workflowId",
     "workflow_version_name": "workflowVersionName",
+    "workflow_owner_id": "workflowOwnerId",
+    "run_group_id": "runGroupId",
+    "run_id": "runId",
     "name": "name",
     "cache_id": "cacheId",
     "cache_behavior": "cacheBehavior",
-    "parameters": "parameters",
     "output_uri": "outputUri",
-    "tags": "tags",
     "workflow_type": "workflowType",
     "priority": "priority",
     "storage_type": "storageType",
     "storage_capacity": "storageCapacity",
     "log_level": "logLevel",
     "retention_mode": "retentionMode",
+    "networking_mode": "networkingMode",
+    "scratch_storage_mode": "scratchStorageMode",
+    "configuration_name": "configurationName",
 }
 
 # Open AWS session
@@ -149,22 +204,27 @@ for arg in vars(args):
         if getattr(args, arg) != "":
             run_args[parameter_map.get(arg, arg)] = getattr(args, arg)
 # Add parameters to run arguments
-with open(args.parameters) as f:
-    parameters = json.load(f)
+try:
+    with open(args.parameters) as f:
+        parameters = json.load(f)
+except (OSError, json.JSONDecodeError) as e:
+    raise SystemExit("Error reading parameters file '{}': {}".format(args.parameters, e))
 run_args['parameters'] = parameters
 # Add tags to run arguments
 run_args['tags'] = { "project-number": args.charge_code}
 # Add request ID to run arguments
 run_args['requestId'] = "{}_{}".format(args.name, str(datetime.now().timestamp()))
-# Add role ARN to run arguments
+# Add role ARN to run arguments; use override if provided, otherwise default to the OmicsWorkflow role
 client = session.client("sts")
 account_id = client.get_caller_identity()["Account"]
-role_arn = "arn:aws:iam::{}:role/OmicsWorkflow".format(account_id)
-run_args['roleArn'] = role_arn
+run_args['roleArn'] = args.role_arn if args.role_arn else "arn:aws:iam::{}:role/OmicsWorkflow".format(account_id)
 
 # Start run
 omics = session.client('omics')
-response = omics.start_run(**run_args)
+try:
+    response = omics.start_run(**run_args)
+except Exception as e:
+    raise SystemExit("Error starting Healthomics run: {}".format(e))
 
 with open("{}{}_metadata.json".format(run_metadata_output_dir, args.name), 'w', encoding='utf-8') as f:
     json.dump(response, f)

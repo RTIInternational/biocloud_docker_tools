@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Add scripts
 ADD cancel_runs.py /opt/
+ADD create_run_cache.py /opt/
 ADD create_wf.py /opt/
 ADD create_wf_version.py /opt/
 ADD delete_runs.py /opt/
