@@ -1,4 +1,7 @@
-FROM --platform=linux/arm64 rocker/r-ver:4.6.1
+ARG TARGETPLATFORM=linux/arm64
+
+FROM --platform=$TARGETPLATFORM rocker/r-ver:4.6.1 
+
 
 # Add Container Labels
 LABEL maintainer="Caryn Willis <cdwillis@rti.org>"
