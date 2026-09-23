@@ -176,17 +176,9 @@ sumstats <- sumstats(
   cores = opt$cores
 )
 
-## Save sumstats output to RDS file
-rds_file <- paste0(opt$output_prefix, ".rds")
-cat("Saving sumstats output to RDS file:", rds_file, "\n")
-saveRDS(
-  sumstats,
-  file = rds_file
-)
-
-## Save sumstats output to a text file
+## Save sumstats output
 txt_file <- paste0(opt$output_prefix, ".tsv")
-cat("Saving sumstats output to text file:", txt_file, "\n")
+cat("Saving sumstats output to file ", txt_file, "\n")
 write.table(
   sumstats,
   file = txt_file,
@@ -194,3 +186,4 @@ write.table(
   row.names = FALSE,
   quote = FALSE
 )
+cat("Sumstats output saved successfully.\n")
