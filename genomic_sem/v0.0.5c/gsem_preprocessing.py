@@ -89,6 +89,12 @@ def main():
         help='Separator for the summary statistics file (optional)'
     )
     parser.add_argument(
+        '--chunk_size',
+        type=int,
+        default=100000,
+        help='Number of rows to process per chunk (optional)'
+    )
+    parser.add_argument(
         '--col_z',
         default=None,
         help='Column name for Z-score (optional)'
@@ -120,19 +126,9 @@ def main():
     )
     
     args = parser.parse_args()
-    
-    # Read the summary statistics file
-    try:
-        df = pd.read_csv(
-            args.sumstats_file,
-            sep=args.sumstats_sep
-        )
-    except FileNotFoundError:
-        print(f"Error: File '{args.sumstats_file}' not found.", file=sys.stderr)
-        sys.exit(1)
-    except Exception as e:
-        print(f"Error reading file: {e}", file=sys.stderr)
-        sys.exit(1)
+
+    if args.chunk_size <= 0:
+        parser.error('--chunk_size must be a positive integer')
     
     # Build list of columns to extract and their new names
     column_mappings = {}
@@ -149,53 +145,81 @@ def main():
         'col_info': args.col_info,
         'col_direction': args.col_direction,
     }
-    
-    # Process column mappings
+
     for param_name, col_name in col_params.items():
         if col_name is not None:
             # New column name is param_name minus "col_" prefix
-            new_col_name = param_name[4:]  # Remove "col_" prefix
-            column_mappings[col_name] = new_col_name
+            column_mappings[col_name] = param_name[4:]
+
+    # Read the header first so missing columns are reported before processing chunks.
+    try:
+        input_columns = pd.read_csv(
+            args.sumstats_file,
+            sep=args.sumstats_sep,
+            nrows=0
+        )
+    except FileNotFoundError:
+        print(f"Error: File '{args.sumstats_file}' not found.", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error reading file: {e}", file=sys.stderr)
+        sys.exit(1)
     
     # Verify all required columns exist in the dataframe
-    missing_cols = [col for col in column_mappings.keys() if col not in df.columns]
+    missing_cols = [col for col in column_mappings.keys() if col not in input_columns.columns]
     if missing_cols:
         print(f"Error: Missing columns in input file: {missing_cols}", file=sys.stderr)
         print(f"\nAvailable columns in input file:", file=sys.stderr)
-        for col in df.columns:
+        for col in input_columns.columns:
             print(f"  - {col}", file=sys.stderr)
         print(f"\nNote: Check that --sumstats_sep matches your file's delimiter (default is whitespace).", file=sys.stderr)
         sys.exit(1)
-    
-    # Extract and rename columns
-    df_subset = df[list(column_mappings.keys())].copy()
-    df_subset.rename(columns=column_mappings, inplace=True)
-    
-    # Extract rsID from variant_id column
-    if 'variant_id' in df_subset.columns:
-        df_subset['variant_id'] = df_subset['variant_id'].apply(extract_rsid)
-    
-    # Handle output file path
+
+    # Process and write one chunk at a time to keep memory bounded.
     out_file = args.out_file
     if not out_file.endswith('.gz'):
         out_file = out_file + '.gz'
-    
-    # Ensure output directory exists
+
     output_dir = Path(out_file).parent
     output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Write gzipped TSV
+
     try:
-        df_subset.to_csv(
-            out_file,
-            sep='\t',
-            index=False,
-            compression='gzip'
+        chunks = pd.read_csv(
+            args.sumstats_file,
+            sep=args.sumstats_sep,
+            chunksize=args.chunk_size
         )
-        print(f"Successfully wrote output to {out_file}")
+        wrote_chunk = False
+        for df in chunks:
+            df_subset = df[list(column_mappings.keys())].copy()
+            df_subset.rename(columns=column_mappings, inplace=True)
+
+            if 'variant_id' in df_subset.columns:
+                df_subset['variant_id'] = df_subset['variant_id'].apply(extract_rsid)
+
+            df_subset.to_csv(
+                out_file,
+                sep='\t',
+                index=False,
+                mode='w' if not wrote_chunk else 'a',
+                header=not wrote_chunk,
+                compression='gzip'
+            )
+            wrote_chunk = True
+
+        # Ensure an empty input still produces a valid, header-only output.
+        if not wrote_chunk:
+            pd.DataFrame(columns=[mapping_name for mapping_name in column_mappings.values()]).to_csv(
+                out_file,
+                sep='\t',
+                index=False,
+                compression='gzip'
+            )
     except Exception as e:
-        print(f"Error writing output file: {e}", file=sys.stderr)
+        print(f"Error processing or writing file: {e}", file=sys.stderr)
         sys.exit(1)
+
+    print(f"Successfully wrote output to {out_file}")
 
 
 if __name__ == '__main__':

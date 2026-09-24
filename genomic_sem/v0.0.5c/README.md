@@ -338,6 +338,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `--col_p` | Yes | string | none | Column name containing p-value. |
 | `--out_file` | Yes | string | none | Output file path (automatically gzipped with `.gz` appended if missing). |
 | `--sumstats_sep` | No | string | `\s+` | Field separator/delimiter of input file. |
+| `--chunk_size` | No | integer | `100000` | Number of input rows processed per chunk. |
 | `--col_z` | No | string | `None` | Optional column name containing Z-scores. |
 | `--col_se` | No | string | `None` | Optional column name containing standard errors. |
 | `--col_n` | No | string | `None` | Optional column name containing sample sizes. |
