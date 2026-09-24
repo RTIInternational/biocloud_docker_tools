@@ -97,6 +97,21 @@ sumstats_files <- split_csv(opt$sumstats_files)
 trait_names <- split_csv(opt$trait_names)
 sample_sizes <- as.numeric(unlist(split_csv(opt$sample_sizes)))
 
+if (anyNA(sample_sizes)) {
+  stop("Invalid value for --sample_sizes. Values must be numeric.")
+}
+if (length(sumstats_files) != length(trait_names) ||
+    length(sample_sizes) != length(sumstats_files)) {
+  stop("--sumstats_files, --trait_names, and --sample_sizes must have the same length.")
+}
+if (opt$cores < 1) {
+  stop("Invalid value for --cores. Must be a positive integer.")
+}
+
+sumstats_files <- normalizePath(sumstats_files, mustWork = TRUE)
+opt$ref_snp_list <- normalizePath(opt$ref_snp_list, mustWork = TRUE)
+out_dir <- normalizePath(out_dir, mustWork = FALSE)
+
 ## Create output directory if it doesn't exist
 if (!dir.exists(out_dir)) {
   dir.create(out_dir, recursive = TRUE)

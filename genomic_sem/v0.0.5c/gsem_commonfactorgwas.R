@@ -32,13 +32,13 @@ option_list <- list(
   ),
   make_option(
     "--toler",
-    type = "float",
+    type = "double",
     default = FALSE,
     help = "Tolerance level to use for matrix inversion (optional)"
   ),
   make_option(
     "--snpse",
-    type = "float",
+    type = "double",
     default = FALSE,
     help = "Standard error for SNPs (optional)"
   ),
@@ -117,6 +117,17 @@ if (!opt$gc %in% valid_gcs) {
   ))
 }
 
+valid_estimators <- c("DWLS", "ML")
+if (!opt$estimation_method %in% valid_estimators) {
+  stop(paste(
+    "Invalid value for --estimation_method. Must be one of:",
+    paste(valid_estimators, collapse = ", ")
+  ))
+}
+if (opt$cores < 1) {
+  stop("Invalid value for --cores. Must be a positive integer.")
+}
+
 ## Output the parsed arguments for verification
 cat("Arguments:\n")
 str(opt)
@@ -126,9 +137,6 @@ output_dir <- dirname(opt$output_prefix)
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
-
-## Set working directory to output directory
-setwd(output_dir)
 
 ## Read LDSC output from RDS file
 ldsc_output <- readRDS(opt$ldsc_rds)

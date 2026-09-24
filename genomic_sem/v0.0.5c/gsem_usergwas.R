@@ -14,7 +14,10 @@ option_list <- list(
   make_option(
     "--sumstats",
     type = "character",
-    help = "Summary statistics file from sumstats function (RDS or text table) (required)"
+    help = paste(
+      "Summary statistics file from sumstats function",
+      "(RDS or text table) (required)"
+    )
   ),
   make_option(
     "--model_lavaan",
@@ -25,7 +28,7 @@ option_list <- list(
     "--estimation_method",
     type = "character",
     default = "DWLS",
-    help = "Estimation method for the user model (required)"
+    help = "Estimation method for the user model: DWLS or ML (optional)"
   ),
   make_option(
     "--output_prefix",
@@ -49,13 +52,13 @@ option_list <- list(
   ),
   make_option(
     "--toler",
-    type = "float",
+    type = "double",
     default = FALSE,
     help = "Tolerance level to use for matrix inversion (optional)"
   ),
   make_option(
     "--snpse",
-    type = "float",
+    type = "double",
     default = FALSE,
     help = "Standard error for SNPs (optional)"
   ),
@@ -141,7 +144,6 @@ required_parameters <- c(
   "ldsc_rds",
   "sumstats",
   "model_lavaan",
-  "estimation_method",
   "output_prefix"
 )
 for (param in required_parameters) {
@@ -159,17 +161,31 @@ if (!opt$gc %in% valid_gcs) {
   ))
 }
 
+## Check whether estimation method and core count are valid
+valid_estimators <- c("DWLS", "ML")
+if (!opt$estimation_method %in% valid_estimators) {
+  stop(paste(
+    "Invalid value for --estimation_method. Must be one of:",
+    paste(valid_estimators, collapse = ", ")
+  ))
+}
+if (opt$cores < 1) {
+  stop("Invalid value for --cores. Must be a positive integer")
+}
+
 ## Check whether sub components are valid
 model <- readLines(opt$model_lavaan)
 if (!is.null(opt$sub)) {
   sub <- split_csv(opt$sub)
+  normalized_model <- gsub("\\s+", "", model)
+  sub <- gsub("\\s+", "", sub)
   for (s in sub) {
-    if (!s %in% model) {
+    if (!s %in% normalized_model) {
       stop(paste("Invalid value for --sub:", s))
     }
   }
 } else {
-  sub <- NULL
+  sub <- FALSE
 }
 
 ## Output the parsed arguments for verification
@@ -181,9 +197,6 @@ output_dir <- dirname(opt$output_prefix)
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
-
-## Set working directory to output directory
-setwd(output_dir)
 
 ## Read model from file
 model <- readLines(opt$model_lavaan)

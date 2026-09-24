@@ -108,17 +108,38 @@ str(opt)
 ## Process arguments
 sumstats_files <- split_csv(opt$sumstats_files)
 trait_names <- split_csv(opt$trait_names)
-sample_prevs <- as.numeric(unlist(split_csv(opt$sample_prevs)))
-population_prevs <- as.numeric(unlist(split_csv(opt$population_prevs)))
+sample_prevs_raw <- split_csv(opt$sample_prevs)
+population_prevs_raw <- split_csv(opt$population_prevs)
+sample_prevs <- suppressWarnings(as.numeric(sample_prevs_raw))
+population_prevs <- suppressWarnings(as.numeric(population_prevs_raw))
+
+num_traits <- length(sumstats_files)
+if (
+  length(trait_names) != num_traits ||
+  length(sample_prevs) != num_traits ||
+  length(population_prevs) != num_traits
+) {
+  stop(
+    paste(
+      "--sumstats_files, --trait_names, --sample_prevs, and --population_prevs",
+      "must have the same length."
+    )
+  )
+}
+if (
+  any(is.na(sample_prevs) & tolower(sample_prevs_raw) != "na") ||
+  any(is.na(population_prevs) & tolower(population_prevs_raw) != "na")
+) {
+  stop(
+    "--sample_prevs and --population_prevs must contain numeric values or NA."
+  )
+}
 
 ## Create output directory if it doesn't exist
 output_dir <- dirname(opt$output_prefix)
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
-
-## Set working directory to output directory
-setwd(output_dir)
 
 ## Run stratified LDSC
 cat("Running stratified LDSC...\n")

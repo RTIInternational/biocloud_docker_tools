@@ -79,7 +79,7 @@ option_list <- list(
   ),
   make_option(
     "--toler",
-    type = "float",
+    type = "double",
     default = NULL,
     help = paste(
       "Tolerance for matrix inversion (optional)"
@@ -113,6 +113,14 @@ for (param in required_parameters) {
   }
 }
 
+valid_fixes <- c("regressions", "variances", "covariances")
+if (!opt$fix %in% valid_fixes) {
+  stop(paste(
+    "Invalid value for --fix. Must be one of:",
+    paste(valid_fixes, collapse = ", ")
+  ))
+}
+
 ## Output the parsed arguments for verification
 cat("Arguments:\n")
 str(opt)
@@ -122,9 +130,6 @@ output_dir <- dirname(opt$output_prefix)
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
-
-## Set working directory to output directory
-setwd(output_dir)
 
 ## Read LDSC output from RDS file
 ldsc_output <- readRDS(opt$s_ldsc_rds)

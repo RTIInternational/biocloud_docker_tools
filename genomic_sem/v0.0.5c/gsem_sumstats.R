@@ -5,6 +5,18 @@ split_csv <- function(x) {
   trimws(strsplit(x, ",")[[1]])
 }
 
+parse_bool_csv <- function(x, option_name) {
+  values <- split_csv(x)
+  normalized <- tolower(values)
+  if (any(!normalized %in% c("true", "false"))) {
+    stop(
+      "Invalid value for ", option_name,
+      ". Values must be comma-separated true or false values."
+    )
+  }
+  normalized == "true"
+}
+
 option_list <- list(
   make_option(
     "--sumstats_files",
@@ -132,14 +144,17 @@ str(opt)
 sumstats_files <- split_csv(opt$sumstats_files)
 trait_names <- split_csv(opt$trait_names)
 sample_sizes <- as.numeric(unlist(split_csv(opt$sample_sizes)))
-se_logit <- as.logical(unlist(split_csv(opt$se_logit)))
+if (anyNA(sample_sizes)) {
+  stop("Invalid value for --sample_sizes. Values must be numeric.")
+}
+se_logit <- parse_bool_csv(opt$se_logit, "--se_logit")
 ols <- if (!is.null(opt$ols)) {
-  as.logical(unlist(split_csv(opt$ols)))
+  parse_bool_csv(opt$ols, "--ols")
 } else {
   NULL
 }
 linprob <- if (!is.null(opt$linprob)) {
-  as.logical(unlist(split_csv(opt$linprob)))
+  parse_bool_csv(opt$linprob, "--linprob")
 } else {
   NULL
 }
@@ -149,14 +164,28 @@ betas <- if (!is.null(opt$betas)) {
   NULL
 }
 
+num_traits <- length(sumstats_files)
+if (length(trait_names) != num_traits ||
+    length(sample_sizes) != num_traits ||
+    length(se_logit) != num_traits ||
+    (!is.null(ols) && length(ols) != num_traits) ||
+    (!is.null(linprob) && length(linprob) != num_traits) ||
+    (!is.null(betas) && length(betas) != num_traits)) {
+  stop(
+    "The comma-separated values for --sumstats_files, --trait_names, " ,
+    "--sample_sizes, --se_logit, --ols, --linprob, and --betas must have " ,
+    "the same length."
+  )
+}
+if (opt$cores < 1) {
+  stop("Invalid value for --cores. Must be a positive integer.")
+}
+
 ## Create output directory if it doesn't exist
 out_dir <- dirname(opt$output_prefix)
 if (!dir.exists(out_dir)) {
   dir.create(out_dir, recursive = TRUE)
 }
-
-## Set working directory to output directory
-setwd(out_dir)
 
 ## Prepare summary statistics using the sumstats function
 cat("Preparing Summary Statistics for SEM...\n")
