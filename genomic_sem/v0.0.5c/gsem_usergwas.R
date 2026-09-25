@@ -173,21 +173,6 @@ if (opt$cores < 1) {
   stop("Invalid value for --cores. Must be a positive integer")
 }
 
-## Check whether sub components are valid
-model <- readLines(opt$model_lavaan)
-if (!is.null(opt$sub)) {
-  sub <- split_csv(opt$sub)
-  normalized_model <- gsub("\\s+", "", model)
-  sub <- gsub("\\s+", "", sub)
-  for (s in sub) {
-    if (!s %in% normalized_model) {
-      stop(paste("Invalid value for --sub:", s))
-    }
-  }
-} else {
-  sub <- FALSE
-}
-
 ## Output the parsed arguments for verification
 cat("Arguments:\n")
 str(opt)
@@ -197,9 +182,6 @@ output_dir <- dirname(opt$output_prefix)
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
-
-## Read model from file
-model <- readLines(opt$model_lavaan)
 
 ## Read LDSC output from RDS file
 ldsc_output <- readRDS(opt$ldsc_rds)
@@ -213,6 +195,68 @@ sumstats <- if (grepl("\\.rds$", opt$sumstats, ignore.case = TRUE)) {
     header = TRUE,
     stringsAsFactors = FALSE
   )
+}
+if (is.null(sumstats) || nrow(sumstats) == 0) {
+  stop("Summary statistics file is empty or could not be read.")
+}
+
+## Read the Lavaan model as one string for userGWAS.
+model_lines <- readLines(opt$model_lavaan, warn = FALSE)
+model <- paste(model_lines, collapse = "\n")
+
+## Validate --sub against the model components returned for the first SNP.
+if (!is.null(opt$sub)) {
+  sub <- gsub("\\s+", "", split_csv(opt$sub))
+  validation_gwas <- userGWAS(
+    covstruc = ldsc_output,
+    SNPs = sumstats[1, , drop = FALSE],
+    model = model,
+    estimation = opt$estimation_method,
+    printwarn = FALSE,
+    sub = FALSE,
+    toler = opt$toler,
+    SNPSE = opt$snpse,
+    GC = opt$gc,
+    MPI = FALSE,
+    smooth_check = FALSE,
+    TWAS = opt$twas,
+    std.lv = opt$std_lv,
+    fix_measurement = !opt$not_fix_measurement,
+    Q_SNP = opt$q_snp,
+    parallel = FALSE,
+    cores = 1
+  )
+
+  if (
+    !is.list(validation_gwas) ||
+      length(validation_gwas) == 0 ||
+      !is.data.frame(validation_gwas[[1]])
+  ) {
+    stop(
+      paste(
+        "Unable to validate --sub: ",
+        "userGWAS did not return a SNP result dataframe."
+      )
+    )
+  }
+
+  validation_result <- validation_gwas[[1]]
+  result_components <- gsub(
+    "\\s+",
+    "",
+    paste(validation_result$lhs, validation_result$op, validation_result$rhs)
+  )
+  unmatched_sub <- sub[!sub %in% result_components]
+  if (length(unmatched_sub) > 0) {
+    stop(
+      "Invalid value(s) for --sub: ",
+      paste(unmatched_sub, collapse = ", "),
+      ". Valid components include: ",
+      paste(unique(result_components), collapse = ", ")
+    )
+  }
+} else {
+  sub <- FALSE
 }
 
 ## Run user GWAS
@@ -244,51 +288,5 @@ saveRDS(
   user_gwas,
   file = rds_file
 )
-
-## Save user GWAS output to text file(s)
-if (is.data.frame(user_gwas) || is.matrix(user_gwas)) {
-  tsv_file <- paste0(opt$output_prefix, ".tsv")
-  cat("Saving user GWAS output to TSV file:", tsv_file, "\n")
-  write.table(
-    user_gwas,
-    file = tsv_file,
-    sep = "\t",
-    row.names = FALSE,
-    quote = FALSE
-  )
-} else if (is.list(user_gwas)) {
-  # If sub components or list of data frames returned
-  if (!is.null(names(user_gwas)) && length(names(user_gwas)) > 0) {
-    for (nm in names(user_gwas)) {
-      comp <- user_gwas[[nm]]
-      if (is.data.frame(comp) || is.matrix(comp)) {
-        tsv_file <- paste0(opt$output_prefix, "_", nm, ".tsv")
-        cat("Saving component", nm, "to TSV file:", tsv_file, "\n")
-        write.table(
-          comp,
-          file = tsv_file,
-          sep = "\t",
-          row.names = FALSE,
-          quote = FALSE
-        )
-      }
-    }
-  } else {
-    for (i in seq_along(user_gwas)) {
-      comp <- user_gwas[[i]]
-      if (is.data.frame(comp) || is.matrix(comp)) {
-        tsv_file <- paste0(opt$output_prefix, "_part", i, ".tsv")
-        cat("Saving component part", i, "to TSV file:", tsv_file, "\n")
-        write.table(
-          comp,
-          file = tsv_file,
-          sep = "\t",
-          row.names = FALSE,
-          quote = FALSE
-        )
-      }
-    }
-  }
-}
 
 cat("User GWAS analysis completed successfully.\n")

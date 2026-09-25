@@ -1,10 +1,14 @@
-FROM bioconductor/bioconductor_docker:RELEASE_3_23
+FROM rocker/r-ver:4.2.3
 
 # Maintainer and author
 LABEL maintainer="Nathan Gaddis <ngaddis@rti.org>"
 
 # Install Python dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
     python3 \
     python3-pip \
     python3-pandas \
@@ -12,11 +16,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install R packages
-RUN Rscript -e 'install.packages("devtools"); library("devtools");'
-RUN Rscript -e 'install.packages("optparse"); library("optparse");'
-RUN Rscript -e 'install.packages("magrittr"); library("magrittr");'
-RUN Rscript -e 'install.packages("R.utils"); library("R.utils");'
-RUN Rscript -e 'pak::pak("GenomicSEM/GenomicSEM"); require(GenomicSEM); require(Matrix); require(stats)'
+RUN Rscript -e 'install.packages(c("pak", "optparse", "magrittr", "R.utils"), repos = "https://cloud.r-project.org")'
+RUN Rscript -e 'pak::pkg_install(c("url::https://cran.r-project.org/src/contrib/Archive/lavaan/lavaan_0.6-15.tar.gz", "GenomicSEM/GenomicSEM")); stopifnot(packageVersion("lavaan") == package_version("0.6-15")); require(GenomicSEM); require(Matrix); require(stats)'
+
+# Record installed package versions in the image.
+RUN mkdir -p /opt/package_versions && \
+    Rscript -e 'packages <- installed.packages()[, c("Package", "Version"), drop = FALSE]; write.table(packages, "/opt/package_versions/r-packages.tsv", sep = "\t", quote = FALSE, row.names = FALSE)' && \
+    pip3 freeze | sort > /opt/package_versions/python-packages.txt && \
+    dpkg-query -W -f='${binary:Package}\t${Version}\n' | sort > /opt/package_versions/debian-packages.tsv
 
 # Add R and Python helper scripts
 ADD gsem_*.R gsem_*.py /opt/

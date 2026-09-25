@@ -1,7 +1,7 @@
 # GenomicSEM Docker Tool (v0.0.5c)
 
 This folder contains command-line R wrappers around GenomicSEM functions ([GitHub](https://github.com/GenomicSEM/GenomicSEM).
-Each script takes `optparse` arguments, performs basic validation, runs one GenomicSEM function, and writes output as `.rds` (except `gsem_munge.R`, which writes munged `.sumstats.gz` files).
+Each script takes `optparse` arguments, performs basic validation, runs one GenomicSEM function or utility operation, and writes structured outputs as documented below.
 
 ## Quick Mapping
 
@@ -17,6 +17,8 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `gsem_usermodel.R` | `usermodel()` |
 | `gsem_enrich.R` | `enrich()` |
 | `gsem_merge_rds.R` | Merges split RDS outputs (`userGWAS` / `usermodel`) |
+| `gsem_concatenate_rds_dataframe_lists.R` | Concatenates lists of SNP result dataframes from RDS files |
+| `gsem_extract_snp_results.R` | Extracts and combines SNP model-component results |
 | `gsem_preprocessing.py` | Preprocesses summary statistics (column mapping, rsID extraction) |
 
 ## 1) gsem_munge.R
@@ -215,12 +217,12 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `--ldsc_rds` | Yes | character | none | RDS containing LDSC output. |
 | `--sumstats` | Yes | character | none | Summary statistics file from `sumstats()` (RDS or text table). |
 | `--model_lavaan` | Yes | character | none | Lavaan model file path. |
-| `--estimation_method` | Yes | character | `"DWLS"` | Estimation method for user GWAS model. |
+| `--estimation_method` | No | character | `"DWLS"` | Estimation method for user GWAS model: `DWLS` or `ML`. |
 | `--output_prefix` | Yes | character | none | Prefix for output `.rds` and `.tsv` files. |
 | `--not_printwarn` | No | flag | `FALSE` | If set, suppress per-SNP lavaan warnings/errors. |
 | `--sub` | No | character (CSV) | `NULL` | Comma-separated subset of model lines to return. |
-| `--toler` | No | float | `FALSE` | Matrix inversion tolerance. |
-| `--snpse` | No | float | `FALSE` | SNP SE override. |
+| `--toler` | No | double | `FALSE` | Matrix inversion tolerance. |
+| `--snpse` | No | double | `FALSE` | SNP SE override. |
 | `--gc` | No | character | `"standard"` | Genomic control mode: `standard`, `conserv`, or `none`. |
 | `--mpi` | No | flag | `FALSE` | Use MPI/multi-node processing. |
 | `--smooth_check` | No | flag | `FALSE` | Save smoothing diagnostics. |
@@ -235,7 +237,10 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 
 - Required fields are checked for `NULL`.
 - `--gc` is explicitly validated (`standard|conserv|none`).
-- If `--sub` is provided, each value must exactly match a line in `model_lavaan`; otherwise the script stops.
+- `--estimation_method` is validated as `DWLS` or `ML`, and `--cores` must be positive.
+- The Lavaan model file is read as a newline-separated model string.
+- If `--sub` is provided, the script runs `userGWAS()` on the first summary-statistics row, combines each returned row's `lhs`, `op`, and `rhs` values, removes whitespace, and stops if any requested component does not match.
+- The full `userGWAS()` run is then performed and saved as an RDS.
 
 ## 8) gsem_usermodel.R (**untested**)
 
@@ -320,7 +325,52 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 - Supports merging data frames/matrices (via row-binding), lists of data frames/matrices (element-wise row-binding across lists), and vectors.
 - Automatically saves merged results to RDS and creates a tab-delimited `.tsv` table when the merged object is a data frame or matrix.
 
-## 11) gsem_preprocessing.py
+## 11) gsem_concatenate_rds_dataframe_lists.R
+
+### Purpose
+
+- Combines lists of data frames from multiple RDS files into one ordered list.
+- Supports comma-separated RDS paths or a text file containing one RDS path per line.
+- Saves the combined list as an RDS file.
+
+### CLI parameters
+
+| Flag | Required | Type | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--rds_files` | Conditional | character (CSV) | `NULL` | Comma-separated RDS paths, each containing a list of data frames. |
+| `--rds_file_list` | Conditional | character | `NULL` | Text file containing one RDS path per line; avoids command-line length limits. |
+| `--output_prefix` | Yes | character | none | Prefix for the combined RDS output. |
+
+### Validation/behavior
+
+- At least one of `--rds_files` or `--rds_file_list` must be provided.
+- Each input RDS must contain a list whose elements are data frames.
+- Lists are concatenated in input order and saved to `<output_prefix>.rds`.
+
+## 12) gsem_extract_snp_results.R
+
+### Purpose
+
+- Extracts SNP-related model components from a `userGWAS()` RDS result containing one dataframe per SNP.
+- Combines the matching component rows across SNPs into one dataframe per model component.
+- Writes one tab-delimited TSV file per component; no RDS output is written.
+
+### CLI parameters
+
+| Flag | Required | Type | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--model_lavaan` | Yes | character | none | Lavaan model file used to identify model components containing `SNP`. |
+| `--results_rds` | Yes | character | none | RDS file containing a list of SNP result dataframes. |
+| `--output_prefix` | Yes | character | none | Prefix for the component TSV files. |
+
+### Validation/behavior
+
+- Excludes the `SNP ~~ SNP` variance component.
+- Removes whitespace when matching model components, so `F1 ~ SNP` and `F1~SNP` are equivalent.
+- Combines rows using the normalized `lhs`, `op`, and `rhs` values from each SNP dataframe.
+- For a component such as `F1~SNP`, writes `<output_prefix>_F1_SNP.tsv`.
+
+## 13) gsem_preprocessing.py
 
 ### Purpose
 
@@ -356,4 +406,4 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 
 - All scripts parse options with `optparse` and print parsed arguments using `str(opt)`.
 - Output directory is created automatically when missing.
-- For wrappers writing structured outputs, result objects are saved to `paste0(output_prefix, ".rds")`.
+- For wrappers writing structured outputs, result objects are generally saved to `paste0(output_prefix, ".rds")`; `gsem_extract_snp_results.R` writes component TSV files only.
