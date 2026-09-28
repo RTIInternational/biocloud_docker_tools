@@ -77,9 +77,9 @@ def main():
         help='Column name for p-value'
     )
     parser.add_argument(
-        '--out_file',
+        '--out_prefix',
         required=True,
-        help='Output file path (will be gzipped)'
+        help='Output prefix (will be a gzipped TSV file)'
     )
     
     # Optional arguments
@@ -176,13 +176,9 @@ def main():
         sys.exit(1)
 
     # Process and write one chunk at a time to keep memory bounded.
-    out_file = args.out_file
-    if not out_file.endswith('.gz'):
-        out_file = out_file + '.gz'
-
+    out_file = args.out_prefix + '.tsv.gz'
     output_dir = Path(out_file).parent
     output_dir.mkdir(parents=True, exist_ok=True)
-
     try:
         chunks = pd.read_csv(
             args.sumstats_file,

@@ -386,7 +386,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 | `--col_non_effect_allele` | Yes | string | none | Column name containing non-effect allele (A2/REF). |
 | `--col_effect` | Yes | string | none | Column name containing effect size estimate (beta / log odds). |
 | `--col_p` | Yes | string | none | Column name containing p-value. |
-| `--out_file` | Yes | string | none | Output file path (automatically gzipped with `.gz` appended if missing). |
+| `--out_prefix` | Yes | string | none | Output path prefix; the script writes `<out_prefix>.tsv.gz`. |
 | `--sumstats_sep` | No | string | `\s+` | Field separator/delimiter of input file. |
 | `--chunk_size` | No | integer | `100000` | Number of input rows processed per chunk. |
 | `--col_z` | No | string | `None` | Optional column name containing Z-scores. |
@@ -400,7 +400,7 @@ Each script takes `optparse` arguments, performs basic validation, runs one Geno
 
 - Extracts specified columns and renames them by dropping the `col_` prefix (e.g., `col_variant_id` → `variant_id`).
 - Formats rsID in the `variant_id` column when a regex match is found.
-- Outputs a gzipped tab-delimited file.
+- Outputs a gzipped tab-delimited file named `<out_prefix>.tsv.gz`.
 
 ## General implementation behavior across scripts
 
