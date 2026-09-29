@@ -212,7 +212,7 @@ if (!is.null(opt$sub)) {
     SNPs = sumstats[1, , drop = FALSE],
     model = model,
     estimation = opt$estimation_method,
-    printwarn = FALSE,
+    printwarn = TRUE,
     sub = FALSE,
     toler = opt$toler,
     SNPSE = opt$snpse,
@@ -266,7 +266,7 @@ user_gwas <- userGWAS(
   SNPs = sumstats,
   model = model,
   estimation = opt$estimation_method,
-  printwarn = !opt$not_printwarn,
+  printwarn = TRUE,
   sub = sub,
   toler = opt$toler,
   SNPSE = opt$snpse,
@@ -280,6 +280,21 @@ user_gwas <- userGWAS(
   parallel = opt$parallel,
   cores = opt$cores
 )
+
+if (opt$not_printwarn) {
+  remove_diagnostic_columns <- function(result) {
+    if (is.data.frame(result) || is.matrix(result)) {
+      return(
+        result[, !colnames(result) %in% c("error", "warning"), drop = FALSE]
+      )
+    }
+    if (is.list(result)) {
+      return(lapply(result, remove_diagnostic_columns))
+    }
+    result
+  }
+  user_gwas <- remove_diagnostic_columns(user_gwas)
+}
 
 ## Save user GWAS output to RDS file
 rds_file <- paste0(opt$output_prefix, ".rds")
