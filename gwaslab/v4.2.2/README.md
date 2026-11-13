@@ -33,6 +33,10 @@ docker build -t rtibiocloud/gwaslab:v4.2.2 biocloud_docker_tools/gwaslab/v4.2.2/
 
 Each wrapper initializes the `Sumstats` object from an input file (`--sumstats`) and optional format/column mappings (`--fmt`, `--snpid`, `--chrom`, etc.):
 
+Shared argument parsing, `Sumstats` loading, and formatted output helpers live in `sumstats/gwaslab_sumstats_common.py`. The Docker image copies this module alongside the wrappers in `/opt/`.
+
+The shared parser accepts the GWASLab 4.2.2 `Sumstats()` column mappings and metadata options, including `--other`, `--include`, and `--exclude` followed by column names. Use `--input_tab_fmt` for the constructor's `tab_fmt` (separate from export-format options), and `--readargs_json` for a JSON object of input-reading settings. `--n`, `--ncase`, `--ncontrol`, and `--dof` accept column names or integer constants.
+
 #### Core (`sumstats/core/`)
 
 | Script | GWASLab Method | Description |
